@@ -1,3 +1,9 @@
+Grinder 2.8.5
+-------------
+
+   Fix TCPSniffer bug for non-proxy, non-ssl startup.
+
+
 Grinder 2.8.4
 -------------
 
