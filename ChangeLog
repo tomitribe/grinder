@@ -1,3 +1,14 @@
+2002-11-02  Philip Aston  <paston@bea.com>
+
+	* CHANGES: Doc bug fix.
+
+2002-11-01  Philip Aston  <paston@bea.com>
+
+	* build.xml: Next is 2.8.6.
+
+	* src/net/grinder/Grinder.java:
+	Don't add empty strings to command line array.
+
 2002-10-27  Philip Aston  <paston@bea.com>
 
 	* The Grinder 2.8.5 is released.
