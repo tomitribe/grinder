@@ -3,16 +3,10 @@ diff patches. Mail them to grinder-development@lists.sourceforge.net.
 The wish list is part of the distribution, I'll accept patches against
 it too :-). The list is roughly in priority order.]
 
-Download link on sf is broken?
-Add xweb processing to build. Add html docs. Link to javadoc. Remove
-old documentation.
-
   Find out how to stop net.grinder.console.swing.TestGraph from
   preventing parent process from detecting exit status. (For example,
   when used with the JUnit plugin). Surely System.exit() is not the
   answer?
-
-  Convert docs to xml and xslt->html.
 
   Add an assertion for the expected status code to the HTTP plugin.
   HTTP Plugin "not ok".

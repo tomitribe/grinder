@@ -1,3 +1,8 @@
+2002-10-08  Philip Aston  <paston@bea.com>
+
+	* CHANGES, src/net/grinder/console/swingui/resources/Console_es.properties, xdoc/welcome-xhtml.xml, AUTHORS:
+	Merge from G3 stream: Spanish console from Jose Antonio Zapata Rey.
+
 2002-08-09  Philip Aston  <paston@bea.com>
 
 	* xdoc/documentation.xweb: All directories should have an index file.
