@@ -1,3 +1,15 @@
+2002-11-03  Philip Aston  <paston@bea.com>
+
+	* The Grinder 2.8.6 is released.
+
+	* CHANGES: Correct comment.
+
+	* src/net/grinder/Grinder.java:
+	Deal more correctly with multiple JVM arguments.
+
+	* CHANGES, src/net/grinder/console/swingui/ConsoleUI.java, TODO:
+	Fix 608392.
+
 2002-11-02  Philip Aston  <paston@bea.com>
 
 	* CHANGES: Doc bug fix.
