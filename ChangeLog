@@ -1,3 +1,12 @@
+2002-11-27  Philip Aston  <paston@bea.com>
+
+	* CHANGES: Add new initialTestNumber plugin parameter.
+
+	* build.xml: Next is 2.8.7.
+
+	* src/net/grinder/plugin/junit/JUnitPlugin.java:
+	Add new initialTestNumber plugin parameter.
+
 2002-11-03  Philip Aston  <paston@bea.com>
 
 	* The Grinder 2.8.6 is released.
