@@ -1,4 +1,4 @@
-GRINDER_HOME=/work/src/grinder
+GRINDER_HOME=/work/src/grinder2
 
 #GRINDER=${GRINDER_HOME}/lib/grinder.jar
 GRINDER=${GRINDER_HOME}/build/classes:${GRINDER_HOME}/lib/jakarta-oro-2.0.6.jar
