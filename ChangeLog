@@ -1,3 +1,13 @@
+2002-10-20  Philip Aston  <paston@bea.com>
+
+	* build.xml, CHANGES: Next is 2.8.5.
+
+	* src/net/grinder/TCPSniffer.java: Fix non-proxy, non-ssl start up bug.
+
+2002-10-09  Philip Aston  <paston@bea.com>
+
+	* The Grinder 2.8.4 is released.
+
 2002-10-08  Philip Aston  <paston@bea.com>
 
 	* CHANGES, src/net/grinder/console/swingui/resources/Console_es.properties, xdoc/welcome-xhtml.xml, AUTHORS:
