@@ -53,6 +53,7 @@ public class JUnitPlugin implements GrinderPlugin
     private PluginProcessContext m_processContext;
     private junit.framework.Test m_testSuite;
     private boolean m_logStackTraces;
+    private int m_initialTestNumber;
 
     /**
      * This method is executed when the process starts. It is only
@@ -68,6 +69,7 @@ public class JUnitPlugin implements GrinderPlugin
 	    processContext.getPluginParameters();
 
 	m_logStackTraces = parameters.getBoolean("logStackTraces", false);
+	m_initialTestNumber = parameters.getInt("initialTestNumber", 0);
 
 	try {
 	    final String testSuiteName =
@@ -123,7 +125,7 @@ public class JUnitPlugin implements GrinderPlugin
 	    }
 	}
 	else if (test instanceof TestCase) {
-	    tests.add(new TestWrapper((TestCase)test));
+	    tests.add(new TestWrapper((TestCase)test, m_initialTestNumber++));
 	}
 	else {
 	    m_processContext.logError("Unknown Test: " + test);
@@ -232,13 +234,11 @@ public class JUnitPlugin implements GrinderPlugin
 
 class TestWrapper extends TestImplementation
 {
-    private static int s_nextTestNumber = 0;
-
     private final transient TestCase m_testCase;
 
-    public TestWrapper(TestCase jUnitTest)
+    public TestWrapper(TestCase jUnitTest, int testNumber)
     {
-	super(s_nextTestNumber++, jUnitTest.toString(), null);
+	super(testNumber, jUnitTest.toString(), null);
 
 	m_testCase = jUnitTest;
     }
