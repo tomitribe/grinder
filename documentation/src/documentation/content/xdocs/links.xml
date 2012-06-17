@@ -190,6 +190,16 @@
   <title>Articles</title>
 
   <table class="noborder">
+
+
+    <tr>
+      <td>
+        <a href="http://agilegrind.blogspot.co.uk/">The Agile Grind</a>
+      </td>
+
+      <td>Gary Mulder's blog on using The Grinder.</td>
+    </tr>
+
     <tr>
       <td>
         <a href="http://blackanvil.blogspot.com/2011/12/integrating-grinder-performance-data.html">Black Anvil: Visualizing Grinder Data With Other External Metrics</a>
