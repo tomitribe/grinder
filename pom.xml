@@ -269,6 +269,12 @@
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+  <groupId>com.theoryinpractise</groupId>
+  <artifactId>clojure-maven-plugin</artifactId>
+  <version>1.3.10</version>
+</dependency>
+
   </dependencies>
 
   <dependencyManagement>
@@ -517,6 +523,7 @@
 
   <modules>
     <module>grinder</module>
+    <module>grinder-console-service</module>
     <module>grinder-core</module>
     <module>grinder-dcr-agent</module>
     <module>grinder-http</module>
