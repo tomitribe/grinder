@@ -51,10 +51,9 @@ img { border: 0; }
   padding: 5px 10px;
 }
 .note .content {
-  background: #F0F0FF;
+  background: #F0F0F0;
   color: black;
-  line-height: 120%;
-  font-size: 90%;
+  line-height: 140%;
   padding: 5px 10px;
 }
 .warning .label {
@@ -66,8 +65,7 @@ img { border: 0; }
 .warning .content {
   background: #FFF0F0;
   color: black;
-  line-height: 120%;
-  font-size: 90%;
+  line-height: 140%;
   padding: 5px 10px;
 }
 .fixme .label {
@@ -86,15 +84,14 @@ img { border: 0; }
 
 body {
   font-family: verdana, "Trebuchet MS", arial, helvetica, sans-serif;
-  font-size: 100%;
 }
 
 #content {
-  font-family: Georgia, Palatino, Times, serif;
-  font-size: 95%;
+  font-family: Georgia,'Liberation Serif','Times New Roman',Times,serif;
 }
+
 #tabs {
-  font-size: 70%;
+  font-size: small;
 }
 #menu {
   font-size: 80%;
@@ -132,10 +129,9 @@ h5 { font-size: 80%; }
 h6 { font-size: 75%; }
 
 p {
-  line-height: 120%;
+  line-height: 150%;
   text-align: left;
   margin-top: .5em;
-  margin-bottom: 1em;
 }
 
 #content li,
@@ -162,6 +158,5 @@ p {
 }
 
 .codefrag {
-  font-family: "Courier New", Courier, monospace;
-  font-size: 110%;
+  font-family: monospace; 
 }

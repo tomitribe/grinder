@@ -189,8 +189,8 @@ which will be used to configure the chosen Forrest skin.
     }
 
     .codefrag {
-      font-weight: bolder;
-    color: #303030;
+/*      font-weight: bolder; */
+/*    color: #303030; */
     }
 
     a .codefrag {
@@ -218,14 +218,13 @@ which will be used to configure the chosen Forrest skin.
       text-decoration: underline; font-weight: bold;
     }
 
+
     #content {
-      padding: 40px 20px 20px 180px;
+      padding: 40px 20px 30px 250px;
       width: 768px; <!--  Can't work out how to left align this div in IE. -->
-      font-size: small; <!-- Doesn't look great on IE, but at least it gives an integer pt size. -->
     }
 
-    #content p { line-height: 150%; text-align: justify; }
-  #content a { font-weight: bold; }
+    #content a { font-weight: bold; } 
     #content dt { color: #303030; }
     #content h1 { color: #3a4b8d; }
     #content h2 { color: #3a4b8d; }
