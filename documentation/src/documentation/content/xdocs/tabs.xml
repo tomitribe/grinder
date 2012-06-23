@@ -34,7 +34,7 @@
 
   <tab id="project" label="Project" dir=""/>
 
-  <tab id="manual" label="User Guide" dir="g3" indexfile="whats-new.html"/>
+  <tab id="manual" label="User Guide" dir="g3" indexfile="getting-started.html"/>
 
   <tab id="faq-tab" label="FAQ" dir="" indexfile="faq.html"/>
 

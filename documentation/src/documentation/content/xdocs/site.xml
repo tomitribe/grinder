@@ -36,8 +36,6 @@ See http://forrest.apache.org/docs/linking.html for more info
   </development>
 
   <g3 label="The Grinder 3" href="g3/" tab="manual">
-    <whats-new label="What's new?" href="whats-new.html"/>
-    <features label="Features" href="features.html"/>
     <getting-started label="Getting started" href="getting-started.html">
        <processes href="#The+Grinder+processes"/>
        <howtostart href="#howtostart"/>
@@ -107,6 +105,7 @@ See http://forrest.apache.org/docs/linking.html for more info
       <weight-distribution label="Weighted Distribution" href="tutorial-weight-distribution.html"/>
       <gc label="Garbage Collection" href="garbage-collection.html"/>
     </advice>
+    <features label="Features" href="features.html"/>
     <manual href="manual.html" label="Complete User Guide" />
   </g3>
 

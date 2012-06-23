@@ -23,13 +23,61 @@
   Should I use The Grinder 2 or The Grinder 3?
       </question>
       <answer>
-  <p>The Grinder 3. The Grinder 3 has many <a
-  href="site:g3/whats-new">enhancements</a> over The Grinder 2.
+  <p>The Grinder 3. The Grinder 3 has many enhancements over The Grinder 2.
   The Grinder 3 is in active development.</p>
 
   <p>If you continue to use The Grinder 2, be aware that it has
   defects (including <a href="#premature-eof">this one</a> and <a
   href="#extra-line">this one</a>) that will not be fixed.</p>
+
+    <p>Here is a partial list of changes.</p>
+
+    <ul>
+      <li>Test scripts are now written in a dynamic scripting
+      language, either using Jython or Clojure. String beans and OK
+      strings have been removed from the HTTP plug-in. String beans
+      and OK strings are very limited in comparison to to the
+      flexibility now provided.</li>
+
+      <li>Many <a
+      href="site:properties">grinder.properties</a>
+      have been removed. The features formerly accessed through
+      setting properties are now set by making calls to the plug-in
+      from test scripts. Some of the remaining property names have
+      been renamed.</li>
+
+      <li>The TCPSniffer has been renamed <em>TCPProxy</em> for
+      correctness. The TCPProxy can be used with other HTTP and HTTPS
+      proxies. Many new features and fixes have been added to the
+      TCPProxy.</li>
+
+      <li>Console signals are now transmitted over a TCP socket
+      connection. Multicast is no longer used, removing a frequent
+      source of setup problems.</li>
+
+      <li>The interface that plug-ins must implement has changed
+      completely. Plug-ins written for The Grinder 2 will not work
+      with The Grinder 3. The JUnit and Socket plug-ins have been
+      removed. Their functionality can be achieved directly by using
+      the appropriate Java objects in scripts. It is rarely necessary
+      to write a plug-in for The Grinder 3.</li>
+
+      <li>HTTP tests can now be directed through an HTTP proxy.</li>
+
+      <li>The <code>HttpURLConnection</code> implementation has been
+      removed from the HTTP plug-in.</li>
+
+      <li>Many other updates to HTTP testing functionality.</li>
+
+      <li>HTTPS and SSL contexts can now be controlled on a per thread
+      basis.</li>
+
+      <li>From the console you can edit test scripts and distribute them to
+      the worker processes. It is no longer be necessary to copy
+      grinder.properties files around or to use a shared disk.</li>
+
+      <li>The console can be controlled through a REST API.</li>
+    </ul>
       </answer>
     </faq>
 
