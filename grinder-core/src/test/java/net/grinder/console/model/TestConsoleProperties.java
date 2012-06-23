@@ -21,12 +21,13 @@
 
 package net.grinder.console.model;
 
-import static org.mockito.Mockito.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
@@ -46,7 +47,7 @@ import net.grinder.console.common.DisplayMessageConsoleException;
 import net.grinder.console.common.Resources;
 import net.grinder.console.common.ResourcesImplementation;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
-import net.grinder.testutility.AssertUtilities;
+import static net.grinder.testutility.AssertUtilities.*;
 import net.grinder.testutility.FileUtilities;
 import net.grinder.util.Directory;
 
@@ -664,6 +665,9 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       p2.getScanDistributionFilesPeriod());
     assertEquals(p1.getLookAndFeel(), p2.getLookAndFeel());
     assertEquals(p1.getSaveTotalsWithResults(), p2.getSaveTotalsWithResults());
+
+    p1.setCollectSampleCount(99);
+    assertNotEquals(p1.getCollectSampleCount(), p2.getCollectSampleCount());
   }
 
   @Test public void testAssignment() throws Exception {
@@ -705,18 +709,18 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       p2.getStartWithUnsavedBuffersAsk());
     assertTrue(p1.getStopProcessesAsk() != p2.getStopProcessesAsk());
     assertTrue(p1.getDistributeOnStartAsk() != p2.getDistributeOnStartAsk());
-    AssertUtilities.assertNotEquals(p1.getPropertiesFile(), p2.getPropertiesFile());
-    AssertUtilities.assertNotEquals(p1.getDistributionDirectory(),
+    assertNotEquals(p1.getPropertiesFile(), p2.getPropertiesFile());
+    assertNotEquals(p1.getDistributionDirectory(),
       p2.getDistributionDirectory());
-    AssertUtilities.assertNotEquals(p1.getDistributionFileFilterPattern(),
+    assertNotEquals(p1.getDistributionFileFilterPattern(),
       p2.getDistributionFileFilterPattern());
     assertTrue(p1.getScanDistributionFilesPeriod() !=
       p2.getScanDistributionFilesPeriod());
-    AssertUtilities.assertNotEquals(p1.getLookAndFeel(), p2.getLookAndFeel());
-    AssertUtilities.assertNotEquals(p1.getExternalEditorCommand(),
-                                    p2.getExternalEditorCommand());
-    AssertUtilities.assertNotEquals(p1.getExternalEditorArguments(),
-                                    p2.getExternalEditorArguments());
+    assertNotEquals(p1.getLookAndFeel(), p2.getLookAndFeel());
+    assertNotEquals(p1.getExternalEditorCommand(),
+                    p2.getExternalEditorCommand());
+    assertNotEquals(p1.getExternalEditorArguments(),
+                    p2.getExternalEditorArguments());
     assertTrue(p1.getSaveTotalsWithResults() != p2.getSaveTotalsWithResults());
 
     p2.set(p1);

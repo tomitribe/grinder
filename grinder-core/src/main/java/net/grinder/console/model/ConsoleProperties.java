@@ -266,7 +266,9 @@ public final class ConsoleProperties {
    */
   public ConsoleProperties(ConsoleProperties properties) {
     m_resources = properties.m_resources;
-    m_backingProperties = properties.m_backingProperties;
+    m_backingProperties = new GrinderProperties();
+    m_backingProperties.setAssociatedFile(
+      properties.m_backingProperties.getAssociatedFile());
     set(properties);
   }
 
