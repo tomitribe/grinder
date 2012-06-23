@@ -81,6 +81,7 @@
   (with-temporary-files [f1]
     (let [cp (ConsoleProperties. nil f1)
           r (properties/save cp)]
-      (is (= :success r))
+      (.setConsolePort cp 9999)
+      (is (= :success (properties/save cp)))
       (let [saved (slurp f1)]
-        (is (re-find #"grinder.console.consolePort=6372" saved))))))
+        (is (re-find #"grinder.console.consolePort=9999" saved))))))
