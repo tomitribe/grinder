@@ -101,7 +101,7 @@ footer, searchbar, css etc.  As input, it takes XML of the form:
 <script type="text/javascript" language="javascript" 
 				src="{$root}skin/fontsize.js"></script>
 
-<script type="text/javascript" language="javascript"  src="{$root}skin/shCore.js"></script>
+<script type="text/javascript" language="javascript" src="{$root}skin/shCore.js"></script>
 <script type="text/javascript" language="javascript" src="{$root}skin/shBrushBash.js"></script>
 <script type="text/javascript" language="javascript" src="{$root}skin/shBrushPython.js"></script>
 <script type="text/javascript" language="javascript" src="{$root}skin/shBrushJava.js"></script>
@@ -391,6 +391,7 @@ footer, searchbar, css etc.  As input, it takes XML of the form:
     +</xsl:comment>
         </div>
 <script type="text/javascript">
+     SyntaxHighlighter.defaults['toolbar'] = false;
      SyntaxHighlighter.all()
 </script>
       </body>

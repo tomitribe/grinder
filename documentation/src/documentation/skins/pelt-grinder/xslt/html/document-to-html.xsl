@@ -24,59 +24,73 @@ imported document-to-html.xsl for details.
 
    <xsl:template match="source[@class='sh']">
     <xsl:apply-templates select="@id"/>
-    <pre class="brush: bash; gutter: false">
-      <xsl:copy-of select="@id"/>
-      <xsl:apply-templates/>
-    </pre>
+    <div class="shcontainer">
+      <pre class="brush: bash; gutter: false">
+	<xsl:copy-of select="@id"/>
+	<xsl:apply-templates/>
+      </pre>
+    </div>
   </xsl:template>
 
    <xsl:template match="source[@class='cmd']">
     <xsl:apply-templates select="@id"/>
-    <!-- No cmd brush available. -->
-    <pre class="brush: bash; gutter: false">
-      <xsl:copy-of select="@id"/>
-      <xsl:apply-templates/>
-    </pre>
+    <div class="shcontainer">
+      <!-- No cmd brush available. -->
+      <pre class="brush: bash; gutter: false">
+	<xsl:copy-of select="@id"/>
+	<xsl:apply-templates/>
+      </pre>
+    </div>
   </xsl:template>
 
   <xsl:template match="source[@class='text']">
     <xsl:apply-templates select="@id"/>
-    <pre class="brush: text; gutter: false">
-      <xsl:copy-of select="@id"/>
-      <xsl:apply-templates/>
-    </pre>
+    <div class="shcontainer">
+      <pre class="brush: text; gutter: false;">
+	<xsl:copy-of select="@id"/>
+	<xsl:apply-templates/>
+      </pre>
+    </div>
   </xsl:template>
 
   <xsl:template match="source[@class='java']">
     <xsl:apply-templates select="@id"/>
-    <pre class="brush: java">
-      <xsl:copy-of select="@id"/>
-      <xsl:apply-templates/>
-    </pre>
+    <div class="shcontainer">
+      <pre class="brush: java">
+	<xsl:copy-of select="@id"/>
+	<xsl:apply-templates/>
+      </pre>
+    </div>
   </xsl:template>
 
   <xsl:template match="source[@class='jython']">
     <xsl:apply-templates select="@id"/>
-    <pre class="brush: python">
-      <xsl:copy-of select="@id"/>
-      <xsl:apply-templates/>
-    </pre>
+    <div class="shcontainer">
+      <pre class="brush: python">
+	<xsl:copy-of select="@id"/>
+	<xsl:apply-templates/>
+      </pre>
+    </div>
   </xsl:template>
 
   <xsl:template match="source[@class='clojure']">
     <xsl:apply-templates select="@id"/>
-    <pre class="brush: clojure">
-      <xsl:copy-of select="@id"/>
-      <xsl:apply-templates/>
+    <div class="shcontainer">
+      <pre class="brush: clojure">
+	<xsl:copy-of select="@id"/>
+	<xsl:apply-templates/>
     </pre>
+    </div>
   </xsl:template>
 
   <xsl:template match="source[@class='xml']">
     <xsl:apply-templates select="@id"/>
-    <pre class="brush: xml">
-      <xsl:copy-of select="@id"/>
-      <xsl:apply-templates/>
+    <div class="shcontainer">
+      <pre class="brush: xml">
+	<xsl:copy-of select="@id"/>
+	<xsl:apply-templates/>
     </pre>
+    </div>
   </xsl:template>
 
   <xsl:template match="source">

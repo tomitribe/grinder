@@ -586,3 +586,20 @@ p.instruction {
   list-style-position: outside;
   margin-left: 2em;
 } 
+
+
+.shcontainer {
+  border: 1px solid #D0D0F0;
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+  padding: 0 1em 0 1em;
+  margin: 1em 0em 1em 0em;
+  background-color: white;
+}
+
+body .syntaxhighlighter .line {
+    white-space: pre-wrap !important; /* make code wrap */
+}
