@@ -1,3 +1,10 @@
+The Grinder 3.10
+----------------
+
+  Implement feature request 3526344 - the Console Service provides a
+  RESTful API for automating The Grinder.
+
+
 The Grinder 3.9.1
 -----------------
 
