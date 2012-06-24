@@ -227,7 +227,7 @@ class TestRunner:
 
       <p>Selective instrumentation is useful for instrumenting
       instances of the <a href="site:api/HTTPRequest">HTTPRequest</a>
-      class, which has ancilliary methods that typically need to be
+      class, which has ancillary methods that typically need to be
       called without affecting test statistics. With the traditional
       instrumentation, this could be avoided through the
       <code>__target__</code> reference. Here's an example of how to

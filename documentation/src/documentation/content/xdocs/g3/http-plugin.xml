@@ -35,7 +35,7 @@ from net.grinder.plugin.http import HTTPRequest
   <p>The plug-in wires itself into The Grinder script life cycle. It maintains a cache
   of connections and cookies for each worker thread which it resets at the beginning of each run.
   Each run performed by a worker thread simulates a browser session carried out by a user.
-  Reseting a thread's cookies at the beginning of a run will cause server
+  Resetting a thread's cookies at the beginning of a run will cause server
   applications that use cookie-based tracking to create a new session.</p>
 
   <p>If your

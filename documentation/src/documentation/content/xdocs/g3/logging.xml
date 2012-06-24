@@ -156,7 +156,7 @@ you may have noted the following drawbacks.</p>
 
 <ul>
 
-<li>It's not particuarly fast. Maximum logging throughput is of the
+<li>It's not particularly fast. Maximum logging throughput is of the
 order of a hundred log events per second, and this severely constrains
 the rate at which a worker process can perform tests.</li>
 

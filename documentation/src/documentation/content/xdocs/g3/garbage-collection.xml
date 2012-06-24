@@ -18,7 +18,7 @@ Virtual Machine (JVM) that The Grinder workers run on.
 </p>
 
 <p>
-This page documents the improvments obtained by tuning garbage
+This page documents the improvements obtained by tuning garbage
 collection for a particular test configuration.
 </p>
     <p><strong>Gary Mulder</strong></p>
@@ -53,7 +53,7 @@ standard deviations.
 </section>
 
 <section>
-<title>Conclustions</title>
+<title>Conclusions</title>
 <p>
 Conclusions are as follows. Your mileage may vary:
 </p>
