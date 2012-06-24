@@ -7,12 +7,12 @@
   <parent>
     <artifactId>grinder-parent</artifactId>
     <groupId>net.sf.grinder</groupId>
-    <version>3.10</version>
+    <version>3.11-SNAPSHOT</version>
   </parent>
   <groupId>net.sf.grinder</groupId>
   <artifactId>grinder-console-service</artifactId>
   <packaging>clojure</packaging>
-  <version>3.10</version>
+  <version>3.11-SNAPSHOT</version>
   <name>grinder-console-service</name>
   <description>REST API to The Grinder console.</description>
   <url>http://grinder.sourceforge.net</url>
@@ -119,7 +119,7 @@
     <dependency>
       <groupId>net.sf.grinder</groupId>
       <artifactId>grinder-core</artifactId>
-      <version>3.10</version>
+      <version>3.11-SNAPSHOT</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
