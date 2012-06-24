@@ -22,12 +22,12 @@
 
       <p>You can use the console service to start and stop worker
       processes; change console options; distribute script files;
-      contol when recordings start and stop; and to obtain aggregated
-      test results.</p>
+      start and stop recordings; and obtain aggregated test
+      results.</p>
 
       <p>The first version of the console service was released as part
       of The Grinder 3.10, and provides REST web services. Future
-      releases will provide other flavours of interace, such as a
+      releases will provide other flavours of interface, such as a
       browser-based user interface, and event-driven publication of
       data.</p>
     </section>
@@ -307,7 +307,7 @@
     <section id="rest-example">
       <title>Example session</title>
 
-      <p>Let's have a look at an example terminal sesssion that
+      <p>Let's have a look at an example terminal session that
       exercises the REST interface. We'll use <a
       href="ext:curl">curl</a> as a client, but other HTTP clients
       will work will as well.</p>
@@ -360,15 +360,20 @@ The Grinder 3.10-SNAPSHOT
 "saveTotalsWithResults":false,"stopProcessesAsk":true,"lookAndFeel":null}
 </source>
 
+        <p>The console options are returned in the response body as a
+        JSON object containing key/value pairs. This format is easily
+        to parse with a scripting language, or JavaScript in a
+        browser.</p>
+
       </section>
 
       <section>
 	<title>Setting the properties</title>
 
-        <p>Some of the options are only relevant to the GUI, but
-        others also affect the console service. The following command
-        changes the distribution directory to the examples directory
-        in our distribution, and selects the
+        <p>Some of the console options are only relevant to the GUI,
+        but others also affect the console service. The following
+        command changes the distribution directory to the examples
+        directory in our distribution, and selects the
         <code>grinder.properties</code> file.</p>
 
 	<source class="text">
@@ -377,6 +382,9 @@ The Grinder 3.10-SNAPSHOT
 
 {"propertiesFile":"grinder.properties","distributionDirectory":"examples"}
 </source>
+
+        <p>The properties that were changed are returned in the
+        response body.</p>
 
       </section>
 
@@ -407,11 +415,11 @@ The Grinder 3.10-SNAPSHOT
 	<source class="text">
 % curl http://localhost:6373/agents/status
 
-[{"id":"paston02:968414967|1338400470671|425013298:0","name":"paston02","number":-1,"state":"RUNNING",
-"workers":[]}]
+[{"id":"paston02:968414967|1338400470671|425013298:0","name":"paston02","number":-1,
+"state":"RUNNING","workers":[]}]
 </source>
 
-        <p>The agent is running, and its not yet started any worker
+        <p>The agent is running, and it has not yet started any worker
         processes. Now we'll distribute the scripts to the agent.</p>
 
 
@@ -421,9 +429,9 @@ The Grinder 3.10-SNAPSHOT
 {"id":1,"state":"started","files":[]}
 </source>
 
-        <p>File distribution is asyncronous - the result indicates
+        <p>File distribution is asynchronous - the result indicates
         that the distribution request has been queued, and allocated
-        id 1. We can find out where its got to by querying the
+        id 1. We can find out where it's got to by querying the
         status.</p>
 
 	<source class="text">
@@ -438,8 +446,8 @@ The Grinder 3.10-SNAPSHOT
 </source>
 
 	<p>This tells us that the agent caches are no longer stale,
-	and the distribiution 1 completed, seniding the list of files
-	to the agents.</p>
+	and the distribution 1 completed, sending the list of files to
+	the agents.</p>
 
       </section>
 
@@ -447,18 +455,19 @@ The Grinder 3.10-SNAPSHOT
 	<title>Starting the workers</title>
 
 	<p>We're going to have The Grinder start some worker processes
-	and run <a
+	and run the <a
 	href="site:script-gallery/helloworld.py">helloworld.py</a>
-	from the files we've just sent.</p>
+	script, which is one of the files we've just sent.</p>
 
         <p>We previously set the console option
         <em>propertiesFile</em> to a properties file in the
         distributed files (we chose
-        <code>grinder.properties</code>). This causes the agent to
-        first look for any script file in its distribution cache,
-        before falling back to its working directory. We can override
-        the values in the distributed <code>grinder.properties</code>
-        file in properties sent with the start command.</p>
+        <code>grinder.properties</code>). Setting this option causes
+        the agent to first look for any script file in its
+        distribution cache, falling back to its working directory if
+        the file isn't found. We can override the values in the
+        distributed <code>grinder.properties</code> file in properties
+        sent with the start command.</p>
 
 	<note>Distributing the files to the agents is optional. If you
 	do so, then be sure to set <em>propertiesFile</em> to a valid
@@ -480,13 +489,11 @@ The Grinder 3.10-SNAPSHOT
 	</note>
 
 	<p>The following starts two worker processes, to perform three
-	runs of <em>helloworld.py</em>, using 5 worker threads
+	runs of <em>helloworld.py</em>, using five worker threads
 	each.</p>
 
 	<source class="text">
-% curl -H "Content-Type: application/json" -X POST  http://localhost:6373/agent/start-workers
- -d '{"grinder.processes" : "2", "grinder.threads" : "5", "grinder.runs" : "3",
- "grinder.script" : "helloworld.py" }'
+% curl -H "Content-Type: application/json" -X POST http://localhost:6373/agents/start-workers -d '{"grinder.processes" : "2", "grinder.threads" : "5", "grinder.runs" : "3",  "grinder.script" : "helloworld.py" }'
 
 success
 </source>
@@ -498,7 +505,7 @@ success
 
 	<p>Let's stop the recording. Until we do this, the TPS will be
 	calculated over an increasing duration, and steadily
-	fall. When doing real tests, its usual to set
+	fall. When doing real tests, it's more common to set
 	<code>grinder.runs</code> to <code>0</code> so that the
 	workers don't stop until instructed to do so, and to record a
 	period of data before they are stopped.</p>
@@ -540,10 +547,9 @@ success
         found</em>, check you've used the appropriate HTTP method
         (GET, PUT, or POST).
 	<br/>
-	When playing, you might find it simpler to run the console
-	GUI (don't add <code>-headless</code> to the command
-	line). This will allow you to see the current current console
-	status at a glance.
+	You might find it simpler to run the console GUI
+	(don't add <code>-headless</code> to the command line). This
+	will allow you to see the current console status at a glance.
 
 	</note>
 
