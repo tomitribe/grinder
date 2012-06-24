@@ -23,7 +23,7 @@
   "Compojure application that provides the console REST API."
   (:use [compojure [core :only [GET POST PUT context defroutes routes]]
                    [route :only [not-found]]]
-        [net.grinder.console.service.format-params :only [wrap-restful-params]]
+        [ring.middleware.format-params :only [wrap-restful-params]]
         [ring.middleware.format-response :only [wrap-restful-response]])
   (:require
     [compojure.handler]

@@ -6,7 +6,7 @@
                  [org.clojure/tools.logging "0.2.3"]
                  [ring/ring-core "1.1.0"]
                  [ring/ring-jetty-adapter "1.1.0"]
-                 [ring-middleware-format "0.2.0-SNAPSHOT"]
+                 [ring-middleware-format "0.2.0"]
                  [compojure "1.0.4"]
                  [clj-stacktrace "0.2.4"]
                  [net.sf.grinder/grinder-core "3.10-SNAPSHOT" :scope "provided"]]
