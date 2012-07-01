@@ -36,6 +36,12 @@
       <artifactId>grinder-console-service</artifactId>
       <version>3.11-SNAPSHOT</version>
     </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>grinder-swing-console</artifactId>
+      <version>3.11-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
   <build>

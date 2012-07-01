@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -118,14 +119,10 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
 
   @Test public void testConstruction() throws Exception {
 
-    final ConsoleFoundation foundation =
-      new ConsoleFoundation(m_resources, m_logger);
+    new ConsoleFoundation(m_resources, m_logger, true);
 
     setInstance(this);
-
-    final MyUI ui = (MyUI)foundation.createUI(MyUI.class);
-    assertNotNull(ui);
-
+    verify(m_logger).info(isA(String.class)); // Text UI version.
     verifyNoMoreInteractions(m_logger);
   }
 
@@ -156,8 +153,13 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
     consoleProperties.setHttpPort(port2);
 
     final ConsoleFoundation foundation =
-      new ConsoleFoundation(m_resources, m_logger, timer, consoleProperties);
+      new ConsoleFoundation(m_resources,
+                            m_logger,
+                            false,
+                            timer,
+                            consoleProperties);
 
+    verify(m_logger).info(isA(String.class)); // Text UI version.
     verifyNoMoreInteractions(m_logger);
 
     final Future<?> runTask = m_executor.submit(new Runnable() {

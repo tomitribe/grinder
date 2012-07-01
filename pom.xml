@@ -527,6 +527,7 @@
     <module>grinder-dcr-agent</module>
     <module>grinder-http</module>
     <module>grinder-httpclient</module>
+    <module>grinder-swing-console</module>
     <module>grinder-test-support</module>
     <module>grinder-xmlbeans</module>
   </modules>

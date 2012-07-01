@@ -47,6 +47,7 @@ import net.grinder.console.model.SampleModelImplementation;
 import net.grinder.console.model.SampleModelViews;
 import net.grinder.console.model.SampleModelViewsImplementation;
 import net.grinder.console.synchronisation.WireDistributedBarriers;
+import net.grinder.console.textui.TextUI;
 import net.grinder.messages.console.RegisterExpressionViewMessage;
 import net.grinder.messages.console.RegisterTestsMessage;
 import net.grinder.messages.console.ReportStatisticsMessage;
@@ -88,14 +89,16 @@ public final class ConsoleFoundation {
    *
    * @param resources Console resources
    * @param logger Logger.
+   * @param headless {@code true} => run with the text UI.
    *
    * @exception GrinderException If an error occurs.
    */
-  public ConsoleFoundation(Resources resources, Logger logger)
+  public ConsoleFoundation(Resources resources, Logger logger, boolean headless)
     throws GrinderException {
 
     this(resources,
          logger,
+         headless,
          new Timer(true),
          new ConsoleProperties(
             resources,
@@ -111,13 +114,16 @@ public final class ConsoleFoundation {
    *
    * @param resources Console resources
    * @param logger Logger.
+   * @param headless {@code true} => run with the text UI.
    * @param timer A timer.
    * @param properties The properties.
    *
    * @exception GrinderException If an error occurs.
    */
+  @SuppressWarnings("unchecked")
   public ConsoleFoundation(Resources resources,
                            Logger logger,
+                           boolean headless,
                            Timer timer,
                            ConsoleProperties properties)
     throws GrinderException {
@@ -174,37 +180,32 @@ public final class ConsoleFoundation {
     // META-INF/net.grinder.console property files.
     final ClassLoader classLoader = getClass().getClassLoader();
 
+    Class<? extends UI> uiClass = headless ? TextUI.class : null;
+
     for (Class<?> implementation :
       loadRegisteredImplementations(DYNAMIC_COMPONENT_RESOURCE_NAME,
                                     classLoader)) {
 
-      // Implementations will only be instantiated here if they are startable
-      // - see http://picocontainer.org/lifecycle.html. Otherwise, they
-      // are lazily created as other components require them.
-      m_container.addComponent(implementation);
+      if (uiClass == null && UI.class.isAssignableFrom(implementation)) {
+        // First UI implementation wins, others are ignored.
+        uiClass = (Class<? extends UI>) implementation;
+      }
+      else {
+        // Implementations will be instantiated here if they are startable
+        // - see http://picocontainer.org/lifecycle.html. Otherwise, they
+        // are lazily created as other components require them.
+        m_container.addComponent(implementation);
+      }
     }
-  }
 
-  /**
-   * Factory method to create a console user interface implementation.
-   * PicoContainer is used to satisfy the requirements of the implementation's
-   * constructor.
-   *
-   * @param uiClass
-   *            The implementation class - must implement
-   *            {@link ConsoleFoundation.UI}.
-   * @return An instance of the user interface class.
-   */
-  public UI createUI(Class<? extends UI> uiClass) {
-    m_container.addComponent(uiClass);
+    if (uiClass == null) {
+      uiClass = TextUI.class;
+    }
 
-    final UI ui = m_container.getComponent(uiClass);
+    final UI ui =  m_container.addComponent(uiClass).getComponent(uiClass);
 
     final ErrorQueue errorQueue = m_container.getComponent(ErrorQueue.class);
-
     errorQueue.setErrorHandler(ui.getErrorHandler());
-
-    return ui;
   }
 
   /**

@@ -26,8 +26,6 @@ import net.grinder.common.GrinderException;
 import net.grinder.console.ConsoleFoundation;
 import net.grinder.console.common.Resources;
 import net.grinder.console.common.ResourcesImplementation;
-import net.grinder.console.swingui.ConsoleUI;
-import net.grinder.console.textui.TextUI;
 import net.grinder.util.AbstractMainClass;
 
 import org.slf4j.Logger;
@@ -53,19 +51,18 @@ public final class Console extends AbstractMainClass {
 
     super(logger, USAGE);
 
-    Class<? extends ConsoleFoundation.UI> ui = ConsoleUI.class;
+    boolean headless = false;
 
     for (int i = 0; i < args.length; i++) {
       if ("-headless".equalsIgnoreCase(args[i])) {
-        ui = TextUI.class;
+        headless = true;
       }
       else {
         throw barfUsage();
       }
     }
 
-    m_consoleFoundation = new ConsoleFoundation(resources, logger);
-    m_consoleFoundation.createUI(ui);
+    m_consoleFoundation = new ConsoleFoundation(resources, logger, headless);
   }
 
   private void run() {
