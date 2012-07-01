@@ -444,6 +444,9 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       final Image logoImage = logoIcon.getImage();
 
       if (logoImage != null) {
+        // We've a high resolution image, but the Ubuntu Unity switcher
+        // renders it in low resolution. The launcher looks OK though.
+        // I think this is a Unity bug.
         m_frame.setIconImage(logoImage);
       }
     }
