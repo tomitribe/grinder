@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -29,7 +29,10 @@ import net.grinder.engine.process.dcr.DCRContextImplementation;
 import net.grinder.scriptengine.CompositeInstrumenter;
 import net.grinder.scriptengine.Instrumenter;
 import net.grinder.scriptengine.java.JavaScriptEngineService;
-import net.grinder.scriptengine.jython.instrumentation.dcr.Jython22Instrumenter;
+import net.grinder.testutility.Jython21_22Runner;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 
 /**
@@ -37,6 +40,7 @@ import net.grinder.scriptengine.jython.instrumentation.dcr.Jython22Instrumenter;
  *
  * @author Philip Aston
  */
+@RunWith(Jython21_22Runner.class)
 public class TestJython22Instrumenter
   extends AbstractJythonDCRInstrumenterTestCase {
 
@@ -55,5 +59,9 @@ public class TestJython22Instrumenter
 
   public TestJython22Instrumenter() throws Exception {
     super(createInstrumenter());
+  }
+
+  @Test public void testVersion() throws Exception {
+    assertVersion("(2.1|2.2)");
   }
 }

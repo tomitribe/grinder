@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2011 Philip Aston
+// Copyright (C) 2005 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -23,7 +23,6 @@ package net.grinder.scriptengine.jython;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -32,7 +31,6 @@ import java.util.List;
 import net.grinder.common.GrinderProperties;
 import net.grinder.engine.common.ScriptLocation;
 import net.grinder.engine.process.dcr.DCRContextImplementation;
-import net.grinder.script.NonInstrumentableTypeException;
 import net.grinder.script.NotWrappableTypeException;
 import net.grinder.scriptengine.DCRContext;
 import net.grinder.scriptengine.Instrumenter;
@@ -88,18 +86,14 @@ public class TestJythonScriptEngineService
 
     final Instrumenter instrumenter = instrumenters.get(0);
 
-    assertEquals("traditional Jython instrumenter",
+    assertEquals("byte code transforming instrumenter for Jython 2.5",
                  instrumenter.getDescription());
 
     final Object foo = new Object();
 
     PySystemState.initialize();
 
-    final PyObject proxy =
-      (PyObject)
-      instrumenter.createInstrumentedProxy(m_test, m_recorder, foo);
-
-    assertSame(proxy.__getattr__("__target__").__tojava__(Object.class), foo);
+    instrumenter.createInstrumentedProxy(m_test, m_recorder, foo);
 
     try {
       instrumenter.createInstrumentedProxy(m_test,
@@ -125,31 +119,7 @@ public class TestJythonScriptEngineService
 
     final Object foo = new Object();
 
-    // instrument() is not supported by the traditional instrumenter.
-    try {
-      instrumenter.instrument(m_test, m_recorder, foo, null);
-      fail("Expected NonInstrumentableTypeException");
-    }
-    catch (NonInstrumentableTypeException e) {
-    }
-  }
-
-  @Test public void testWithForcedDCRInsstrumentation() throws Exception {
-    final GrinderProperties properties = new GrinderProperties();
-    properties.setBoolean("grinder.dcrinstrumentation", true);
-
-    final DCRContextImplementation context = DCRContextImplementation.create(null);
-
-    final List<Instrumenter> instrumenters =
-      new JythonScriptEngineService(properties, context, m_pyScript)
-      .createInstrumenters();
-
-    assertEquals(1, instrumenters.size());
-
-    final Instrumenter instrumenter = instrumenters.get(0);
-
-    assertEquals("byte code transforming instrumenter for Jython 2.1/2.2",
-                 instrumenter.getDescription());
+    instrumenter.instrument(m_test, m_recorder, foo, null);
   }
 
   @Test public void testWithNoInstrumenters() throws Exception {

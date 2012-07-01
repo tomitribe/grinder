@@ -185,7 +185,7 @@ public class TestScriptEngineContainer extends AbstractJUnit4FileTestCase {
       new ScriptEngineContainer(m_properties, m_logger, null, m_pyScript);
 
     final Instrumenter instrumenter = container.createInstrumenter();
-    assertEquals("traditional Jython instrumenter",
+    assertEquals("NO INSTRUMENTER COULD BE LOADED",
                  instrumenter.getDescription());
   }
 
@@ -197,7 +197,7 @@ public class TestScriptEngineContainer extends AbstractJUnit4FileTestCase {
                                 m_pyScript);
 
     final Instrumenter instrumenter = container.createInstrumenter();
-    assertEquals("traditional Jython instrumenter; " +
+    assertEquals("byte code transforming instrumenter for Jython 2.5; " +
                  "byte code transforming instrumenter for Java",
                  instrumenter.getDescription());
   }

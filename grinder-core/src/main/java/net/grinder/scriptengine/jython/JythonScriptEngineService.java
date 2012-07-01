@@ -1,3 +1,25 @@
+// Copyright (C) 2001 - 2012 Philip Aston
+// Copyright (C) 2005 Martin Wagner
+// All rights reserved.
+//
+// This file is part of The Grinder software distribution. Refer to
+// the file LICENSE which is part of The Grinder distribution for
+// licensing details. The Grinder distribution is available on the
+// Internet at http://grinder.sourceforge.net/
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+// COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+// (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+// SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+// OF THE POSSIBILITY OF SUCH DAMAGE.
+
 package net.grinder.scriptengine.jython;
 
 import java.util.ArrayList;
@@ -11,7 +33,6 @@ import net.grinder.scriptengine.Instrumenter;
 import net.grinder.scriptengine.ScriptEngineService;
 import net.grinder.scriptengine.jython.instrumentation.dcr.Jython22Instrumenter;
 import net.grinder.scriptengine.jython.instrumentation.dcr.Jython25Instrumenter;
-import net.grinder.scriptengine.jython.instrumentation.traditional.TraditionalJythonInstrumenter;
 import net.grinder.util.FileExtensionMatcher;
 import net.grinder.util.weave.WeavingException;
 
@@ -26,7 +47,6 @@ public final class JythonScriptEngineService implements ScriptEngineService {
   private final FileExtensionMatcher m_pyFileMatcher =
     new FileExtensionMatcher(".py");
 
-  private final boolean m_forceDCRInstrumentation;
   private final DCRContext m_dcrContext;
 
   /**
@@ -39,16 +59,6 @@ public final class JythonScriptEngineService implements ScriptEngineService {
   public JythonScriptEngineService(GrinderProperties properties,
                                    DCRContext dcrContext,
                                    ScriptLocation scriptLocation) {
-
-    // This property name is poor, since it really means "If DCR
-    // instrumentation is available, avoid the traditional Jython
-    // instrumenter". I'm not renaming it, since I expect it only to last
-    // a few releases, until DCR becomes the default.
-    m_forceDCRInstrumentation =
-      properties.getBoolean("grinder.dcrinstrumentation", false) ||
-      // Hack: force DCR instrumentation for non-Jython scripts.
-      !m_pyFileMatcher.accept(scriptLocation.getFile());
-
     m_dcrContext = dcrContext;
   }
 
@@ -57,7 +67,6 @@ public final class JythonScriptEngineService implements ScriptEngineService {
    */
   public JythonScriptEngineService() {
     m_dcrContext = null;
-    m_forceDCRInstrumentation = false;
   }
 
   /**
@@ -67,18 +76,6 @@ public final class JythonScriptEngineService implements ScriptEngineService {
     throws EngineException {
 
     final List<Instrumenter> instrumenters = new ArrayList<Instrumenter>();
-
-    if (!m_forceDCRInstrumentation) {
-      try {
-        instrumenters.add(new TraditionalJythonInstrumenter());
-      }
-      catch (EngineException e) {
-        // Ignore.
-      }
-      catch (VerifyError e) {
-        // Ignore.
-      }
-    }
 
     if (m_dcrContext != null) {
       if (instrumenters.size() == 0) {

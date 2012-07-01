@@ -1,3 +1,11 @@
+The Grinder 3.11
+----------------
+
+  Upgrade the packaged version of Jython to Jython 2.5.2, including
+  the Jython standard library.  Remove the support for the traditional
+  Jython instrumenter.
+
+
 The Grinder 3.10
 ----------------
 

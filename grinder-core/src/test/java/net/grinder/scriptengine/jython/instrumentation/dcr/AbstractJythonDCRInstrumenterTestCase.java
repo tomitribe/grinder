@@ -119,7 +119,7 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
   }
 
   @Test public void testInstrumentationWithPyDerivedClass() throws Exception {
-    m_interpreter.exec("from test import MyClass\n" +
+    m_interpreter.exec("from grinder.test import MyClass\n" +
                        "class Foo(MyClass):\n" +
                        " def six(self): return 6\n" +
                        "x=Foo()");
@@ -156,7 +156,7 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
   }
 
   @Test public void testInstrumentationWithStaticMethod() throws Exception {
-    m_interpreter.exec("from test import MyClass\n" +
+    m_interpreter.exec("from grinder.test import MyClass\n" +
                        "x=MyClass.staticSix");
 
     final PyObject pyType = m_interpreter.get("x");
@@ -181,7 +181,7 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
   }
 
   @Test public void testInstrumentationWithReflectedConstructor() throws Exception {
-    m_interpreter.exec("from test import MyClass\n" +
+    m_interpreter.exec("from grinder.test import MyClass\n" +
                        "x=MyClass.__init__");
 
     final PyObject myClass = m_interpreter.get("MyClass");
@@ -227,7 +227,7 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
 
   // This doesn't work for DCR.
   @Test public void testCreateProxyWithPyJavaInstance() throws Exception {
-    m_interpreter.exec("from test import MyClass\nx=MyClass()");
+    m_interpreter.exec("from grinder.test import MyClass\nx=MyClass()");
     final PyObject pyJava = m_interpreter.get("x");
     createInstrumentedProxy(m_test, m_recorder, pyJava);
 
@@ -249,7 +249,7 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
   }
 
   @Test public void testCreateProxyWithJavaClass() throws Exception {
-    m_interpreter.exec("from test import MyClass");
+    m_interpreter.exec("from grinder.test import MyClass");
     final PyObject pyJavaType = m_interpreter.get("MyClass");
     createInstrumentedProxy(m_test, m_recorder, pyJavaType);
 
@@ -281,7 +281,7 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
    * See bug 2992248.
    */
   @Test public void testJavaBoundMethod() throws Exception {
-    m_interpreter.exec("from test import MyClass\nx=MyClass(1, 2, 3)");
+    m_interpreter.exec("from grinder.test import MyClass\nx=MyClass(1, 2, 3)");
 
     m_interpreter.exec("y=x.getA");
     final PyObject pyJavaMethod = m_interpreter.get("y");
@@ -321,7 +321,7 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
    * See bug 2992248.
    */
   @Test public void testJavaStaticMethod() throws Exception {
-    m_interpreter.exec("from test import MyClass");
+    m_interpreter.exec("from grinder.test import MyClass");
 
     m_interpreter.exec(
       "y=MyClass.staticSix\nz=MyClass.staticSix");
@@ -355,7 +355,7 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
   }
 
   @Test public void testJavaUnboundMethod() throws Exception {
-    m_interpreter.exec("from test import MyClass\n" +
+    m_interpreter.exec("from grinder.test import MyClass\n" +
                        "x=MyClass(1, 2, 3)\n" +
                        "y=MyClass(3, 2, 1)\n" +
                        "m=MyClass.getA");
@@ -382,7 +382,7 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
   @Test public void testJavaBoundMethodSuperClassImplementation()
     throws Exception {
 
-    m_interpreter.exec("from test import MyExtendedClass\nx=MyExtendedClass()");
+    m_interpreter.exec("from grinder.test import MyExtendedClass\nx=MyExtendedClass()");
 
     m_interpreter.exec("y=x.getA");
     final PyObject pyJavaMethod = m_interpreter.get("y");
@@ -419,7 +419,7 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
   }
 
   @Test public void testJavaBoundMethodThroughInterface() throws Exception {
-    m_interpreter.exec("from test import MyExtendedClass\n"+
+    m_interpreter.exec("from grinder.test import MyExtendedClass\n"+
                        "x=MyExtendedClass.create()");
 
     m_interpreter.exec("y=x.addOne");

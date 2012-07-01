@@ -78,7 +78,7 @@ public class TestJython25Instrumenter
   }
 
   @Test public void testCreateProxyWithJavaClassAnd__call__() throws Exception {
-    m_interpreter.exec("from test import MyClass");
+    m_interpreter.exec("from grinder.test import MyClass");
     final PyObject pyJavaType = m_interpreter.get("MyClass");
     createInstrumentedProxy(m_test, m_recorder, pyJavaType);
 

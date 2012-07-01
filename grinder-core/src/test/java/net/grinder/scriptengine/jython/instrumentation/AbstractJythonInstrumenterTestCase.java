@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -56,7 +56,6 @@ import org.python.util.PythonInterpreter;
  * Instrumentation unit tests.
  *
  * @author Philip Aston
- * @version $Revision:$
  */
 public abstract class AbstractJythonInstrumenterTestCase {
 
@@ -100,15 +99,18 @@ public abstract class AbstractJythonInstrumenterTestCase {
     final PyTuple pyTuple =
       (PyTuple) PySystemState.class.getField("version_info").get(null);
 
-    final Object[] tuple = pyTuple.toArray();
+    return new Integer[] { getVersionPart(pyTuple, 0),
+                           getVersionPart(pyTuple, 1),
+                           getVersionPart(pyTuple, 2), };
+  }
 
-    return new Integer[] { (Integer) tuple[0],
-                           (Integer) tuple[1],
-                           (Integer) tuple[2], };
+  private static Integer getVersionPart(PyTuple versionTuple, int part) {
+    // PyTuple.get()/toArray() do not exist in Jython 2.1.
+    return (Integer)versionTuple.__finditem__(part).__tojava__(Integer.class);
   }
 
   public static void assertVersion(String expected) throws Exception {
-    AssertUtilities.assertContains(
+    AssertUtilities.assertContainsPattern(
       PySystemState.class.getField("version").get(null).toString(),
       expected);
   }
@@ -364,7 +366,7 @@ public abstract class AbstractJythonInstrumenterTestCase {
   }
 
   @Test public void testCreateProxyWithPyReflectedFunction() throws Exception {
-    m_interpreter.exec("from test import MyClass\nx=MyClass(6, 5, 4)");
+    m_interpreter.exec("from grinder.test import MyClass\nx=MyClass(6, 5, 4)");
     final PyObject pyJava = m_interpreter.get("x");
     m_interpreter.exec("y=MyClass.getA");
     final PyObject pyJavaMethod = m_interpreter.get("y");

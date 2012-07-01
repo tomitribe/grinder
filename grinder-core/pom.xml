@@ -47,7 +47,7 @@
 
     <dependency>
       <groupId>org.python</groupId>
-      <artifactId>jython</artifactId>
+      <artifactId>jython-standalone</artifactId>
     </dependency>
 
     <dependency>
@@ -139,17 +139,11 @@
             <!-- Alternative Jython implementations for unit tests. If you don't
               have these, comment out the property. -->
             <jython2_1.dir>/opt/jython/jython-2.1</jython2_1.dir>
+            <jython2_2_1.dir>/opt/jython/jython2.2.1</jython2_2_1.dir>
             <jython2_5_0.dir>/opt/jython/jython2.5.0</jython2_5_0.dir>
             <jython2_5_1.dir>/opt/jython/jython2.5.1</jython2_5_1.dir>
             <jython2_5_2.dir>/opt/jython/jython2.5.2</jython2_5_2.dir>
           </systemPropertyVariables>
-
-          <excludes>
-            <!-- Skipping due to "Duplicated LocalVariableTable" issue that only
-              occurs when Jython 2.1 is classloaded through surefire, in a group of tests.
-              This ignores 14 tests. -->
-            <exclude>**/TestTraditionalJythonInstrumenterWithJython21.java</exclude>
-          </excludes>
         </configuration>
       </plugin>
 

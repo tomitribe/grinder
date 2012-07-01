@@ -72,7 +72,7 @@ public abstract class JythonVersionRunner extends Suite {
   private static final Set<String> ISOLATED_CLASSES =
     new HashSet<String>(asList("net.grinder.*",
                                "org.python.*",
-                               "test.*",
+                               "grinder.test.*",
                                "org.mockito.*"));
 
   private static final Set<String> SHARED_CLASSES =

@@ -1,4 +1,4 @@
-// Copyright (C) 2010 Philip Aston
+// Copyright (C) 2009 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -19,10 +19,24 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package test;
+package grinder.test;
 
-// Package scope.
-interface Adder {
+/**
+ * Test class used by
+ * {@link net.grinder.scriptengine.jython.instrumentation.AbstractJythonInstrumenterTestCase}.
+ *
+ * <p>
+ * Needs to be outside of the {@code net.grinder} package so it can be
+ * instrumented.
+ * </p>
+ */
+public class MyExtendedClass extends MyClass {
 
-  int addOne(int i);
+  public static MyClass create() {
+    return new MyExtendedClass();
+  }
+
+  public int addOne(int i) {
+    return i + 2;
+  }
 }

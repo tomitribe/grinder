@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -99,7 +99,17 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
   @Override protected void transform(Recorder recorder, PyProxy target)
     throws NonInstrumentableTypeException {
 
-    final PyObject pyInstance = target._getPyInstance();
+    // For some reason, static linking to _getPyInstance fails.
+    final PyObject pyInstance;
+
+    try {
+      pyInstance =
+          (PyObject)
+          target.getClass().getMethod("_getPyInstance").invoke(target);
+    }
+    catch (Exception e) {
+      throw new NonInstrumentableTypeException(e.getMessage(), e);
+    }
 
     instrumentPublicMethodsByName(pyInstance,
                                   "invoke",
