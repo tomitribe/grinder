@@ -469,6 +469,7 @@ acronym { cursor: help; }
 
 #minitoc-area {
     font-family: verdana, "Trebuchet MS", arial, helvetica, sans-serif;
+    font-size: small;
     border-top: solid 1px #4C6C8F;
     border-bottom: solid 1px #4C6C8F;
     margin: 15px 10% 20px 25px;
