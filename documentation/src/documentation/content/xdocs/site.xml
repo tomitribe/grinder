@@ -426,5 +426,9 @@ See http://forrest.apache.org/docs/linking.html for more info
 
     <webflange href="http://webflange.sourceforge.net/"/>
 
+    <youtube href="http://www.youtube.com/">
+      <grinder-console-service href="http://www.youtube.com/watch?v=OzB3bvQnS7U"/>
+    </youtube>
+
   </external-refs>
 </site>
