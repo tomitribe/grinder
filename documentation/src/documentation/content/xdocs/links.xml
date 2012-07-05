@@ -15,6 +15,20 @@
   <table class="noborder">
     <tr>
       <td>
+        <a href="http://code.google.com/p/grinder-maven-plugin/">Grinder maven plugin</a>
+      </td>
+
+      <td></td>
+
+      <td>
+	A Maven Plugin for The Grinder, with Grinder Analyzer
+	integration. The plugin allows you to run The Grinder from a
+	Maven build, and analyse the results.
+      </td>
+    </tr>
+
+    <tr>
+      <td>
         <a href="ext:ngrinder">nGrinder</a>
       </td>
 
