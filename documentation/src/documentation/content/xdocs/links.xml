@@ -28,7 +28,7 @@
 
     <tr>
       <td>
-        <a href="http://code.google.com/p/grinder-maven-plugin/">Grinder maven plugin</a>
+        <a href="ext:grinder-groovy">Grinder maven plugin</a>
       </td>
 
       <td></td>

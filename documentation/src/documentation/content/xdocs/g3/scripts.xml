@@ -38,8 +38,11 @@
     <section>
       <title>Alternative languages</title>
 
-      <p>The Grinder 3.6 also supports test scripts written in <a
+      <p>The Grinder 3.6 and later support test scripts written in <a
       href="site:clojure">Clojure</a>.</p>
+
+      <p>Ryan Gardner has written an add-on <a
+      href="ext:grinder-groovy">script engine for Groovy</a>.</p>
     </section>
   </section>
 

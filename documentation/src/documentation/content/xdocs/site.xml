@@ -263,6 +263,8 @@ See http://forrest.apache.org/docs/linking.html for more info
 
     <grinder-analyzer href="http://sourceforge.net/project/showfiles.php?group_id=160220"/>
 
+    <grinder-groovy href="http://code.google.com/p/grinder-maven-plugin"/>
+
     <grinder-hudson href="http://hudson.gotdns.com/wiki/display/HUDSON/Grinder+Plugin"/>
 
     <grinder-in-the-cloud href="http://developer.amazonwebservices.com/connect/entry.jspa?externalID=2055&amp;categoryID=101"/>
