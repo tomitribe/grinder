@@ -409,9 +409,16 @@ from the script gallery. This gives the tests contributed by each script
 a distinct range of test numbers, which is important because the test
 number uniquely identifies the test in the console and the data logs.</p>
 
-<p>The HTTP TCPProxy
-filter doesn't directly support
-off-setting test numbers. However, its simple to do in the script.</p>
+<p>The HTTP TCPProxy filter allows the recording of a test script with
+off-setting test numbers. This is done using the
+<code>HTTPPlugin.initialTest</code> property, which can either be set
+directly on the command line, or in a file using the
+<code>-properties</code> option. Here's an example that will start the
+test numbers at 1000:</p>
+
+<source class="sh">java -DHTTPPlugin.initialTest=1000  net.grinder.TCPProxy  -http</source>
+
+<p>Its also simple to offset test values by modifying the script.</p>
 
 <p>Edit the recorded script to replace:</p>
 <source class="jython">
@@ -429,10 +436,11 @@ def Test(number, description):
 </source>
 
 
-<p>This technique doesn't allow different test scripts to be merged together
-into one. If you want to do this, you might consider a <a href="#Stylesheets">
-custom stylesheet</a>; but be aware that you might also have to alter the
-identifiers used for headers, URLs, pages, tokens, and so on.</p>
+<p>Neither technique allows different test scripts to be merged
+together into one because you also have to alter the identifiers used
+for headers, URLs, pages, tokens, and so on. If you want to do this,
+you might consider a <a href="#Stylesheets"> custom
+stylesheet</a>.</p>
 
   </section>
 

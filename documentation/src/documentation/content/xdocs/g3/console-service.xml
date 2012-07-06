@@ -312,6 +312,11 @@
       href="ext:curl">curl</a> as a client, but other HTTP clients
       will work will as well.</p>
 
+
+	<note>A web cast of a similar example session is <a
+	href="ext:youtube/grinder-console-service">available on YouTube</a>.
+	</note>
+
       <section>
 	<title>Starting up</title>
       
