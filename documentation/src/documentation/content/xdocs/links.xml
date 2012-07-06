@@ -13,6 +13,19 @@
   <title>Related Software Projects</title>
 
   <table class="noborder">
+    
+    <tr>
+      <td>
+        <a href="https://github.com/DealerDotCom/grinder-groovy">grinder-groovy</a>
+      </td>
+
+      <td></td>
+
+      <td>
+	Alternative script engine for The Grinder: write your test scripts in Groovy.
+      </td>
+    </tr>
+
     <tr>
       <td>
         <a href="http://code.google.com/p/grinder-maven-plugin/">Grinder maven plugin</a>
