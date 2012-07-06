@@ -26,8 +26,7 @@ import java.io.InputStream;
 import net.grinder.communication.StreamReceiver;
 
 import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.Logger;
+import org.slf4j.Logger;
 
 
 /**
@@ -70,7 +69,7 @@ public class WorkerProcessEntryPoint {
    */
   public int run(InputStream agentCommunicationStream) {
 
-    final Logger logger = (Logger) LoggerFactory.getLogger("worker-bootstrap");
+    final Logger logger = LoggerFactory.getLogger("worker-bootstrap");
 
     final GrinderProcess grinderProcess;
 

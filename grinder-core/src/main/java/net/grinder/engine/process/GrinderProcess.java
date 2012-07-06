@@ -87,6 +87,7 @@ import net.grinder.util.TimeAuthority;
 import net.grinder.util.thread.BooleanCondition;
 import net.grinder.util.thread.Condition;
 
+import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -110,6 +111,7 @@ final class GrinderProcess {
   private final Logger m_terminalLogger;
   private final Logger m_logger;
   private final Logger m_dataLogger;
+  private final LoggerContext m_logbackLoggerContext;
   private final boolean m_reportTimesToConsole;
   private final QueuedSender m_consoleSender;
   private final Sleeper m_sleeper;
@@ -172,7 +174,7 @@ final class GrinderProcess {
     m_reportTimesToConsole =
       properties.getBoolean("grinder.reportTimesToConsole", true);
 
-    configureLogging(workerName, logDirectory);
+    m_logbackLoggerContext = configureLogging(workerName, logDirectory);
 
     m_logger = LoggerFactory.getLogger("worker." + workerName);
     m_dataLogger = LoggerFactory.getLogger("data");
@@ -298,22 +300,37 @@ final class GrinderProcess {
     m_messagePump = new MessagePump(agentReceiver, messageDispatcher, 1);
   }
 
-  private static void configureLogging(String workerName, String logDirectory)
+  private LoggerContext configureLogging(String workerName, String logDirectory)
     throws EngineException {
 
-    final Context context = (Context) LoggerFactory.getILoggerFactory();
+    final ILoggerFactory iLoggerFactory = LoggerFactory.getILoggerFactory();
 
-    final JoranConfigurator configurator = new JoranConfigurator();
-    configurator.setContext(context);
-    context.putProperty("WORKER_NAME", workerName);
-    context.putProperty("LOG_DIRECTORY", logDirectory);
 
-    try {
-      configurator.doConfigure(
-        GrinderProcess.class.getResource("/logback-worker.xml"));
+    if (iLoggerFactory instanceof Context) {
+      final Context context = (Context) iLoggerFactory;
+      final LoggerContext result = (LoggerContext) iLoggerFactory;
+
+      final JoranConfigurator configurator = new JoranConfigurator();
+      configurator.setContext(context);
+      context.putProperty("WORKER_NAME", workerName);
+      context.putProperty("LOG_DIRECTORY", logDirectory);
+
+      try {
+        configurator.doConfigure(
+          GrinderProcess.class.getResource("/logback-worker.xml"));
+      }
+      catch (JoranException e) {
+        throw new EngineException("Could not initialise logger", e);
+      }
+
+      return result;
     }
-    catch (JoranException e) {
-      throw new EngineException("Could not initialise logger", e);
+    else {
+      m_terminalLogger.warn(
+        "Logback not found; grinder log configuration will be ignored.\n" +
+        "Consider adding logback-classic to the start of the CLASSPATH.");
+
+      return null;
     }
   }
 
@@ -546,7 +563,9 @@ final class GrinderProcess {
 
     // Logback doesn't stop its loggers on exit (see LBCORE-202). We do
     // so explicitly to flush our BufferedEchoMessageEncoder.
-    ((LoggerContext) LoggerFactory.getILoggerFactory()).stop();
+    if (m_logbackLoggerContext != null) {
+      m_logbackLoggerContext.stop();
+    }
   }
 
   private class ReportToConsoleTimerTask extends TimerTask {
