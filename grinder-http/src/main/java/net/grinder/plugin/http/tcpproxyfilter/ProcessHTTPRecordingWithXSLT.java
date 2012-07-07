@@ -88,7 +88,7 @@ public class ProcessHTTPRecordingWithXSLT implements
    *          Where to log errors.
    */
   public ProcessHTTPRecordingWithXSLT(PrintWriter output, Logger logger) {
-    this(BuiltInStyleSheet.TraditionalJython, output, logger);
+    this(BuiltInStyleSheet.Jython, output, logger);
   }
 
   /**
