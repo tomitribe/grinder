@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000, 2001, 2002, 2003 Philip Aston
+// Copyright (C) 2000 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -34,10 +34,7 @@ public interface GrinderPlugin {
   /**
    * This method is executed when the process starts. It is only
    * executed once.
-   * @param processContext Process information. {@link
-   * PluginProcessContext} implements {@link
-   * net.grinder.common.Logger} but for efficiency the
-   * implementation isn't synchronised.
+   * @param processContext Process information.
    * @exception PluginException If an error occurs.
    */
   void initialize(PluginProcessContext processContext) throws PluginException;
@@ -45,13 +42,8 @@ public interface GrinderPlugin {
   /**
    * This method is called to create a handler for each thread.
    *
-   * @param pluginThreadContext Thread context information. {@link
-   * PluginThreadContext} implements {@link
-   * net.grinder.common.Logger} but for efficiency the
-   * implementation isn't synchronised. Consequently you should only
-   * call this object using the thread that which the engine uses to
-   * invoke the {@link PluginThreadListener}.
-   * @return a <code>PluginThreadListener</code> implementation.
+   * @param pluginThreadContext Thread context information.
+   * @return A {@code PluginThreadListener} implementation.
    * @exception PluginException If an error occurs.
    */
   PluginThreadListener createThreadListener(

@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2011 Philip Aston
+// Copyright (C) 2001 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -78,10 +78,10 @@ public final class ConsoleListener {
   /**
    * Constructor.
    *
-   * @param notifyOnMessage An <code>Object</code> to notify when a
-   * message arrives.
-   * @param logger A {@link net.grinder.common.Logger} to log received
-   * event messages to.
+   * @param notifyOnMessage
+   *          An <code>Object</code> to notify when a message arrives.
+   * @param logger
+   *          A @ code Logger} to which received event messages are loggged.
    */
   public ConsoleListener(Condition notifyOnMessage, Logger logger) {
     m_notifyOnMessage = notifyOnMessage;

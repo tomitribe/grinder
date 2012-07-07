@@ -1,4 +1,4 @@
-// Copyright (C) 2011 Philip Aston
+// Copyright (C) 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -253,9 +253,11 @@ public abstract class AbstractBarrierGroups implements BarrierGroups  {
     }
 
     /**
-     * Call the {@link Listener#awaken()} method for all of the listeners.
+     * Call the {@link BarrierGroup$Listener#awaken} method for all of the
+     * listeners.
      *
-     * @param oldWaiters The previous waiters.
+     * @param oldWaiters
+     *          The previous waiters.
      */
     protected final void fireAwaken(final Set<BarrierIdentity> oldWaiters) {
       m_listeners.apply(new ListenerSupport.Informer<Listener>() {
