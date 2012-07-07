@@ -163,7 +163,8 @@ requestString = string.join(requestString.split(), "")
 
 <source class="jython">
 grinder.statistics.delayReports = 1
-request = tests[testId].wrap(HTTPRequest())
+request = HTTPRequest()
+tests[testId].record(request)
 
 log("Sending request %s " % requestString)
 result = request.GET(requestString)
@@ -180,13 +181,12 @@ result = request.GET(requestString)
     control back to the script, i.e. immediately after a test has
     executed.</p>
 
-    <p>Next we wrap the HTTPRequest with the test being executed. This
-    enables any calls through the test wrapper to be monitored by the
-    Grinder. Only wrapped tests will be used when collecting test
-    statistics. Any other time spent within the script will not be
-    recorded by The Grinder. Be careful not to include extra script
-    processing within a test; doing so will not give the correct
-    statistics. Only test what is required.</p>
+    <p>Next we instrument the HTTPRequest with the test being
+    executed. This enables any calls through HTTPRequest to be
+    monitored by the Grinder. Any other time spent within the script
+    will not be recorded by The Grinder. Be careful not to include
+    extra script processing within a test; doing so will not give the
+    correct statistics. Only test what is required.</p>
 
     <p>The test itself is next executed which is a HTTP GET to the
     server using our previously constructed test string. Remember -
@@ -266,7 +266,8 @@ class TestRunner:
            requestString = string.join(requestString.split(), "")
 
            grinder.statistics.delayReports = 1
-           request = tests[testId].wrap(HTTPRequest())
+           request = HTTPRequest()
+           tests[testId].record(request)
 
            log("Sending request %s " % requestString)
            result = request.GET(requestString)

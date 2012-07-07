@@ -136,9 +136,7 @@
         <tr>
           <td><strong>Description</strong></td>
 
-          <td>The test description as specified in the test script. If the HTTPProxy has been used to
-          generate the scripts the description field can be found in the httpscript_tests.py file, eg.
-          tests[14000] = Test(14000, 'GET index.jsp').wrap(request14000) will display as 'Get index.jsp'.</td>
+          <td>The test description as specified in the test script.</td>
         </tr>
 
         <tr>

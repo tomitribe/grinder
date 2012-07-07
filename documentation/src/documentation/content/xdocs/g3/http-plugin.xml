@@ -45,13 +45,14 @@ from net.grinder.plugin.http import HTTPRequest
   The TCPProxy goes to some lengths to identify and record these tokens.
   </p>
 
-  <p>If an <code>HTTPRequest</code> is wrapped in a
-    <code>Test</code>, the plug-in contributes additional statistics, including the HTTP status
-  code, the response body length, and  additional connection timing information.
- These statistics appear in the console and are recorded to the process data log.
-    If multiple <code>HTTPRequests</code> are wrapped in a
-    <code>Test</code>, the status code of the last response is
-    recorded.</p>
+  <p>If an <code>HTTPRequest</code> is instrumented with a
+  <code>Test</code>, the plug-in contributes additional statistics,
+  including the HTTP status code, the response body length, and
+  additional connection timing information.  These statistics appear
+  in the console and are recorded to the process data log.  If several
+  <code>HTTPRequests</code> are instrumented within the same
+  <code>Test</code> (e.g. they are called within an instrumented
+  function), the status code of the last response is recorded.</p>
   </section>
 
 

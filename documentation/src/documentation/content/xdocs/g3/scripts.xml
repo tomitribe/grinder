@@ -11,18 +11,18 @@
   <p>This section describes The Grinder 3 scripting API. If you've
   used The Grinder 2 for HTTP testing and you're not a programmer, you
   might be a bit daunted. Don't worry, its just as easy to record and
-  replay HTTP scripts with The Grinder 3.</p>
+  replay HTTP scripts with The&nbsp;Grinder&nbsp;3.</p>
 
   <section>
     <title>Jython and Python</title>
 
     <p>The default scripting engine is Jython - the Java
     implementation of Python. Python is powerful, popular and easy on
-    the eye. If you've never seen any Python before, don't panic. Take
-    a look at the <a href="site:script-gallery">script gallery</a> and
-    Richard Perks' <a href="site:tutorial">tutorial</a> to get a taste
-    of what its like. There are plenty of resources on the web, here
-    are a few of them to get you started:</p>
+    the eye. If you've not seen any Python before, take a look at the
+    <a href="site:script-gallery">script gallery</a> and Richard
+    Perks' <a href="site:tutorial">tutorial</a> to get a taste of what
+    its like. There are plenty of resources on the web, here are a few
+    of them to get you started:</p>
 
     <ul>
       <li><a href="ext:jython">The Jython home page</a></li>
@@ -165,20 +165,15 @@ class TestRunner:
 
     <p>Here we have created a single <code>Test</code> with the test
     number <em>1</em> and the description <em>Log method</em>. Note
-    how must import the <code>grinder</code> object and the
+    how we import the <code>grinder</code> object and the
     <code>Test</code> class in a similar manner to
     Java.</p>
 
     <p>Now the console knows about our <code>Test</code>, but we're
     still not using it to record anything. Let's record how long our
-    <code>grinder.logger.info</code> method takes. To instrument the
-    <code>grinder.logger.info</code> method we use our
-    <code>Test</code> to wrap it with a proxy <em>wrapper</em>. The
-    wrapper object looks exactly like the
-    <code>grinder.logger.info</code> method and can be called in the
-    same manner. If we call the wrapper the call will be delegated
-    through to the <code>grinder.logger.info</code> method but
-    additionally the time taken to do the call and the number of calls
+    <code>grinder.logger.info</code> method takes to execute.
+    <code>Test.record</code> adds the appropriate instrumentation code
+    to the byte code of method. The time taken and the number of calls
     will be recorded and reported to the console.</p>
 
 <source class="jython">
@@ -187,19 +182,19 @@ from net.grinder.script.Grinder import grinder
 
 test1 = Test(1, "Log method")
 
-# Wrap the info() method with our Test and call the result logWrapper.
-logWrapper = test1.wrap(grinder.logger.info)
+# Instrument the info() method with our Test.
+test1.record(grinder.logger.info)
 
 class TestRunner:
     def __call__(self):
-        logWrapper("Hello World")
+        log("Hello World")
 </source>
 
-    <p>This is a fully functional test script that works within The
-    Grinder framework and reports results to the console.</p>
+    <p>This is a complete test script that works within The Grinder
+    framework and reports results to the console.</p>
 
-    <p>You're not restricted to wrapping method calls. In fact, its
-    more common to wrap objects. Here's an example using The Grinder's
+    <p>You're not restricted to instrument method calls. In fact, it's
+    more common to instrument objects. Here's an example using The Grinder's
     <a href="site:g3/plugins/http-plugin">HTTP plug-in</a>.</p>
 
 <source class="jython">
@@ -211,7 +206,8 @@ from net.grinder.script.Grinder import grinder
 from net.grinder.plugin.http import HTTPRequest
 
 test1 = Test(1, "Request resource")
-request1 = test1.wrap(HTTPRequest())
+request1 = HTTPRequest()
+test1.record(request1)
 
 class TestRunner:
     def __call__(self):

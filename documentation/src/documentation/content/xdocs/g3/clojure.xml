@@ -18,10 +18,6 @@
     <p>Install Clojure and add the path to the installation's <code>clojure-x.x.x.jar</code>
     file to the start of the <code>CLASSPATH</code> you use for The Grinder agent processes.
     </p>
-
-    <p>The support for Clojure uses the
-    <a href="site:script-instrumentation/new-instrumentation">new instrumentation engine</a>,
-    and so requires that the agent processes are run using Java SE 6.</p>
   </section>
 
   <section>

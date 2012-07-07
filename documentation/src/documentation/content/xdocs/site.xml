@@ -78,8 +78,6 @@ See http://forrest.apache.org/docs/linking.html for more info
       </jython>
       <clojure label="Clojure" href="clojure.html"/>
       <script-instrumentation label="Instrumentation" href="instrumentation.html">
-        <new-instrumentation href="#new-instrumentation"/>
-        <record-api href="#record-api"/>
       </script-instrumentation>
       <coordination label="Coordination" href="coordination.html"/>
       <script-gallery label="Script Gallery" href="script-gallery.html">
