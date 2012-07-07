@@ -41,6 +41,8 @@ def createBytesMessage(session, size):
     message.writeBytes(bytes)
     return message
 
+test1 =  Test(1, "Send a message")
+
 class TestRunner:
     def __call__(self):
         log = grinder.logger.info
@@ -49,14 +51,14 @@ class TestRunner:
         session = connection.createQueueSession(0, Session.AUTO_ACKNOWLEDGE)
 
         sender = session.createSender(queue)
-        instrumentedSender = Test(1, "Send a message").wrap(sender)
+        test1.record(sender)
 
         message = createBytesMessage(session, 100)
 
         log("Sending ten messages")
 
         for i in range(0, 10):
-            instrumentedSender.send(message)
+            sender.send(message)
             grinder.sleep(100)
 
         log("Closing queue session")

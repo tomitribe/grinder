@@ -13,10 +13,10 @@ from net.grinder.script.Grinder import grinder
 from net.grinder.script import Test
 
 test1 = Test(1, "Log method")
-logTest = test1.wrap(grinder.logger.info)
+test1.record(grinder.logger.info)
 
 def doRun():
-    logTest("Hello World")
+    grinder.logger.info("Hello World")
 
 def TestRunner():
     return doRun

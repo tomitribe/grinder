@@ -17,7 +17,8 @@ from org.apache.xmlrpc import XmlRpcClient
 test1 = Test(1, "XML-RPC example test")
 server_url = "http://localhost:8080/RPC2"
 
-serverWrapper = test1.wrap(XmlRpcClient(server_url))
+client = XmlRpcClient(server_url)
+test1.record(client)
 
 class TestRunner:
     def __call__(self):
@@ -25,7 +26,7 @@ class TestRunner:
         params.addElement(Integer(6))
         params.addElement(Integer(3))
 
-        result = serverWrapper.execute("sample.sumAndDifference", params)
+        result = client.execute("sample.sumAndDifference", params)
         sum = result.get("sum")
 
         grinder.logger.info("SUM %d" % sum)

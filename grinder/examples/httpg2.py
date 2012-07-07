@@ -43,8 +43,8 @@ if pluginParameters["disablePersistentConnections"]:
 
 
 class G2HTTPTest:
-    """Parses parameters for an individual test and wraps the test
-    invocation in a G3 Test."""
+    """Parses parameters for an individual test and records the test
+    invocation using a G3 Test."""
 
     def __init__(self, testNumber, properties):
         self.sleepTime = properties["sleepTime"]
@@ -86,9 +86,9 @@ class G2HTTPTest:
         else:
             raise "If you specify one of { basicAuthenticationUser, basicAuthenticationRealm, basicAuthenticationPassword } you must specify all three."
 
-        request = HTTPRequest(headers=headers)
+        self.request = HTTPRequest(headers=headers)
         self.test = Test(testNumber, properties["description"])
-        self.request = self.test.wrap(request)
+        self.test.record(self.request)
 
     def doTest(self, iteration):
 

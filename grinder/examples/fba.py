@@ -19,13 +19,12 @@ from HTTPClient import NVPair
 protectedResourceTest = Test(1, "Request resource")
 authenticationTest = Test(2, "POST to j_security_check")
 
+request = HTTPRequest(url="http://localhost:7001/console")
+protectedResourceTest.record(request)
+
 class TestRunner:
     def __call__(self):
-        request = protectedResourceTest.wrap(
-            HTTPRequest(url="http://localhost:7001/console"))
-
         result = request.GET()
-
         result = maybeAuthenticate(result)
 
         result = request.GET()
@@ -42,7 +41,7 @@ def maybeAuthenticate(lastResult):
         authenticationFormData = ( NVPair("j_username", "weblogic"),
                                    NVPair("j_password", "weblogic"),)
 
-        request = authenticationTest.wrap(
-            HTTPRequest(url="%s/j_security_check" % lastResult.originalURI))
+        request = HTTPRequest(url="%s/j_security_check" % lastResult.originalURI)
+        authenticationTest.record(request)
 
         return request.POST(authenticationFormData)

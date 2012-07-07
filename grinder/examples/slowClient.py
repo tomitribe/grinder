@@ -11,7 +11,8 @@ rates = (-1, 10000000, 1000000, 100000, 56000, 9600, 2400)
 i = 0
 
 for baud in rates:
-    requests[baud] = Test(i, "%d baud" % baud).wrap(HTTPRequest())
+    requests[baud] = HTTPRequest
+    Test(i, "%d baud" % baud).record(requests[baud])
     i = i + 1
     
 

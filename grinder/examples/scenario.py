@@ -16,8 +16,8 @@ def page1():
     request.GET('/console/login/LoginForm.jsp')
     request.GET('/console/login/bea_logo.gif')
 
-page1Test = Test(1, "First page").wrap(page1)
+Test(1, "First page").record(page1)
 
 class TestRunner:
     def __call__(self):
-        page1Test()
+        page1()

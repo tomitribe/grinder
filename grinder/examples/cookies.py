@@ -36,7 +36,8 @@ class MyCookiePolicyHandler(CookiePolicyHandler):
 CookieModule.setCookiePolicyHandler(MyCookiePolicyHandler())
 
 test1 = Test(1, "Request resource")
-request1 = test1.wrap(HTTPRequest())
+request1 = HTTPRequest()
+test1.record(request1)
 
 
 class TestRunner:

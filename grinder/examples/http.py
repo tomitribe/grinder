@@ -10,7 +10,8 @@ from net.grinder.script import Test
 from net.grinder.plugin.http import HTTPRequest
 
 test1 = Test(1, "Request resource")
-request1 = test1.wrap(HTTPRequest())
+request1 = HTTPRequest()
+test1.record(request1)
 
 class TestRunner:
     def __call__(self):

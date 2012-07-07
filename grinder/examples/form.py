@@ -10,7 +10,8 @@ from HTTPClient import Codecs, NVPair
 from jarray import zeros
 
 test1 = Test(1, "Upload Image")
-request1 = test1.wrap(HTTPRequest(url="http://localhost:7001/"))
+request1 = HTTPRequest(url="http://localhost:7001/")
+test1.record(request1)
 
 class TestRunner:
     def __call__(self):

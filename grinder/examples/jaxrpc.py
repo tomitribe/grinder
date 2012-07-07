@@ -17,9 +17,9 @@ System.setProperty( "javax.xml.rpc.ServiceFactory",
 webService = HelloWorld_Impl("http://localhost:7001/basic_javaclass/HelloWorld?WSDL")
 
 port  = webService.getHelloWorldPort()
-portTest = Test(1, "JAXP Port test").wrap(port)
+Test(1, "JAXP Port test").record(port)
 
 class TestRunner:
     def __call__(self):
-        result = portTest.sayHello(grinder.threadNumber, grinder.grinderID)
+        result = port.sayHello(grinder.threadNumber, grinder.grinderID)
         grinder.logger.info("Got '%s'" % result)

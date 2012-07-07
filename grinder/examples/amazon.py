@@ -31,8 +31,8 @@ class TestRunner:
             raise RuntimeError("Use limited to one thread, one run; "
                                "see Amazon Web Services terms and conditions")
 
-        request = bookDetailsTest.wrap(
-            HTTPRequest(url="http://xml.amazon.com/onca/xml"))
+        request = HTTPRequest(url="http://xml.amazon.com/onca/xml")
+        bookDetailsTest.record(request)
 
         parameters = (
             NVPair("v", "1.0"),

@@ -10,8 +10,8 @@ from net.grinder.plugin.http import HTTPRequest
 
 class TestRunner:
     def __call__(self):
-        request = Test(1, "Basic request").wrap(
-                      HTTPRequest(url = "http://localhost:7001"))
+        request = HTTPRequest(url = "http://localhost:7001")
+        Test(1, "Basic request").record(request)
 
         # Example 1. You can get the time of the last test as follows.
         result = request.GET("index.html")
@@ -48,8 +48,8 @@ class TestRunner:
         # getForLastTest() accesses statistics for the last completed test.
 
         def page(self):
-            resourceRequest = Test(2, "Request resource").wrap(
-                                  HTTPRequest(url = "http://localhost:7001"))
+            resourceRequest =HTTPRequest(url = "http://localhost:7001")
+            Test(2, "Request resource").record(resourceRequest)
 
             resourceRequest.GET("index.html");
             resourceRequest.GET("foo.css");
@@ -66,7 +66,8 @@ class TestRunner:
 
             resourceRequest.GET("image.gif");
 
-        instrumentedPage = Test(3, "Page").wrap(page)
+        instrumentedPage = page
+        Test(3, "Page").record(instrumentedPage)
 
         instrumentedPage(self)
 

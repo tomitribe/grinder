@@ -56,7 +56,7 @@ grinder.statistics.registerSummaryExpression(
 def recordDeliveryTime(deliveryTime):
     grinder.statistics.forCurrentTest.setValue("userLong0", deliveryTime)
 
-recordTest = Test(1, "Receive messages").wrap(recordDeliveryTime)
+Test(1, "Receive messages").record(recordDeliveryTime)
 
 class TestRunner(MessageListener):
 
@@ -87,7 +87,7 @@ class TestRunner(MessageListener):
 
             # We record the test a here rather than in onMessage
             # because we must do so from a worker thread.
-            recordTest(deliveryTime)
+            recordDeliveryTime(deliveryTime)
 
         log("Closing queue session")
         session.close()

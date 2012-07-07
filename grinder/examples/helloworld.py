@@ -19,10 +19,8 @@ log = grinder.logger.info
 # it.
 test1 = Test(1, "Log method")
 
-# Wrap the info() method with our Test and call the result logWrapper.
-# Calls to logWrapper() will be recorded and forwarded on to the real
-# info() method.
-logWrapper = test1.wrap(log)
+# Instrument the info() method with our Test.
+test1.record(log)
 
 # A TestRunner instance is created for each thread. It can be used to
 # store thread-specific data.
@@ -30,4 +28,4 @@ class TestRunner:
 
     # This method is called for every run.
     def __call__(self):
-        logWrapper("Hello World")
+        test1("Hello World")

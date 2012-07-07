@@ -30,8 +30,12 @@ testNames = [ "testRedirect",
               "testContentFrame",
               "testLogout", ]
 
-tests = [Test(i, name).wrap(HttpTest(name))
-         for name, i in zip(testNames, range(len(testNames)))]
+tests=[]
+
+for name, i in zip(testNames, range(len(testNames))):
+  t = HttpTest(name)
+  Test(i, name).record(t)
+  tests.append(t)
 
 # A TestRunner instance is created for each thread. It can be used to
 # store thread-specific data.

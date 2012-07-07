@@ -39,20 +39,22 @@ ensureClosed(connection)
 class TestRunner:
     def __call__(self):
         connection = None
-        statement = None
+        insertStatement = None
+        queryStatement = None
 
         try:
             connection = getConnection()
-            statement = connection.createStatement()
+            insertStatement = connection.createStatement()
 
-            testInsert = test1.wrap(statement)
-            testInsert.execute("insert into grinder_fun values(%d, %d)" %
-                               (grinder.threadNumber, grinder.runNumber))
+            test1.record(insertStatement)
+            insertStatement.execute("insert into grinder_fun values(%d, %d)" %
+                                    (grinder.threadNumber, grinder.runNumber))
 
-            testQuery = test2.wrap(statement)
-            testQuery.execute("select * from grinder_fun where thread=%d" %
-                              grinder.threadNumber)
+            test2.record(queryStatement)
+            queryStatement.execute("select * from grinder_fun where thread=%d" %
+                                   grinder.threadNumber)
 
         finally:
-            ensureClosed(statement)
+            ensureClosed(insertStatement)
+            ensureClosed(queryStatement)
             ensureClosed(connection)

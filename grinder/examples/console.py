@@ -8,12 +8,20 @@ from java.lang import Math
 
 r = Random()
 
-def doIt(v):
-    t = 500 + r.nextGaussian() * v * 10
-    grinder.sleep(int(t), 0)
-    pass
+class Tester:
+    def __init__(self, i):
+        self.i = i
 
-tests = [ Test(i, "Test %s" % i).wrap(doIt) for i in range(0, 10) ]
+    def __call__(self):
+        t = 500 + r.nextGaussian() * self.i * 10
+        grinder.sleep(int(t), 0)
+
+def createTester(i):
+    result = Tester(i)
+    Test(i, "Test %s" % i).record(result)
+    return result
+
+testers = [ createTester(i) for i in range(0, 10) ]
 
 class TestRunner:
     def __call__(self):
@@ -21,7 +29,7 @@ class TestRunner:
 
 #        statistics.delayReports = 1
 
-        for test in tests:
-            test(test.__test__.number)
+        for tester in testers:
+            tester()
 
 
