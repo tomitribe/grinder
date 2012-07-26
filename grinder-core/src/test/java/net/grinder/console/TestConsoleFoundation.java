@@ -22,8 +22,6 @@
 package net.grinder.console;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
@@ -48,17 +46,12 @@ import java.util.concurrent.TimeUnit;
 import net.grinder.communication.Message;
 import net.grinder.communication.MessageDispatchRegistry;
 import net.grinder.communication.MessageDispatchRegistry.Handler;
-import net.grinder.console.ConsoleFoundation.UI;
 import net.grinder.console.client.ConsoleConnection;
 import net.grinder.console.client.ConsoleConnectionFactory;
-import net.grinder.console.common.ErrorHandler;
 import net.grinder.console.common.Resources;
 import net.grinder.console.common.StubResources;
 import net.grinder.console.communication.ConsoleCommunication;
-import net.grinder.console.communication.DistributionControl;
-import net.grinder.console.communication.ProcessControl;
 import net.grinder.console.communication.server.DispatchClientCommands;
-import net.grinder.console.distribution.FileDistribution;
 import net.grinder.console.model.ConsoleProperties;
 import net.grinder.console.model.SampleModel;
 import net.grinder.console.model.SampleModelViews;
@@ -66,7 +59,6 @@ import net.grinder.messages.console.RegisterExpressionViewMessage;
 import net.grinder.messages.console.RegisterTestsMessage;
 import net.grinder.messages.console.ReportStatisticsMessage;
 import net.grinder.statistics.ExpressionView;
-import net.grinder.statistics.StatisticsServices;
 import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.statistics.TestStatisticsMap;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
@@ -87,12 +79,6 @@ import org.slf4j.Logger;
  * @author Philip Aston
  */
 public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
-
-  private static TestConsoleFoundation s_instance;
-
-  private static void setInstance(TestConsoleFoundation instance) {
-    s_instance = instance;
-  }
 
   @Mock private MessageDispatchRegistry m_messageDispatchRegistry;
   @Mock private ConsoleCommunication m_consoleCommunication;
@@ -119,11 +105,12 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
 
   @Test public void testConstruction() throws Exception {
 
-    new ConsoleFoundation(m_resources, m_logger, true);
+    final ConsoleFoundation consoleFoundation =
+        new ConsoleFoundation(m_resources, m_logger, true);
 
-    setInstance(this);
     verify(m_logger).info(isA(String.class)); // Text UI version.
     verifyNoMoreInteractions(m_logger);
+    consoleFoundation.shutdown();
   }
 
   @Test public void testSimpleRun() throws Exception {
@@ -251,32 +238,5 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
 
     verifyNoMoreInteractions(sampleModel,
                              sampleModelViews);
-  }
-
-  public static class MyUI implements UI {
-    public MyUI(Logger logger,
-                Resources resources,
-                ConsoleProperties properties,
-                StatisticsServices statisticsServices,
-                SampleModel model,
-                ConsoleCommunication consoleCommunication,
-                DistributionControl distributionControl,
-                FileDistribution fileDistribution,
-                ProcessControl processControl) {
-      assertSame(s_instance.m_logger, logger);
-      assertSame(s_instance.m_resources, resources);
-      assertNotNull(properties);
-      assertSame(StatisticsServicesImplementation.getInstance(),
-                 statisticsServices);
-      assertNotNull(model);
-      assertNotNull(consoleCommunication);
-      assertNotNull(distributionControl);
-      assertNotNull(fileDistribution);
-      assertNotNull(processControl);
-    }
-
-    public ErrorHandler getErrorHandler() {
-      return null;
-    }
   }
 }
