@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Phil Dawes
-// Copyright (C) 2000 - 2010 Philip Aston
+// Copyright (C) 2000 - 2012 Philip Aston
 // Copyright (C) 2003 Bertrand Ave
 // All rights reserved.
 //
@@ -31,11 +31,10 @@ import net.grinder.common.GrinderException;
  *
  * <p>
  * In addition, filters are registered with a PicoContainer. They can learn
- * about a {@link net.grinder.common.Logger}, other filters, and custom
- * components (see the TCPProxy <code>-component</code> option) through
- * constructor injection. Filters can also implement the PicoContainer life
- * cycle methods {@link org.picocontainer.Startable} and
- * {@link org.picocontainer.Disposable}.
+ * about a {@code Logger}, other filters, and custom components (see the
+ * TCPProxy {@code -component} option) through constructor injection. Filters
+ * can also implement the PicoContainer life cycle methods
+ * {@link org.picocontainer.Startable} and {@link org.picocontainer.Disposable}.
  * </p>
  *
  * <p>
@@ -47,8 +46,8 @@ import net.grinder.common.GrinderException;
  *
  * <p>
  * The {@link ConnectionDetails#equals equality semantics} of the
- * <code>ConnectionDetails</code> passed to each method can be used to
- * uniquely identify a connection.
+ * {@code ConnectionDetails} passed to each method can be used to uniquely
+ * identify a connection.
  * </p>
  *
  * @author Philip Aston
