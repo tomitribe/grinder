@@ -134,6 +134,7 @@ final class ThreadContextImplementation implements ThreadContext {
   public void setCurrentRunNumber(int run) {
     if (m_runMarker != null) {
       m_threadMarker.remove(m_runMarker);
+      MarkerFactory.getIMarkerFactory().detachMarker(m_runMarker.getName());
     }
 
     if (run != -1) {
@@ -356,6 +357,7 @@ final class ThreadContextImplementation implements ThreadContext {
   }
 
   public void shutdown() {
+    MarkerFactory.getIMarkerFactory().detachMarker(m_threadMarker.getName());
     m_shutdown = true;
   }
 
