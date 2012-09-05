@@ -21,6 +21,8 @@
 
 package net.grinder.plugin.http;
 
+import static net.grinder.testutility.AssertUtilities.assertArraysEqual;
+import static net.grinder.testutility.AssertUtilities.assertContains;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -28,9 +30,15 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -55,9 +63,6 @@ import net.grinder.scriptengine.Recorder;
 import net.grinder.scriptengine.java.JavaScriptEngineService;
 import net.grinder.statistics.StatisticsIndexMap;
 import net.grinder.statistics.StatisticsServicesImplementation;
-import static net.grinder.testutility.AssertUtilities.*;
-import net.grinder.testutility.CallData;
-import net.grinder.testutility.RandomStubFactory;
 import net.grinder.util.StandardTimeAuthority;
 import net.grinder.util.TimeAuthority;
 
@@ -84,29 +89,12 @@ import HTTPClient.ParseException;
 public class TestHTTPRequest {
   private static final Random s_random = new Random();
 
-  private final RandomStubFactory<ScriptContext> m_scriptContextStubFactory =
-    RandomStubFactory.create(ScriptContext.class);
-
-  private final RandomStubFactory<Statistics> m_statisticsStubFactory =
-    RandomStubFactory.create(Statistics.class);
-
-  private final PluginThreadContext m_threadContext =
-    RandomStubFactory.create(PluginThreadContext.class).getStub();
-
-  private final SSLContextFactory m_sslContextFactory =
-    RandomStubFactory.create(SSLContextFactory.class).getStub();
-
-  private final RandomStubFactory<PluginProcessContext>
-    m_pluginProcessContextStubFactory =
-      RandomStubFactory.create(PluginProcessContext.class);
-  private final PluginProcessContext m_pluginProcessContext =
-    m_pluginProcessContextStubFactory.getStub();
-
-  private final RandomStubFactory<StatisticsForTest>
-    m_statisticsForTestStubFactory =
-      RandomStubFactory.create(StatisticsForTest.class);
-  private final StatisticsForTest m_statisticsForTest =
-    m_statisticsForTestStubFactory.getStub();
+  @Mock private ScriptContext m_scriptContext;
+  @Mock private Statistics m_statistics;
+  @Mock private PluginThreadContext m_threadContext;
+  @Mock private SSLContextFactory m_sslContextFactory;
+  @Mock private PluginProcessContext m_pluginProcessContext;
+  @Mock private StatisticsForTest m_statisticsForTest;
 
   @Mock private Logger m_logger;
   @Captor private ArgumentCaptor<String> m_stringCaptor;
@@ -123,19 +111,16 @@ public class TestHTTPRequest {
                                 null,
                                 new StandardTimeAuthority());
 
-    m_statisticsStubFactory.setResult("isTestInProgress", Boolean.FALSE);
-    m_scriptContextStubFactory.setResult("getStatistics",
-                                         m_statisticsStubFactory.getStub());
+    when(m_statistics.isTestInProgress()).thenReturn(false);
 
-    m_pluginProcessContextStubFactory.setResult("getPluginThreadListener",
-                                                threadState);
-    m_pluginProcessContextStubFactory.setResult(
-      "getScriptContext",
-      m_scriptContextStubFactory.getStub());
-    m_pluginProcessContextStubFactory.setResult(
-      "getStatisticsServices", StatisticsServicesImplementation.getInstance());
+    when(m_scriptContext.getStatistics()).thenReturn(m_statistics);
+    when(m_scriptContext.getLogger()).thenReturn(m_logger);
 
-    m_statisticsStubFactory.assertNoMoreCalls();
+    when(m_pluginProcessContext.getPluginThreadListener())
+      .thenReturn(threadState);
+    when(m_pluginProcessContext.getScriptContext()).thenReturn(m_scriptContext);
+    when(m_pluginProcessContext.getStatisticsServices())
+      .thenReturn(StatisticsServicesImplementation.getInstance());
 
     new PluginRegistry() {
       {
@@ -150,7 +135,7 @@ public class TestHTTPRequest {
     HTTPPlugin.getPlugin().initialize(m_pluginProcessContext);
 
     // Discard the registration of statistic views.
-    m_statisticsStubFactory.resetCallHistory();
+    reset(m_statistics);
 
     m_handler = new HTTPRequestHandler();
     m_handler.start();
@@ -805,8 +790,6 @@ public class TestHTTPRequest {
   }
 
   @Test public void testResponseProcessing() throws Exception {
-    m_scriptContextStubFactory.setResult("getLogger", m_logger);
-
     final HTTPRequest request = new HTTPRequest();
     request.GET(m_handler.getURL());
 
@@ -816,9 +799,8 @@ public class TestHTTPRequest {
     assertTrue(message.indexOf("200") >= 0);
     assertEquals(-1, message.indexOf("Redirect"));
 
-    assertEquals(Boolean.FALSE,
-      m_statisticsStubFactory.assertSuccess("isTestInProgress").getResult());
-    m_statisticsStubFactory.assertNoMoreCalls();
+    verify(m_statistics).isTestInProgress();
+    verifyNoMoreInteractions(m_statistics);
   }
 
   @Test public void testRedirectResponseProcessing() throws Exception {
@@ -842,9 +824,8 @@ public class TestHTTPRequest {
       };
       handler.start();
 
-      m_scriptContextStubFactory.setResult("getLogger", m_logger);
-
-      m_statisticsStubFactory.setResult("isTestInProgress", Boolean.TRUE);
+      when(m_statistics.isTestInProgress()).thenReturn(true);
+      when(m_statistics.getForCurrentTest()).thenReturn(m_statisticsForTest);
 
       final HTTPRequest request = new HTTPRequest();
       final HTTPResponse response = request.GET(handler.getURL());
@@ -855,13 +836,6 @@ public class TestHTTPRequest {
 
       assertTrue(message.indexOf(Integer.toString(redirectCode)) >= 0);
       assertTrue(message.indexOf("Redirect") >= 0);
-
-      assertEquals(Boolean.TRUE,
-        m_statisticsStubFactory.assertSuccess("isTestInProgress").getResult());
-
-      m_statisticsStubFactory.assertSuccess("getForCurrentTest");
-
-      m_statisticsStubFactory.assertNoMoreCalls();
 
       handler.shutdown();
     }
@@ -876,9 +850,8 @@ public class TestHTTPRequest {
 
     handler.start();
 
-    m_scriptContextStubFactory.setResult("getLogger", m_logger);
-
-    m_statisticsStubFactory.setResult("isTestInProgress", Boolean.TRUE);
+    when(m_statistics.isTestInProgress()).thenReturn(true);
+    when(m_statistics.getForCurrentTest()).thenReturn(m_statisticsForTest);
 
     final HTTPRequest request = new HTTPRequest();
     final HTTPResponse response = request.GET(handler.getURL());
@@ -887,13 +860,6 @@ public class TestHTTPRequest {
     verify(m_logger).info(m_stringCaptor.capture());
     final String message = m_stringCaptor.getValue();
     assertTrue(message.indexOf("400") >= 0);
-
-    assertEquals(Boolean.TRUE,
-      m_statisticsStubFactory.assertSuccess("isTestInProgress").getResult());
-
-    m_statisticsStubFactory.assertSuccess("getForCurrentTest");
-
-    m_statisticsStubFactory.assertNoMoreCalls();
 
     handler.shutdown();
   }
@@ -929,12 +895,11 @@ public class TestHTTPRequest {
                                 null,
                                 timeAuthority);
 
-    m_pluginProcessContextStubFactory.setResult("getPluginThreadListener",
-                                                threadState);
+    when(m_pluginProcessContext.getPluginThreadListener())
+      .thenReturn(threadState);
 
-    m_statisticsStubFactory.setResult("isTestInProgress", Boolean.TRUE);
-    m_statisticsStubFactory.setResult("getForCurrentTest", m_statisticsForTest);
-
+    when(m_statistics.isTestInProgress()).thenReturn(true);
+    when(m_statistics.getForCurrentTest()).thenReturn(m_statisticsForTest);
 
     final HTTPRequest request = new HTTPRequest();
     final String bodyText = "Your heart's gone the colour of Coca Cola\n";
@@ -943,27 +908,20 @@ public class TestHTTPRequest {
     assertEquals(200, response.getStatusCode());
     assertEquals("GET / HTTP/1.1", m_handler.getRequestFirstHeader());
 
-    assertEquals(Boolean.TRUE,
-      m_statisticsStubFactory.assertSuccess("isTestInProgress").getResult());
-    m_statisticsStubFactory.assertSuccess("getForCurrentTest");
-    m_statisticsStubFactory.assertNoMoreCalls();
-
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_LENGTH_KEY,
-      new Long(bodyText.length()));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "setLong", StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_STATUS_KEY,
-      new Long(200));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_DNS_TIME_KEY,
-      new Long(22));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_CONNECT_TIME_KEY,
-      new Long(99));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY,
-      new Long(119));
-    m_statisticsForTestStubFactory.assertNoMoreCalls();
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_LENGTH_KEY,
+               bodyText.length());
+    verify(m_statisticsForTest)
+      .setLong(StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_STATUS_KEY, 200);
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_DNS_TIME_KEY, 22);
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_CONNECT_TIME_KEY, 99);
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY, 119);
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_CONNECTIONS_ESTABLISHED, 1);
+    verifyNoMoreInteractions(m_statisticsForTest);
 
     try {
       timeAuthority.getTimeInMilliseconds();
@@ -974,43 +932,52 @@ public class TestHTTPRequest {
 
     assertTrue(response.getInputStream() instanceof ByteArrayInputStream);
     assertEquals(bodyText, response.getText());
+  }
 
-    // Now try again, but with invalid DNS, connect times. These will be
-    // reported as zero.
-    timeAuthority.setTimes(
-      new long[] {
-          400, // start time
-          400, // start time (internal to HTTPResponse - i.e. post redirect)
-          0,   // DNS time
-          0,   // connection time
-          419, // time to first byte
-      });
+  @Test public void testConnectionTimingsAndStatisticsInvalidTimes()
+      throws Exception {
+
+    final ListTimeAuthority timeAuthority =
+        new ListTimeAuthority(new long[] {
+            400, // start time
+            400, // start time (internal to HTTPResponse - i.e. post redirect)
+            0, // DNS time
+            0, // connection time
+            419, // time to first byte
+        });
+
+    final HTTPPluginThreadState threadState =
+      new HTTPPluginThreadState(m_threadContext,
+                                m_sslContextFactory,
+                                null,
+                                timeAuthority);
+
+    when(m_pluginProcessContext.getPluginThreadListener())
+      .thenReturn(threadState);
+
+    when(m_statistics.isTestInProgress()).thenReturn(true);
+    when(m_statistics.getForCurrentTest()).thenReturn(m_statisticsForTest);
 
     m_handler.setBody(null);
 
-    final HTTPResponse response2 = request.GET(m_handler.getURL());
+    final HTTPRequest request = new HTTPRequest();
+    final HTTPResponse response = request.GET(m_handler.getURL());
+    assertEquals(200, response.getStatusCode());
+    assertEquals("GET / HTTP/1.1", m_handler.getRequestFirstHeader());
 
-    assertEquals(Boolean.TRUE,
-      m_statisticsStubFactory.assertSuccess("isTestInProgress").getResult());
-    m_statisticsStubFactory.assertSuccess("getForCurrentTest");
-    m_statisticsStubFactory.assertNoMoreCalls();
-
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_LENGTH_KEY,
-      new Long(0));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "setLong", StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_STATUS_KEY,
-      new Long(200));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_DNS_TIME_KEY,
-      new Long(0));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_CONNECT_TIME_KEY,
-      new Long(0));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY,
-      new Long(19));
-    m_statisticsForTestStubFactory.assertNoMoreCalls();
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_LENGTH_KEY, 0);
+    verify(m_statisticsForTest)
+      .setLong(StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_STATUS_KEY, 200);
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_DNS_TIME_KEY, 0);
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_CONNECT_TIME_KEY, 0);
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY, 19);
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_CONNECTIONS_ESTABLISHED, 1);
+    verifyNoMoreInteractions(m_statisticsForTest);
 
     try {
       timeAuthority.getTimeInMilliseconds();
@@ -1019,8 +986,8 @@ public class TestHTTPRequest {
     catch (ArrayIndexOutOfBoundsException e) {
     }
 
-    assertTrue(response2.getInputStream() instanceof ByteArrayInputStream);
-    assertEquals("", response2.getText());
+    assertTrue(response.getInputStream() instanceof ByteArrayInputStream);
+    assertEquals("", response.getText());
   }
 
   @Test public void testSetReadResponseBody() throws Exception {
@@ -1040,12 +1007,11 @@ public class TestHTTPRequest {
                                 null,
                                 timeAuthority);
 
-    m_pluginProcessContextStubFactory.setResult("getPluginThreadListener",
-                                                threadState);
+    when(m_pluginProcessContext.getPluginThreadListener())
+      .thenReturn(threadState);
 
-    m_statisticsStubFactory.setResult("isTestInProgress", Boolean.TRUE);
-    m_statisticsStubFactory.setResult("getForCurrentTest", m_statisticsForTest);
-
+    when(m_statistics.isTestInProgress()).thenReturn(true);
+    when(m_statistics.getForCurrentTest()).thenReturn(m_statisticsForTest);
 
     final HTTPRequest request = new HTTPRequest();
 
@@ -1065,27 +1031,19 @@ public class TestHTTPRequest {
     assertEquals(200, response.getStatusCode());
     assertEquals("GET / HTTP/1.1", m_handler.getRequestFirstHeader());
 
-    assertEquals(Boolean.TRUE,
-      m_statisticsStubFactory.assertSuccess("isTestInProgress").getResult());
-    m_statisticsStubFactory.assertSuccess("getForCurrentTest");
-    m_statisticsStubFactory.assertNoMoreCalls();
-
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_LENGTH_KEY,
-      new Long(0));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "setLong", StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_STATUS_KEY,
-      new Long(200));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_DNS_TIME_KEY,
-      new Long(13));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_CONNECT_TIME_KEY,
-      new Long(90));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY,
-      new Long(119));
-    m_statisticsForTestStubFactory.assertNoMoreCalls();
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_LENGTH_KEY, 0);
+    verify(m_statisticsForTest)
+      .setLong(StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_STATUS_KEY, 200);
+    verify(m_statisticsForTest)
+    .addLong(StatisticsIndexMap.HTTP_PLUGIN_DNS_TIME_KEY, 13);
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_CONNECT_TIME_KEY, 90);
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY, 119);
+    verify(m_statisticsForTest)
+      .addLong(StatisticsIndexMap.HTTP_PLUGIN_CONNECTIONS_ESTABLISHED, 1);
+    verifyNoMoreInteractions(m_statisticsForTest);
 
     try {
       timeAuthority.getTimeInMilliseconds();
@@ -1093,65 +1051,17 @@ public class TestHTTPRequest {
     }
     catch (ArrayIndexOutOfBoundsException e) {
     }
-
-    assertTrue(!(response.getInputStream() instanceof ByteArrayInputStream));
-    assertEquals(bodyText, response.getText());
-
-    // Now try again, but with invalid DNS, connect times. These will be
-    // reported as zero.
-    timeAuthority.setTimes(
-      new long[] {
-          400, // start time
-          405, // start time (internal to HTTPResponse - i.e. post redirect)
-          0,   // DNS time
-          0,   // connection time
-          419, // time to first byte
-      });
-
-    m_handler.setBody(null);
-
-    final HTTPResponse response2 = request.GET(m_handler.getURL());
-
-    assertEquals(Boolean.TRUE,
-      m_statisticsStubFactory.assertSuccess("isTestInProgress").getResult());
-    m_statisticsStubFactory.assertSuccess("getForCurrentTest");
-    m_statisticsStubFactory.assertNoMoreCalls();
-
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_LENGTH_KEY,
-      new Long(0));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "setLong", StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_STATUS_KEY,
-      new Long(200));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_DNS_TIME_KEY,
-      new Long(0));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_CONNECT_TIME_KEY,
-      new Long(0));
-    m_statisticsForTestStubFactory.assertSuccess(
-      "addLong", StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY,
-      new Long(19));
-    m_statisticsForTestStubFactory.assertNoMoreCalls();
-
-    try {
-      timeAuthority.getTimeInMilliseconds();
-      fail("Not all times used");
-    }
-    catch (ArrayIndexOutOfBoundsException e) {
-    }
-
-    assertTrue(!(response2.getInputStream() instanceof ByteArrayInputStream));
-    assertEquals("", response2.getText());
   }
 
   @Test public void testWithBadStatistics() throws Exception {
 
-    m_statisticsStubFactory.setResult("isTestInProgress", Boolean.TRUE);
-    m_statisticsStubFactory.setResult("getForCurrentTest", m_statisticsForTest);
+    when(m_statistics.isTestInProgress()).thenReturn(true);
+    when(m_statistics.getForCurrentTest()).thenReturn(m_statisticsForTest);
 
     final Exception exception = new InvalidContextException("bah");
-    m_statisticsForTestStubFactory.setThrows("addLong", exception);
+
+    doThrow(exception)
+    .when(m_statisticsForTest).addLong(isA(String.class), isA(Long.class));
 
     final HTTPRequest request = new HTTPRequest();
 
@@ -1185,13 +1095,13 @@ public class TestHTTPRequest {
       new JavaScriptEngineService(DCRContextImplementation.create(null))
       .createInstrumenters().get(0);
 
-    final RandomStubFactory<Recorder> recorderStubFactory =
-      RandomStubFactory.create(Recorder.class);
-    final Recorder recorder = recorderStubFactory.getStub();
+    final Recorder recorder = mock(Recorder.class);
 
     final net.grinder.common.Test test = mock(net.grinder.common.Test.class);
 
-    instrumenter.createInstrumentedProxy(test, recorder, request);
+    instrumenter.instrument(test, recorder, request,
+                            HTTPRequest.getHttpMethodFilter());
+    verifyNoMoreInteractions(recorder);
 
     try {
       request.GET();
@@ -1200,10 +1110,10 @@ public class TestHTTPRequest {
     catch (URLException e) {
     }
 
-    recorderStubFactory.assertSuccess("start");
-    consumeStartEndPairs(recorderStubFactory);
-    recorderStubFactory.assertSuccess("end", false);
-    recorderStubFactory.assertNoMoreCalls();
+    // GET() delegates to two more general versions.
+    verify(recorder, times(3)).start();
+    verify(recorder, times(3)).end(false);
+    verifyNoMoreInteractions(recorder);
 
     try {
       request.GET("#partial");
@@ -1212,51 +1122,18 @@ public class TestHTTPRequest {
     catch (URLException e) {
     }
 
-    recorderStubFactory.assertSuccess("start");
-    consumeStartEndPairs(recorderStubFactory);
-    recorderStubFactory.assertSuccess("end", false);
-    recorderStubFactory.assertNoMoreCalls();
+    // GET(String) delegates to one more general version.
+    verify(recorder, times(5)).start();
+    verify(recorder, times(5)).end(false);
+    verifyNoMoreInteractions(recorder);
 
     final HTTPResponse response = request.GET(m_handler.getURL());
     assertEquals(200, response.getStatusCode());
     assertEquals("GET / HTTP/1.1", m_handler.getRequestFirstHeader());
 
-    recorderStubFactory.assertSuccess("start");
-    consumeStartEndPairs(recorderStubFactory);
-    recorderStubFactory.assertSuccess("end", true);
-    recorderStubFactory.assertNoMoreCalls();
-  }
-
-  private static void consumeStartEndPairs(RandomStubFactory<?> stubFactory) {
-
-    int s = 0;
-
-    while (true) {
-      final CallData top = stubFactory.peekFirst();
-
-      if (top == null) {
-        if (s == 0) {
-          return;
-        }
-        else {
-          fail("Unbalanced start/end methods");
-        }
-      }
-
-      final String methodName = top.getMethodName();
-
-      if (methodName.equals("start")) {
-        stubFactory.assertSuccess("start");
-        ++s;
-      }
-      else if (s > 0) {
-        stubFactory.assertSuccess("end", Boolean.class);
-        --s;
-      }
-      else {
-        return;
-      }
-    }
+    verify(recorder, times(7)).start();
+    verify(recorder, times(2)).end(true);
+    verifyNoMoreInteractions(recorder);
   }
 
   @Test public void testReadTimeout() throws Exception {

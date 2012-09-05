@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2011 Philip Aston
+// Copyright (C) 2008 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -22,11 +22,18 @@
 package net.grinder.plugin.http;
 
 import static java.util.Collections.singleton;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.net.URLClassLoader;
 import java.util.Collections;
 
-import junit.framework.TestCase;
 import net.grinder.common.GrinderException;
 import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginException;
@@ -34,10 +41,14 @@ import net.grinder.plugininterface.PluginProcessContext;
 import net.grinder.plugininterface.PluginRegistry;
 import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.plugininterface.PluginThreadListener;
-import net.grinder.script.Statistics;
 import net.grinder.script.Grinder.ScriptContext;
-import net.grinder.testutility.RandomStubFactory;
+import net.grinder.script.Statistics;
 import net.grinder.util.BlockingClassLoader;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 
 /**
@@ -45,25 +56,20 @@ import net.grinder.util.BlockingClassLoader;
  *
  * @author Philip Aston
  */
-public class TestHTTPPlugin extends TestCase {
+public class TestHTTPPlugin {
 
-  private final RandomStubFactory<PluginProcessContext>
-    m_pluginProcessContextStubFactory =
-      RandomStubFactory.create(PluginProcessContext.class);
-  private final PluginProcessContext m_pluginProcessContext =
-    m_pluginProcessContextStubFactory.getStub();
+  @Mock private PluginProcessContext m_pluginProcessContext;
+  @Mock private ScriptContext m_scriptContext;
+  @Mock private Statistics m_statistics;
 
-  private final RandomStubFactory<ScriptContext> m_scriptContextStubFactory =
-    RandomStubFactory.create(ScriptContext.class);
-  private final ScriptContext m_scriptContext =
-    m_scriptContextStubFactory.getStub();
+  @Before public void setUp() {
+    MockitoAnnotations.initMocks(this);
 
-  {
-    m_pluginProcessContextStubFactory.setResult(
-      "getScriptContext", m_scriptContext);
+    when(m_pluginProcessContext.getScriptContext()).thenReturn(m_scriptContext);
+    when(m_scriptContext.getStatistics()).thenReturn(m_statistics);
   }
 
-  public void testInitialiseWithBadHTTPClient() throws Exception {
+  @Test public void testInitialiseWithBadHTTPClient() throws Exception {
 
     final String pluginName = HTTPPlugin.class.getName();
 
@@ -93,17 +99,12 @@ public class TestHTTPPlugin extends TestCase {
     }
   }
 
-  public void testInitializeWithBadStatistics() throws Exception {
+  @Test public void testInitializeWithBadStatistics() throws Exception {
 
-    final RandomStubFactory<Statistics> statisticsStubFactory =
-      RandomStubFactory.create(Statistics.class);
     final GrinderException grinderException = new GrinderException("Hello") {};
 
-    statisticsStubFactory.setThrows("registerDataLogExpression",
-                                    grinderException);
-
-    m_scriptContextStubFactory.setResult("getStatistics",
-                                         statisticsStubFactory.getStub());
+    doThrow(grinderException).when(m_statistics)
+      .registerDataLogExpression(isA(String.class), isA(String.class));
 
     final HTTPPlugin plugin = new HTTPPlugin();
 
@@ -116,18 +117,17 @@ public class TestHTTPPlugin extends TestCase {
     }
   }
 
-  public void testCreateThreadListener() throws Exception {
+  @Test public void testCreateThreadListener() throws Exception {
     final HTTPPlugin plugin = new HTTPPlugin();
 
     plugin.initialize(m_pluginProcessContext);
 
     assertSame(m_pluginProcessContext, plugin.getPluginProcessContext());
 
-    final RandomStubFactory<PluginThreadContext>
-      pluginThreadContextStubFactory =
-        RandomStubFactory.create(PluginThreadContext.class);
+    final PluginThreadContext
+      pluginThreadContext = mock(PluginThreadContext.class);
     final PluginThreadListener threadListener =
-      plugin.createThreadListener(pluginThreadContextStubFactory.getStub());
+      plugin.createThreadListener(pluginThreadContext);
 
     assertNotNull(threadListener);
   }

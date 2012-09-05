@@ -1270,6 +1270,8 @@ public class HTTPRequest {
       final long startTime =
         connection.getTimeAuthority().getTimeInMilliseconds();
 
+      final long oldConnections = connection.getConnectionsEstablished();
+
       final HTTPResponse httpResponse;
 
       try {
@@ -1301,6 +1303,8 @@ public class HTTPRequest {
       final long connectTime = connection.getConnectTime();
       final long timeToFirstByte =
         httpResponse.getTimeToFirstByte() - startTime;
+      final boolean newConnection =
+          oldConnections != connection.getConnectionsEstablished();
 
       final int statusCode = httpResponse.getStatusCode();
 
@@ -1349,18 +1353,23 @@ public class HTTPRequest {
           // These statistics are accumulated over all the
           // HTTPRequests wrapped in the Test.
           statisticsForCurrentTest.addLong(
-            StatisticsIndexMap.HTTP_PLUGIN_DNS_TIME_KEY, dnsTime);
-
-          statisticsForCurrentTest.addLong(
-            StatisticsIndexMap.HTTP_PLUGIN_CONNECT_TIME_KEY, connectTime);
-
-          statisticsForCurrentTest.addLong(
             StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY,
             timeToFirstByte);
 
           if (statusCode >= HttpURLConnection.HTTP_BAD_REQUEST) {
             statisticsForCurrentTest.addLong(
               StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_ERRORS_KEY, 1);
+          }
+
+          if (newConnection) {
+            statisticsForCurrentTest.addLong(
+              StatisticsIndexMap.HTTP_PLUGIN_DNS_TIME_KEY, dnsTime);
+
+            statisticsForCurrentTest.addLong(
+              StatisticsIndexMap.HTTP_PLUGIN_CONNECT_TIME_KEY, connectTime);
+
+            statisticsForCurrentTest.addLong(
+              StatisticsIndexMap.HTTP_PLUGIN_CONNECTIONS_ESTABLISHED, 1);
           }
         }
       }
@@ -1405,6 +1414,7 @@ public class HTTPRequest {
         }
       }
 
+      @SuppressWarnings("resource") // Closed by StreamCopier.
       final HttpOutputStream outputStream =
         contentLength >= 0 ?
           new HttpOutputStream(contentLength) : new HttpOutputStream();

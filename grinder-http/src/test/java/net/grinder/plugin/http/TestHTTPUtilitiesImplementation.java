@@ -1,4 +1,4 @@
-// Copyright (C) 2006 - 2010 Philip Aston
+// Copyright (C) 2006 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,25 +21,32 @@
 
 package net.grinder.plugin.http;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static java.util.Arrays.asList;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Answers.RETURNS_MOCKS;
+import static org.mockito.Mockito.when;
 import net.grinder.common.GrinderException;
 import net.grinder.common.SSLContextFactory;
 import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginProcessContext;
 import net.grinder.plugininterface.PluginRegistry;
 import net.grinder.plugininterface.PluginThreadContext;
-import net.grinder.script.Statistics;
 import net.grinder.script.Grinder.ScriptContext;
+import net.grinder.script.Statistics;
 import net.grinder.statistics.StatisticsServicesImplementation;
-import net.grinder.testutility.RandomStubFactory;
 import net.grinder.util.StandardTimeAuthority;
 import net.grinder.util.TimeAuthority;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 import HTTPClient.HTTPResponse;
 import HTTPClient.NVPair;
-import junit.framework.TestCase;
 
 
 /**
@@ -47,52 +54,35 @@ import junit.framework.TestCase;
  *
  * @author Philip Aston
  */
-public class TestHTTPUtilitiesImplementation extends TestCase {
+public class TestHTTPUtilitiesImplementation {
 
-  private final RandomStubFactory<PluginProcessContext>
-    m_pluginProcessContextStubFactory =
-      RandomStubFactory.create(PluginProcessContext.class);
-  private final PluginProcessContext m_pluginProcessContext =
-    m_pluginProcessContextStubFactory.getStub();
+  @Mock private PluginProcessContext m_pluginProcessContext;
+  @Mock(answer = RETURNS_MOCKS) private ScriptContext m_scriptContext;
+  @Mock private Statistics m_statistics;
+  @Mock private PluginThreadContext m_threadContext;
+  @Mock private SSLContextFactory m_sslContextFactory;
 
-  private final RandomStubFactory<ScriptContext> m_scriptContextStubFactory =
-    RandomStubFactory.create(ScriptContext.class);
-
-  private final RandomStubFactory<Statistics> m_statisticsStubFactory =
-    RandomStubFactory.create(Statistics.class);
-
-  protected void setUp() throws Exception {
-    final PluginThreadContext threadContext =
-      RandomStubFactory.create(PluginThreadContext.class).getStub();
-
-    final SSLContextFactory sslContextFactory =
-      RandomStubFactory.create(SSLContextFactory.class).getStub();
+  @Before public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
 
     final TimeAuthority timeAuthority = new StandardTimeAuthority();
 
     final HTTPPluginThreadState threadState =
-      new HTTPPluginThreadState(threadContext,
-                                sslContextFactory,
+      new HTTPPluginThreadState(m_threadContext,
+                                m_sslContextFactory,
                                 null,
                                 timeAuthority);
 
-    m_statisticsStubFactory.setResult("availableForUpdate", Boolean.FALSE);
-    final Statistics statistics =
-      m_statisticsStubFactory.getStub();
+    when(m_scriptContext.getStatistics()).thenReturn(m_statistics);
 
-    m_scriptContextStubFactory.setResult("getStatistics", statistics);
-    final ScriptContext scriptContext =
-      m_scriptContextStubFactory.getStub();
+    when(m_pluginProcessContext.getPluginThreadListener())
+      .thenReturn(threadState);
 
-    m_pluginProcessContextStubFactory.setResult("getPluginThreadListener",
-                                                threadState);
-    m_pluginProcessContextStubFactory.setResult("getScriptContext",
-                                                scriptContext);
-    m_pluginProcessContextStubFactory.setResult("getStatisticsServices",
-      StatisticsServicesImplementation.getInstance());
+    when(m_pluginProcessContext.getScriptContext()).thenReturn(m_scriptContext);
+    when(m_pluginProcessContext.getStatisticsServices())
+      .thenReturn(StatisticsServicesImplementation.getInstance());
 
-    m_pluginProcessContextStubFactory.setResult("getTimeAuthority",
-      timeAuthority);
+    when(m_pluginProcessContext.getTimeAuthority()).thenReturn(timeAuthority);
 
     new PluginRegistry() {
       {
@@ -107,7 +97,7 @@ public class TestHTTPUtilitiesImplementation extends TestCase {
     HTTPPlugin.getPlugin().initialize(m_pluginProcessContext);
   }
 
-  public void testBasicAuthorizationHeader() throws Exception {
+  @Test public void testBasicAuthorizationHeader() throws Exception {
     final HTTPUtilities httpUtilities =
       new HTTPUtilitiesImplementation(m_pluginProcessContext);
 
@@ -122,7 +112,7 @@ public class TestHTTPUtilitiesImplementation extends TestCase {
     assertEquals("Basic Og==", pair2.getValue());
   }
 
-  public void testGetLastResponse() throws Exception {
+  @Test public void testGetLastResponse() throws Exception {
     final HTTPUtilities httpUtilities =
       new HTTPUtilitiesImplementation(m_pluginProcessContext);
 
@@ -139,7 +129,7 @@ public class TestHTTPUtilitiesImplementation extends TestCase {
     handler.shutdown();
   }
 
-  public void testValueFromLocationHeader() throws Exception {
+  @Test public void testValueFromLocationHeader() throws Exception {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
@@ -179,7 +169,7 @@ public class TestHTTPUtilitiesImplementation extends TestCase {
     handler.shutdown();
   }
 
-  public void testValueFromBodyURI() throws Exception {
+  @Test public void testValueFromBodyURI() throws Exception {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
@@ -227,7 +217,7 @@ public class TestHTTPUtilitiesImplementation extends TestCase {
     handler.shutdown();
   }
 
-  public void testValuesFromBodyURI() throws Exception {
+  @Test public void testValuesFromBodyURI() throws Exception {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
@@ -281,7 +271,7 @@ public class TestHTTPUtilitiesImplementation extends TestCase {
     handler.shutdown();
   }
 
-  public void testValueFromBodyInput() throws Exception {
+  @Test public void testValueFromBodyInput() throws Exception {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
@@ -310,7 +300,7 @@ public class TestHTTPUtilitiesImplementation extends TestCase {
     handler.shutdown();
   }
 
-  public void testValuesFromBodyInput() throws Exception {
+  @Test public void testValuesFromBodyInput() throws Exception {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
@@ -343,7 +333,7 @@ public class TestHTTPUtilitiesImplementation extends TestCase {
     handler.shutdown();
   }
 
-  public void testValueFromHiddenInput() throws Exception {
+  @Test public void testValueFromHiddenInput() throws Exception {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
@@ -372,7 +362,7 @@ public class TestHTTPUtilitiesImplementation extends TestCase {
     handler.shutdown();
   }
 
-  public void testValuesFromHiddenInput() throws Exception {
+  @Test public void testValuesFromHiddenInput() throws Exception {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =

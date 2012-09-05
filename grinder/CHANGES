@@ -8,6 +8,15 @@ The Grinder 3.11
   Fix bug 3561156 - Memory leak in MarkerFactory. Thanks to Fei for
   the report.
 
+  Fix bug - "time to establish connection" for re-used connection. The
+  HTTP plugin connection establishment and first byte times are now
+  only recorded when a new connection is established; for tests that
+  re-use connections, these values will be zero. The summary
+  statistics average these values over the number of established
+  connections, not all tests. A "New connections" statistic is
+  available in the data log. The statistics engine now reports 0/0 as
+  0, rather than NaN. Thanks to Teresa Plumari for the report.
+
 
 The Grinder 3.10
 ----------------

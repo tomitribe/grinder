@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -100,16 +100,6 @@ public class CallRecorder extends Assert implements CallAssertions {
     }
 
     return result.toString();
-  }
-
-  public CallData peekFirst() {
-    synchronized (m_callDataList) {
-      if (m_callDataList.size() > 0) {
-        return m_callDataList.getFirst();
-      }
-
-      return null;
-    }
   }
 
   /**

@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2009 Philip Aston
+// Copyright (C) 2008 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,15 +21,20 @@
 
 package net.grinder.plugin.http;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.RETURNS_MOCKS;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import net.grinder.common.GrinderException;
 import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginProcessContext;
 import net.grinder.plugininterface.PluginRegistry;
 import net.grinder.script.Grinder.ScriptContext;
-import net.grinder.testutility.AbstractStubFactory;
-import net.grinder.testutility.RandomStubFactory;
 import net.grinder.util.StandardTimeAuthority;
+
+import org.junit.Test;
 
 
 /**
@@ -37,48 +42,43 @@ import net.grinder.util.StandardTimeAuthority;
  *
  * @author Philip Aston
  */
-public class TestHTTPPluginControl extends TestCase {
+public class TestHTTPPluginControl {
 
-  public void testHTTPPluginControl() throws Exception {
-    final RandomStubFactory<PluginProcessContext>
-      pluginProcessContextStubFactory =
-        RandomStubFactory.create(PluginProcessContext.class);
+  @Test public void testHTTPPluginControl() throws Exception {
     final HTTPPluginThreadState threadState =
       new HTTPPluginThreadState(null,
                                 null,
                                 null,
                                 new StandardTimeAuthority());
 
-    final RandomStubFactory<ScriptContext> scriptContextStubFactory =
-      RandomStubFactory.create(ScriptContext.class);
     final ScriptContext scriptContext =
-      scriptContextStubFactory.getStub();
+        mock(ScriptContext.class, RETURNS_MOCKS);
 
-    pluginProcessContextStubFactory.setResult(
-      "getPluginThreadListener", threadState);
-    pluginProcessContextStubFactory.setResult(
-      "getScriptContext", scriptContext);
+    final PluginProcessContext pluginProcessContext =
+        mock(PluginProcessContext.class);
+
+    when(pluginProcessContext.getPluginThreadListener())
+      .thenReturn(threadState);
+    when(pluginProcessContext.getScriptContext()).thenReturn(scriptContext);
 
     new PluginRegistry() {
       { setInstance(this); }
 
       public void register(GrinderPlugin plugin) throws GrinderException {
-        plugin.initialize(pluginProcessContextStubFactory.getStub());
+        plugin.initialize(pluginProcessContext);
       }
     };
 
     // Sigh, if a previous test has registered a stub PluginProcessContext, we
     // need to rewire it to make this test valid. Further proof that static
     // references are evil.
-    final AbstractStubFactory<?> existingProcessContextStubFactory =
-        AbstractStubFactory.getFactory(
-          HTTPPlugin.getPlugin().getPluginProcessContext());
-    if (existingProcessContextStubFactory != pluginProcessContextStubFactory) {
+    final PluginProcessContext existingMock =
+        HTTPPlugin.getPlugin().getPluginProcessContext();
+    if (existingMock != null &&
+        existingMock != pluginProcessContext) {
 
-      existingProcessContextStubFactory.setResult(
-        "getPluginThreadListener", threadState);
-      existingProcessContextStubFactory.setResult(
-        "getScriptContext", scriptContext);
+      when(existingMock.getPluginThreadListener()).thenReturn(threadState);
+      when(existingMock.getScriptContext()).thenReturn(scriptContext);
     }
 
     final HTTPPluginConnection connectionDefaults =

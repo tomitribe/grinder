@@ -47,7 +47,7 @@ public final class TestStatisticsMap implements java.io.Externalizable {
   // The serialVersionUID should be incremented whenever the default
   // statistic indices are changed in StatisticsIndexMap, or
   // when the StatisticsSet externalisation methods are changed.
-  private static final long serialVersionUID = 4L;
+  private static final long serialVersionUID = 5L;
 
   private final transient StatisticsSetFactory m_statisticsSetFactory;
 

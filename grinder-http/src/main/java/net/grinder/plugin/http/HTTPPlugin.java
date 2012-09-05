@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2008 Philip Aston
+// Copyright (C) 2000 - 2012 Philip Aston
 // Copyright (C) 2004 Bertrand Ave
 // Copyright (C) 2004 John Stanford White
 // Copyright (C) 2004 Calum Fitzgerald
@@ -148,6 +148,10 @@ public class HTTPPlugin implements GrinderPlugin {
         "Time to first byte",
         StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY);
 
+      statistics.registerDataLogExpression(
+        "New connections",
+        StatisticsIndexMap.HTTP_PLUGIN_CONNECTIONS_ESTABLISHED);
+
       statistics.registerSummaryExpression(
         "Mean response length",
         "(/ " + StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_LENGTH_KEY +
@@ -165,12 +169,12 @@ public class HTTPPlugin implements GrinderPlugin {
       statistics.registerSummaryExpression(
         "Mean time to resolve host",
         "(/ " + StatisticsIndexMap.HTTP_PLUGIN_DNS_TIME_KEY +
-        " (+ (count timedTests) untimedTests))");
+        " (+ " + StatisticsIndexMap.HTTP_PLUGIN_CONNECTIONS_ESTABLISHED + "))");
 
       statistics.registerSummaryExpression(
         "Mean time to establish connection",
         "(/ " + StatisticsIndexMap.HTTP_PLUGIN_CONNECT_TIME_KEY +
-        " (+ (count timedTests) untimedTests))");
+        " (+ " + StatisticsIndexMap.HTTP_PLUGIN_CONNECTIONS_ESTABLISHED + "))");
 
       statistics.registerSummaryExpression(
         "Mean time to first byte",

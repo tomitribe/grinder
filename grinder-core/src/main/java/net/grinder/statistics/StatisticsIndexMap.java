@@ -123,6 +123,13 @@ public final class StatisticsIndexMap implements Serializable {
     "httpplugin.firstByteTime";
 
   /**
+   * Special slot for the HTTP plugin so it doesn't steal "user"
+   * indices. Use with {@link #getLongIndex(String)}.
+   */
+  public static final String HTTP_PLUGIN_CONNECTIONS_ESTABLISHED =
+    "httpplugin.connectionsEstablished";
+
+  /**
    * Constructor.
    */
   StatisticsIndexMap() {
@@ -137,6 +144,7 @@ public final class StatisticsIndexMap implements Serializable {
                 HTTP_PLUGIN_DNS_TIME_KEY,
                 HTTP_PLUGIN_CONNECT_TIME_KEY,
                 HTTP_PLUGIN_FIRST_BYTE_TIME_KEY,
+                HTTP_PLUGIN_CONNECTIONS_ESTABLISHED,
                 "userLong0",
                 "userLong1",
                 "userLong2",

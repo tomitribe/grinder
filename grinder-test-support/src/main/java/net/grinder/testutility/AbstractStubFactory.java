@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,9 +21,6 @@
 
 package net.grinder.testutility;
 
-import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -48,10 +45,6 @@ import java.util.Set;
  */
 public abstract class AbstractStubFactory<T> extends CallRecorder {
 
-  private final static WeakIdentityMap<Object, AbstractStubFactory<Object>>
-    s_stubToFactory =
-      new WeakIdentityMap<Object, AbstractStubFactory<Object>>();
-
   private final T m_stub;
   private final Map<String, Object> m_resultMap = new HashMap<String, Object>();
   private final Map<String, Throwable> m_throwsMap =
@@ -69,8 +62,6 @@ public abstract class AbstractStubFactory<T> extends CallRecorder {
     m_stub = (T)Proxy.newProxyInstance(stubbedInterface.getClassLoader(),
                                        getAllInterfaces(stubbedInterface),
                                        decoratedInvocationHandler);
-
-    s_stubToFactory.put(m_stub, (AbstractStubFactory<Object>) this);
   }
 
   private final class RecordingInvocationHandler implements InvocationHandler {
@@ -163,14 +154,6 @@ public abstract class AbstractStubFactory<T> extends CallRecorder {
   }
 
   /**
-   * Return the cached {@code AbstractStubFactory} for stub.
-   * @return The factory, or {@code null}.
-   */
-  public static AbstractStubFactory<?> getFactory(Object stub) {
-    return s_stubToFactory.get(stub);
-  }
-
-  /**
    * Localise need for unchecked cast. I thought the compiler was meant
    * to regarding {@link Object#getClass()} - seems the Eclipse compiler
    * (at least) is not.
@@ -182,66 +165,5 @@ public abstract class AbstractStubFactory<T> extends CallRecorder {
   @SuppressWarnings("unchecked")
   protected static <K> Class<K> getClass(K o) {
     return (Class<K>)o.getClass();
-  }
-
-  /**
-   * Ripped off from Jython implementation.
-   */
-  private static class WeakIdentityMap<K, V> {
-
-    private final ReferenceQueue<K> m_referenceQueue = new ReferenceQueue<K>();
-    private final Map<WeakIdKey, V> m_hashmap = new HashMap<WeakIdKey, V>();
-
-    private void cleanup() {
-      Reference<? extends K> k;
-
-      while ((k = m_referenceQueue.poll()) != null) {
-        m_hashmap.remove(k);
-      }
-    }
-
-    private class WeakIdKey extends WeakReference<K> {
-      private final int m_hashcode;
-
-      WeakIdKey(K key) {
-        super(key, m_referenceQueue);
-        m_hashcode = System.identityHashCode(key);
-      }
-
-      @Override
-      public int hashCode() {
-        return m_hashcode;
-      }
-
-      @SuppressWarnings("unchecked")
-      @Override
-      public boolean equals(Object other) {
-        final Object object = this.get();
-
-        if (object != null) {
-          return object == ((WeakIdKey)other).get();
-        }
-        else {
-          return this == other;
-        }
-      }
-    }
-
-    public void put(K key, V value) {
-      cleanup();
-      m_hashmap.put(new WeakIdKey(key), value);
-    }
-
-    public V get(K key) {
-      cleanup();
-      return m_hashmap.get(new WeakIdKey(key));
-    }
-
-    /*
-    public void remove(K key) {
-      cleanup();
-      m_hashmap.remove(new WeakIdKey<K>(key, m_referenceQueue));
-    }
-    */
   }
 }

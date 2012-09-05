@@ -312,6 +312,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
 
     /** hack to capture Initial Connection time */
     private        AtomicLong          con_time = new AtomicLong();
+    private        AtomicLong          connectionsEstablished = new AtomicLong();
 
     public interface TimeAuthority {
       long getTimeInMilliseconds();
@@ -3418,6 +3419,7 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
                           Math.max(getTimeAuthority().getTimeInMilliseconds() -
                                    startTime,
                                    0));
+                        connectionsEstablished.incrementAndGet();
                         /** --GRINDER MODIFICATION **/
 			break;		// success
 		    }
@@ -3456,11 +3458,13 @@ public class HTTPConnection implements GlobalConstants, HTTPClientModuleConstant
     public long getDnsTime(){
            return DNS_time.get();
     }
-    /** --GRINDER-MODIFICATION++ */
 
-    /** ++GRINDER-MODIFICATION++ */
     public long getConnectTime(){
            return con_time.get();
+    }
+
+    public long getConnectionsEstablished(){
+      return connectionsEstablished.get();
     }
     /** --GRINDER-MODIFICATION++ */
 
