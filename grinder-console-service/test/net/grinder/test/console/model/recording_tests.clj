@@ -150,3 +150,40 @@
         (is (= 2 test))
         (is (= "test two" description))
         (is (= "[0 0 NaN 0.0 NaN]" (str statistics))))))))
+
+(deftest test-with-real-sample-model-latest
+  (with-console-properties cp
+    (let [sm (SampleModelImplementation.
+               cp
+               ss
+               (make-null-timer)
+               (reify Resources
+                 (getString [this s] s))
+               nil)
+          sv (reify SampleModelViews
+             (getIntervalStatisticsView
+               [this]
+               (.getDetailStatisticsView ss)))]
+
+      (recording/initialise sm)
+      (recording/start sm)
+
+      (is (= {:state :WaitingForFirstReport
+              :description "state.waiting.label"}
+             (recording/status sm)))
+
+      (.registerTests sm [(make-test 1 "test one")
+                          (make-test 2 "test two")])
+
+    (let [{:keys [tests columns status]} (recording/data-latest sm sv)]
+      ;(is (= "[0 0 NaN 0.0 NaN]" (str (doall totals))))
+      (is (= ["Test time" "Errors"] columns))
+      (is (= 2 (count tests)))
+      (let [{:keys [test description statistics]} (first tests)]
+        (is (= 1 test))
+        (is (= "test one" description))
+        (is (= "[0 0]" (str statistics))))
+      (let [{:keys [test description statistics]} (second tests)]
+        (is (= 2 test))
+        (is (= "test two" description))
+        (is (= "[0 0]" (str statistics))))))))

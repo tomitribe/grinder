@@ -124,6 +124,12 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     assertNotNull(totalCumulativeStatistics);
     assertSame(totalCumulativeStatistics,
                sampleModelImplementation.getTotalCumulativeStatistics());
+    
+    final StatisticsSet totalLatestStatistics =
+    	      sampleModelImplementation.getTotalLatestStatistics();
+    	    assertNotNull(totalLatestStatistics);
+    	    assertSame(totalLatestStatistics,
+    	               sampleModelImplementation.getTotalLatestStatistics());
 
     final State state = sampleModelImplementation.getState();
     assertEquals(WaitingForFirstReport, state.getValue());

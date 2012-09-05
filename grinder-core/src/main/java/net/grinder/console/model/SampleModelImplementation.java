@@ -217,6 +217,10 @@ public final class SampleModelImplementation implements SampleModel {
   public StatisticsSet getTotalCumulativeStatistics() {
     return m_totalSampleAccumulator.getCumulativeStatistics();
   }
+  
+  public StatisticsSet getTotalLatestStatistics(){
+	  return m_totalSampleAccumulator.getLastSampleStatistics();
+  }
 
   /**
    * {@inheritDoc}

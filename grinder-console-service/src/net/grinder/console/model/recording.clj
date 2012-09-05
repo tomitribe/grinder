@@ -152,3 +152,26 @@
      :totals (process-statistics views
                                  (.getTotalCumulativeStatistics sample-model))}
     ))
+
+(defn data-latest
+  "Get the latest samlple data"
+  [^SampleModel sample-model
+   ^SampleModelViews statistics-view]
+  (let [^ModelTestIndex test-index (get-test-index sample-model)
+        views (.getExpressionViews
+                (.getIntervalStatisticsView statistics-view))]
+    {:status (status sample-model)
+     :columns (vec (for [^ExpressionView v views] (.getDisplayName v)))
+     :tests
+     (vec
+       (for [i (range (.getNumberOfTests test-index))]
+         (let [test (.getTest test-index i)]
+           {
+            :test (.getNumber test)
+            :description (.getDescription test)
+            :statistics
+            (process-statistics views
+                                (.getLastSampleStatistics test-index i)) })))
+    :totals (process-statistics views
+                                 (.getTotalLatestStatistics sample-model))}
+    ))

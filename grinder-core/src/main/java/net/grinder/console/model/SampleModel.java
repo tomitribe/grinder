@@ -129,6 +129,14 @@ public interface SampleModel {
    * @return The cumulative statistics.
    */
   StatisticsSet getTotalCumulativeStatistics();
+  
+  /**
+   * Get the latest statistics for this model
+   * 
+   *
+   * @return The cumulative statistics.
+   */
+  StatisticsSet getTotalLatestStatistics();
 
   /**
    * Add a new model listener.

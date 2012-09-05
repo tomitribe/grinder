@@ -76,6 +76,7 @@
        :post "/properties/save" net.grinder.console.model.properties/save [:properties]
        :get "/recording/status" net.grinder.console.model.recording/status [:sample-model]
        :get "/recording/data" net.grinder.console.model.recording/data [:sample-model :sample-model-views]
+       :get "/recording/data-latest" net.grinder.console.model.recording/data-latest [:sample-model :sample-model-views]
        :post "/recording/start" net.grinder.console.model.recording/start [:sample-model]
        :post "/recording/stop" net.grinder.console.model.recording/stop [:sample-model]
        :post "/recording/zero" net.grinder.console.model.recording/zero [:sample-model]
