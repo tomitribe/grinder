@@ -258,6 +258,14 @@
 	</tr>
 
 	<tr>
+	  <td><code>GET</code></td>
+	  <td><code>/recording/data-latest</code></td>
+	  <td>Return the latest sample of recorded data. Equivalent to 
+	  the data in the lower pane of the <a href="site:console/ui/results">results
+	  tab</a>.</td>
+	</tr>
+
+	<tr>
 	  <td><code>POST</code></td>
 	  <td><code>/recording/start</code></td>
 	  <td>Start capturing data. An initial number of samples may
@@ -536,6 +544,24 @@ success
         <p>There were 30 executions of Test 1 as expected (2 worker
         processes x 5 worker threads x 3 runs), with an average
         execution time of 0.2 ms.</p>
+        
+        
+	<source class="text">
+% curl http://localhost:6373/recording/data-latest
+
+{"status":{"state":"Stopped","description":"Collection stopped"},
+"columns":["Tests","Errors","Mean Test Time (ms)","Test Time Standard Deviation (ms)","TPS","Peak TPS"],
+"tests":[{"test":1,"description":"Log method","statistics":[30,0,0.2,0.4,9.674298613350532,
+9.67741935483871]}],
+"totals":[30,0,0.2,0.4,9.674298613350532,9.67741935483871]}
+</source>
+
+        <p>Adding the -latest will retrieve the latest sample 
+        data available. This is most useful to get near real time 
+        data a currently executing test.<br/>  Again, there were 
+        30 executions of Test 1 as expected (2 worker processes x
+         5 worker threads x 3 runs), with an average execution time of 0.2 ms.</p>
+        
 
       </section>
 
