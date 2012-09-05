@@ -41,7 +41,6 @@
     href="site:api/Barrier/await">await</a>.
     </p>
 
-
     <p>Barriers are usually created in the
     <code>TestRunner.__init__</code> constructor to ensure every
     worker thread has created its barriers before any of the threads
@@ -67,6 +66,20 @@
 
      # ... Further actions.
 </source>
+    </section>
+
+    <section>
+      <title>Barrier scope</title>
+
+      <p>Distributed barriers that allow coordination across worker
+      processes require that the worker processes are started with the
+      console.
+      </p>
+
+      <p>Barriers are not shared across worker processes that are not
+      started using the console, even if they are started by the same
+      agent. In this case, each barrier will only provide coordination
+      locally, between the worker threads of a worker process.</p>
     </section>
 
     <section>
