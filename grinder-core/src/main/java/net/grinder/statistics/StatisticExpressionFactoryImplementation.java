@@ -353,8 +353,16 @@ final class StatisticExpressionFactoryImplementation
 
     return new DoubleStatistic() {
         public double getValue(StatisticsSet statisticsSet) {
+          final double numeratorDouble =
+              numerator.getDoubleValue(statisticsSet);
+
+          if (numeratorDouble == 0d) {
+            // Return zero instead of NaN for 0/0.
+            return 0d;
+          }
+
           return
-            numerator.getDoubleValue(statisticsSet) /
+            numeratorDouble /
             denominator.getDoubleValue(statisticsSet);
         }
       };

@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2008 Philip Aston
+// Copyright (C) 2000 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,8 +21,14 @@
 
 package net.grinder.statistics;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import net.grinder.statistics.StatisticExpressionFactoryImplementation.ParseContext.ParseException;
-import junit.framework.TestCase;
+
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
@@ -31,13 +37,13 @@ import junit.framework.TestCase;
  * @author Philip Aston
  * @see StatisticsSet
  */
-public class TestStatisticExpressionFactory extends TestCase {
+public class TestStatisticExpressionFactory {
 
   private StatisticExpressionFactory m_factory;
   private StatisticsIndexMap m_indexMap;
   private StatisticsSet m_statistics;
 
-  protected void setUp() throws Exception {
+  @Before public void setUp() throws Exception {
     final StatisticsServices statisticsServices =
       StatisticsServicesImplementation.getInstance();
     m_factory = statisticsServices.getStatisticExpressionFactory();
@@ -46,10 +52,9 @@ public class TestStatisticExpressionFactory extends TestCase {
 
     m_statistics.addValue(m_indexMap.getLongIndex("userLong0"), 1);
     m_statistics.addValue(m_indexMap.getLongIndex("userLong1"), 2);
-
   }
 
-  public void testConstant() throws Exception {
+  @Test public void testConstant() throws Exception {
     final StatisticExpression longExpression = m_factory.createConstant(-22);
 
     myAssertEquals(-22, longExpression);
@@ -71,7 +76,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     }
   }
 
-  public void testPrimitive() throws Exception {
+  @Test public void testPrimitive() throws Exception {
     final StatisticExpression expression =
       m_factory.createPrimitive(m_indexMap.getLongIndex("userLong0"));
 
@@ -119,7 +124,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     }
   }
 
-  public void testSum() throws Exception {
+  @Test public void testSum() throws Exception {
     final StatisticExpression[] expressions = {
         m_factory.createExpression("userLong0"),
         m_factory.createExpression("userLong1"),
@@ -150,7 +155,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     }
   }
 
-  public void testNegation() throws Exception {
+  @Test public void testNegation() throws Exception {
     myAssertEquals(-2,
       m_factory.createNegation(m_factory.createExpression("userLong1")));
 
@@ -177,7 +182,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     }
   }
 
-  public void testMinus() throws Exception {
+  @Test public void testMinus() throws Exception {
     final StatisticExpression[] expressions = {
         m_factory.createExpression("userLong0"),
         m_factory.createExpression("userLong1"),
@@ -209,7 +214,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     }
   }
 
-  public void testProduct() throws Exception {
+  @Test public void testProduct() throws Exception {
     final StatisticExpression[] expressions = {
         m_factory.createExpression("userLong0"),
         m_factory.createExpression("userLong1"),
@@ -240,7 +245,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     }
   }
 
-  public void testDivision() throws Exception {
+  @Test public void testDivision() throws Exception {
     final StatisticExpression expression =
       m_factory.createDivision(m_factory.createExpression("userLong1"),
                                m_factory.createExpression("userLong1"));
@@ -283,7 +288,11 @@ public class TestStatisticExpressionFactory extends TestCase {
     }
   }
 
-  public void testSquareRoot() throws Exception {
+  @Test public void testDivisionZeroNumerator() throws Exception {
+    myAssertEquals(0d, m_factory.createExpression("(/ userLong2 userLong2)"));
+  }
+
+  @Test public void testSquareRoot() throws Exception {
     final StatisticExpression expression =
       m_factory.createSquareRoot(m_factory.createExpression("userDouble0"));
 
@@ -320,7 +329,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     }
   }
 
-  public void testLongPeak() throws Exception {
+  @Test public void testLongPeak() throws Exception {
     final StatisticsIndexMap.LongIndex peakIndex1 = m_indexMap
         .getLongIndex("userLong2");
 
@@ -356,7 +365,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     myAssertEquals(33, peak, statistics);
   }
 
-  public void testDoublePeak() throws Exception {
+  @Test public void testDoublePeak() throws Exception {
     final StatisticsIndexMap.DoubleIndex peakIndex1 = m_indexMap
         .getDoubleIndex("userDouble2");
 
@@ -392,7 +401,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     myAssertEquals(33d, peak, statistics);
   }
 
-  public void testLongSample() throws Exception {
+  @Test public void testLongSample() throws Exception {
     myAssertEquals(0, m_factory.createExpression("(count timedTests)"));
     myAssertEquals(0, m_factory.createExpression("(sum timedTests)"));
     myAssertEquals(0, m_factory.createExpression("(variance timedTests)"));
@@ -425,7 +434,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     }
   }
 
-  public void testDoubleSample() throws Exception {
+  @Test public void testDoubleSample() throws Exception {
     try {
       final StatisticsIndexMap.DoubleIndex sumIndex =
         m_indexMap.getDoubleIndex("userDouble0");
@@ -486,7 +495,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     }
   }
 
-  public void testParseCompoundExpessions() throws Exception {
+  @Test public void testParseCompoundExpessions() throws Exception {
     myAssertEquals(0.5, m_factory
         .createExpression("(/ userLong0 (+ userLong0 userLong0))"));
 
@@ -506,7 +515,7 @@ public class TestStatisticExpressionFactory extends TestCase {
         "(* 4 (+ userLong0 (/ userLong0 (* userLong1 userLong1)) userLong0))"));
   }
 
-  public void testParseInvalidExpessions() throws Exception {
+  @Test public void testParseInvalidExpessions() throws Exception {
     try {
       m_factory.createExpression("(+");
       fail("Expected a ParseException");
@@ -529,7 +538,7 @@ public class TestStatisticExpressionFactory extends TestCase {
     }
   }
 
-  public void testNormaliseExpressionString() throws Exception {
+  @Test public void testNormaliseExpressionString() throws Exception {
     assertEquals("userLong0",
                 m_factory.normaliseExpressionString(" userLong0 "));
 

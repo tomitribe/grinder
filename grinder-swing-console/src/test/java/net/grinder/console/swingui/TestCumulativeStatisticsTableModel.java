@@ -150,7 +150,7 @@ public class TestCumulativeStatisticsTableModel extends AbstractFileTestCase {
     assertEquals("Total Label", model.getValueAt(0, 0));
     assertEquals("", model.getValueAt(0, 1));
     assertEquals("0 tests", "0", model.getValueAt(0, 2));
-    assertEquals("Mean time NaN", "", model.getValueAt(0, 4));
+    assertEquals("0.0", model.getValueAt(0, 4));
     assertEquals("SD is 0", "0.0", model.getValueAt(0, 5));
     assertEquals("?", model.getValueAt(0, 10));
 
@@ -177,7 +177,7 @@ public class TestCumulativeStatisticsTableModel extends AbstractFileTestCase {
 
     model.write(writer, "::", "**");
 
-    assertEquals("Test Column::Test Description Column::Tests::Errors::Mean Test Time (ms)::Test Time Standard Deviation (ms)::TPS::**Total Label::::0::0::::0.0::::**",
+    assertEquals("Test Column::Test Description Column::Tests::Errors::Mean Test Time (ms)::Test Time Standard Deviation (ms)::TPS::**Total Label::::0::0::0.0::0.0::0.0::**",
                  writer.toString());
   }
 
