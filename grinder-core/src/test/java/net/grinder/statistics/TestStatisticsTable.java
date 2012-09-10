@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2010 Philip Aston
+// Copyright (C) 2000 - 2012 Philip Aston
 // Copyright (C) 2005 Martin Wagner.
 // All rights reserved.
 //
@@ -26,19 +26,21 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Locale;
 
-import junit.framework.TestCase;
 import net.grinder.common.StubTest;
-import net.grinder.common.Test;
 import net.grinder.testutility.AssertUtilities;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
- * Unit test case for <code>StatisticsTable</code>.
+ * Unit test case for {@link StatisticsTable}.
  *
  * @author Philip Aston
  * @see StatisticsSet
  */
-public class TestStatisticsTable extends TestCase {
+public class TestStatisticsTable  {
 
   private TestStatisticsMap m_testStatisticsMap;
   private StatisticsIndexMap m_indexMap;
@@ -50,7 +52,7 @@ public class TestStatisticsTable extends TestCase {
 
   private final Locale m_originalDefaultLocale = Locale.getDefault();
 
-  protected void setUp() throws Exception {
+  @Before public void setUp() throws Exception {
     Locale.setDefault(Locale.US);
 
     m_testStatisticsMap =
@@ -80,7 +82,7 @@ public class TestStatisticsTable extends TestCase {
       m_statisticsView.add(expressionViews[i]);
     }
 
-    final Test[] tests = {
+    final net.grinder.common.Test[] tests = {
       new StubTest(9, "Test 9"),
       new StubTest(3, null),
       new StubTest(113, "Another test"),
@@ -96,8 +98,10 @@ public class TestStatisticsTable extends TestCase {
       statistics[i] =
         new StatisticsSetImplementation(
           m_statisticsServices.getStatisticsIndexMap());
-      statistics[i].addValue(aIndex, i);
-      statistics[i].addValue(bIndex, i + 1);
+      if (i != 2) {
+        statistics[i].addValue(aIndex, i);
+        statistics[i].addValue(bIndex, i + 1);
+      }
 
       final StatisticsSet statistics2 = factory.create();
       statistics2.add(statistics[i]);
@@ -106,11 +110,11 @@ public class TestStatisticsTable extends TestCase {
     }
   }
 
-  protected void tearDown() throws Exception {
+  @After public void tearDown() throws Exception {
     Locale.setDefault(m_originalDefaultLocale);
   }
 
-  public void testStatisticsTable() throws Exception {
+  @Test public void testStatisticsTable() throws Exception {
     final StringWriter expected = new StringWriter();
     final PrintWriter in = new PrintWriter(expected);
 
@@ -119,10 +123,10 @@ public class TestStatisticsTable extends TestCase {
     in.println();
     in.println("Test 3       1            2            3            0.50         ");
     in.println("Test 9       0            1            1            0.00          \"Test 9\"");
-    in.println("Test 113     2            3            5            0.67          \"Another test\"");
+    in.println("Test 113     0            0            0                          \"Another test\"");
     in.println("Test 12345678 3            4            7            0.75          \"A test with a long name\"");
     in.println();
-    in.println("Totals       6            10           16           0.60         ");
+    in.println("Totals       4            7            11           0.57         ");
     in.close();
 
     final StatisticsTable table =
@@ -138,7 +142,7 @@ public class TestStatisticsTable extends TestCase {
       expected.getBuffer().toString());
   }
 
-  public void testStatisticsTableWithCompositeTests() throws Exception {
+  @Test public void testStatisticsTableWithCompositeTests() throws Exception {
     final StatisticsSet statistics =
       m_statisticsServices.getStatisticsSetFactory().create();
     statistics.setValue(
@@ -155,10 +159,10 @@ public class TestStatisticsTable extends TestCase {
     in.println("Test 3       1            2            3            0.50         ");
     in.println("(Test 4      0            1            1            0.00)         \"T4\"");
     in.println("Test 9       0            1            1            0.00          \"Test 9\"");
-    in.println("Test 113     2            3            5            0.67          \"Another test\"");
+    in.println("Test 113     0            0            0                          \"Another test\"");
     in.println("Test 12345678 3            4            7            0.75          \"A test with a long name\"");
     in.println();
-    in.println("Totals       6            10           16           0.60         ");
+    in.println("Totals       4            7            11           0.57         ");
     in.println("             (0)                                                 ");
     in.close();
 

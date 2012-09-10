@@ -72,7 +72,7 @@ public class TestStatisticExpressionFactory {
       m_factory.createExpression("1 2");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
   }
 
@@ -99,28 +99,28 @@ public class TestStatisticExpressionFactory {
       m_factory.createExpression("");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
 
     try {
       m_factory.createExpression("userLong0 userLong1");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
 
     try {
       m_factory.createExpression("(timedTests)");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
 
     try {
       m_factory.createExpression("Madeup");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
   }
 
@@ -263,33 +263,34 @@ public class TestStatisticExpressionFactory {
       m_factory.createExpression("(/)");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
 
     try {
       m_factory.createExpression("(/ userLong0)");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
 
     try {
       m_factory.createExpression("(/ userLong0 userLong0 userLong0)");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
 
     try {
       m_factory.createExpression("(/ timedTests userLong0)");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
   }
 
   @Test public void testDivisionZeroNumerator() throws Exception {
-    myAssertEquals(0d, m_factory.createExpression("(/ userLong2 userLong2)"));
+    myAssertEquals(Double.NaN,
+                   m_factory.createExpression("(/ userLong2 userLong2)"));
   }
 
   @Test public void testSquareRoot() throws Exception {
@@ -311,21 +312,21 @@ public class TestStatisticExpressionFactory {
       m_factory.createExpression("(sqrt)");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
 
     try {
       m_factory.createExpression("(sqtr userDouble0 userDouble0)");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
 
     try {
       m_factory.createExpression("(sqrt timedTests)");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
   }
 
@@ -417,20 +418,20 @@ public class TestStatisticExpressionFactory {
       m_factory.createExpression("(sum userLong0)");
       fail("Expected ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
 
     try {
       m_factory.createExpression("(count userLong0)");
       fail("Expected ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
     try {
       m_factory.createExpression("(variance userLong0)");
       fail("Expected ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
   }
 
@@ -473,21 +474,21 @@ public class TestStatisticExpressionFactory {
         m_factory.createExpression("(sum userDouble0)");
         fail("Expected ParseException");
       }
-      catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+      catch (ParseException e) {
       }
 
       try {
         m_factory.createExpression("(count userDouble0)");
         fail("Expected ParseException");
       }
-      catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+      catch (ParseException e) {
       }
 
       try {
         m_factory.createExpression("(variance userDouble0)");
         fail("Expected ParseException");
       }
-      catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+      catch (ParseException e) {
       }
     }
     finally {
@@ -520,21 +521,21 @@ public class TestStatisticExpressionFactory {
       m_factory.createExpression("(+");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
 
     try {
       m_factory.createExpression("+)");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
 
     try {
       m_factory.createExpression("(/ 1 2");
       fail("Expected a ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
   }
 
@@ -550,7 +551,7 @@ public class TestStatisticExpressionFactory {
       m_factory.normaliseExpressionString("userLong0 userLong0");
       fail("Expected ParseException");
     }
-    catch (StatisticExpressionFactoryImplementation.ParseContext.ParseException e) {
+    catch (ParseException e) {
     }
   }
 

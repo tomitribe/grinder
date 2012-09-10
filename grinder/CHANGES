@@ -14,8 +14,11 @@ The Grinder 3.11
   re-use connections, these values will be zero. The summary
   statistics average these values over the number of established
   connections, not all tests. A "New connections" statistic is
-  available in the data log. The statistics engine now reports 0/0 as
-  0, rather than NaN. Thanks to Teresa Plumari for the report.
+  available in the data log. Thanks to Teresa Plumari for the report.
+
+  The worker process summary statistics table now prints 0/0 as a
+  blank column, rather than the previous behaviour of using a NaN
+  unicode character.
 
 
 The Grinder 3.10

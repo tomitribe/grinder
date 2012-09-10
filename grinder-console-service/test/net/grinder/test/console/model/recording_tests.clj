@@ -138,15 +138,15 @@
                           (make-test 2 "test two")])
 
     (let [{:keys [tests columns status totals]} (recording/data sm sv)]
-      (is (= "[0 0 0.0 0.0 0.0]" (str (doall totals))))
+      (is (= "[0 0 NaN 0.0 NaN]" (str (doall totals))))
       (is (= ["Tests" "Errors" "Mean Test Time (ms)"
               "Test Time Standard Deviation (ms)" "TPS"] columns))
       (is (= 2 (count tests)))
       (let [{:keys [test description statistics]} (first tests)]
         (is (= 1 test))
         (is (= "test one" description))
-        (is (= "[0 0 0.0 0.0 0.0]" (str statistics))))
+        (is (= "[0 0 NaN 0.0 NaN]" (str statistics))))
       (let [{:keys [test description statistics]} (second tests)]
         (is (= 2 test))
         (is (= "test two" description))
-        (is (= "[0 0 0.0 0.0 0.0]" (str statistics))))))))
+        (is (= "[0 0 NaN 0.0 NaN]" (str statistics))))))))

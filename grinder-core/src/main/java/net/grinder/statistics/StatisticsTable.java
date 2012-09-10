@@ -270,7 +270,13 @@ public class StatisticsTable {
       final StatisticExpression expression = expressionView.getExpression();
 
       if (expression.isDouble()) {
-        return m_twoDPFormat.format(expression.getDoubleValue(statistics));
+        final double value = expression.getDoubleValue(statistics);
+
+        if (Double.isNaN(value)) {
+          return "";
+        }
+
+        return m_twoDPFormat.format(value);
       }
       else {
         return String.valueOf(expression.getLongValue(statistics));
