@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2012 Philip Aston
+// Copyright (C) 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,57 +21,172 @@
 
 package net.grinder.console.communication;
 
-import java.util.Comparator;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.util.Timer;
+
+import net.grinder.common.GrinderProperties;
 import net.grinder.common.processidentity.AgentIdentity;
-import net.grinder.common.processidentity.AgentProcessReport;
-import net.grinder.common.processidentity.ProcessReport;
-import net.grinder.console.common.processidentity.StubAgentProcessReport;
+import net.grinder.common.processidentity.ProcessReport.State;
+import net.grinder.communication.MessageDispatchRegistry;
+import net.grinder.communication.MessageDispatchRegistry.Handler;
+import net.grinder.console.common.DisplayMessageConsoleException;
+import net.grinder.console.common.Resources;
 import net.grinder.console.communication.ProcessControl.ProcessReports;
 import net.grinder.engine.agent.StubAgentIdentity;
-import net.grinder.testutility.RandomStubFactory;
+import net.grinder.messages.agent.StartGrinderMessage;
+import net.grinder.messages.agent.StubCacheHighWaterMark;
+import net.grinder.messages.console.AgentAddress;
+import net.grinder.messages.console.AgentProcessReportMessage;
+import net.grinder.util.Directory;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 /**
- * Unit tests for {@link ProcessStatus}.
+ * Unit tests for {@link ProcessControlImplementation}.
  *
  * @author Philip Aston
  */
-public class TestProcessControlImplementation extends TestCase {
+public class TestProcessControlImplementation {
 
-  public void testProcessReportsComparator() throws Exception {
-    final Comparator<ProcessReports> comparator =
-      new ProcessControl.ProcessReportsComparator();
-
-    final AgentIdentity agentIdentity1 =
+  private final AgentIdentity m_agentIdentity =
       new StubAgentIdentity("my agent");
 
-    final AgentProcessReport agentProcessReport1 =
-      new StubAgentProcessReport(agentIdentity1,
-                                 ProcessReport.State.RUNNING);
+  private final AgentProcessReportMessage m_agentMessage =
+      new AgentProcessReportMessage(State.RUNNING,
+                                    new StubCacheHighWaterMark(null, 0));
 
-    final RandomStubFactory<ProcessReports> processReportsStubFactory1 =
-      RandomStubFactory.create(ProcessReports.class);
-    final ProcessReports processReports1 =
-      processReportsStubFactory1.getStub();
-    processReportsStubFactory1.setResult("getAgentProcessReport",
-                                         agentProcessReport1);
+  @Mock private ProcessReports m_processReports1;
+  @Mock private ProcessReports m_processReports2;
+  @Mock private Timer m_timer;
+  @Mock private MessageDispatchRegistry m_messageDispatchRegistry;
+  @Mock private ConsoleCommunication m_consoleCommunication;
+  @Mock private Resources m_resources;
+  @Captor ArgumentCaptor<Handler<AgentProcessReportMessage>>
+    m_agentReportMessageHandlerCaptor;
+  @Captor ArgumentCaptor<StartGrinderMessage> m_startGrinderMessageCaptor;
 
-    assertEquals(0, comparator.compare(processReports1, processReports1));
+  private ProcessControl m_processControl;
 
-    final AgentProcessReport agentProcessReport2 =
-      new StubAgentProcessReport(agentIdentity1,
-                                 ProcessReport.State.FINISHED);
+  @Before public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
 
-    final RandomStubFactory<ProcessReports> processReportsStubFactory2 =
-      RandomStubFactory.create(ProcessReports.class);
-    final ProcessReports processReports2 =
-      processReportsStubFactory2.getStub();
-    processReportsStubFactory2.setResult("getAgentProcessReport",
-                                         agentProcessReport2);
+    when(m_consoleCommunication.getMessageDispatchRegistry())
+      .thenReturn(m_messageDispatchRegistry);
 
-    assertEquals(0, comparator.compare(processReports2, processReports2));
-    assertTrue(comparator.compare(processReports1, processReports2) < 0);
-    assertTrue(comparator.compare(processReports2, processReports1) > 0);
+    m_agentMessage.setAddress(new AgentAddress(m_agentIdentity));
+
+    m_processControl = new ProcessControlImplementation(m_timer,
+                                     m_consoleCommunication,
+                                     m_resources);
+
+    verify(m_messageDispatchRegistry)
+      .set(eq(AgentProcessReportMessage.class),
+          m_agentReportMessageHandlerCaptor.capture());
+
+    m_agentReportMessageHandlerCaptor.getValue().handle(m_agentMessage);
+  }
+
+  @Test public void testStartWorkerProcessesWithDistributedFiles()
+      throws Exception {
+
+    final GrinderProperties properties = new GrinderProperties();
+    m_processControl.startWorkerProcessesWithDistributedFiles(new Directory(),
+                                                              properties);
+
+    verify(m_consoleCommunication).sendToAddressedAgents(
+      eq(m_agentMessage.getProcessAddress()),
+      m_startGrinderMessageCaptor.capture());
+
+    final StartGrinderMessage startMessage =
+        m_startGrinderMessageCaptor.getValue();
+    assertEquals(0, startMessage.getAgentNumber());
+    final GrinderProperties sentProperties = startMessage.getProperties();
+
+    assertEquals(properties, sentProperties);
+  }
+
+  @Test(expected=DisplayMessageConsoleException.class)
+  public void
+    testStartWorkerProcessesWithDistributedFilesInvalidRelativePath()
+      throws Exception {
+
+    final GrinderProperties properties = new GrinderProperties();
+    properties.setFile("grinder.script", new File("../outside"));
+    m_processControl.startWorkerProcessesWithDistributedFiles(new Directory(),
+                                                              properties);
+  }
+
+  @Test(expected=DisplayMessageConsoleException.class)
+  public void
+    testStartWorkerProcessesWidthDistributedFilesInvalidRelativePath2()
+      throws Exception {
+
+    final GrinderProperties properties = new GrinderProperties();
+    properties.setAssociatedFile(new File("foo/bah").getAbsoluteFile());
+    properties.setFile("grinder.script", new File("../../outside"));
+    m_processControl.startWorkerProcessesWithDistributedFiles(new Directory(),
+                                                              properties);
+  }
+
+  @Test public void
+    testStartWorkerProcessesWithDistributedFilesKeepRelativePath()
+      throws Exception {
+
+    final GrinderProperties properties = new GrinderProperties();
+    properties.setAssociatedFile(new File("one"));
+    properties.setFile("grinder.script", new File("one/two"));
+
+    m_processControl.startWorkerProcessesWithDistributedFiles(
+      new Directory(new File("three").getAbsoluteFile()),
+      properties);
+
+    verify(m_consoleCommunication).sendToAddressedAgents(
+      eq(m_agentMessage.getProcessAddress()),
+      m_startGrinderMessageCaptor.capture());
+
+    final StartGrinderMessage startMessage =
+        m_startGrinderMessageCaptor.getValue();
+    assertEquals(0, startMessage.getAgentNumber());
+    final GrinderProperties sentProperties = startMessage.getProperties();
+
+    assertEquals(properties, sentProperties);
+    assertEquals(properties.getAssociatedFile(),
+                 sentProperties.getAssociatedFile());
+  }
+
+  @Test public void
+    testStartWorkerProcessesWithDistributedFilesAdjustRelativePath()
+      throws Exception {
+
+    final GrinderProperties properties = new GrinderProperties();
+    properties.setAssociatedFile(
+      new File("three/four/my.props").getAbsoluteFile());
+    properties.setFile("grinder.script", new File("one/two"));
+
+    m_processControl.startWorkerProcessesWithDistributedFiles(
+      new Directory(new File("three").getAbsoluteFile()),
+      properties);
+
+    verify(m_consoleCommunication).sendToAddressedAgents(
+      eq(m_agentMessage.getProcessAddress()),
+      m_startGrinderMessageCaptor.capture());
+
+    final StartGrinderMessage startMessage =
+        m_startGrinderMessageCaptor.getValue();
+    assertEquals(0, startMessage.getAgentNumber());
+    final GrinderProperties sentProperties = startMessage.getProperties();
+
+    assertEquals(properties, sentProperties);
+    assertEquals(new File("four/my.props"), sentProperties.getAssociatedFile());
   }
 }

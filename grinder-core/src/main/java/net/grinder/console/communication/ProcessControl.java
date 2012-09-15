@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2009 Philip Aston
+// Copyright (C) 2004 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -27,8 +27,9 @@ import java.util.EventListener;
 import net.grinder.common.GrinderProperties;
 import net.grinder.common.processidentity.ProcessReport;
 import net.grinder.common.processidentity.WorkerProcessReport;
+import net.grinder.console.common.ConsoleException;
 import net.grinder.messages.console.AgentAndCacheReport;
-
+import net.grinder.util.Directory;
 
 /**
  * Interface for issuing commands to the agent and worker processes.
@@ -42,9 +43,31 @@ public interface ProcessControl {
    * Signal the worker processes to start.
    *
    * @param properties
-   *            Properties that override the agent's local properties.
+   *          Properties that override the agent's local properties.
    */
   void startWorkerProcesses(GrinderProperties properties);
+
+  /**
+   * A variant of {@link #startWorkerProcesses} that checks the properties are
+   * reasonable for the distribution directory, and adjusts the supplied
+   * {@code properties} to have the appropriate relative paths.
+   *
+   * @param distributionDirectory
+   *          The distribution directory.
+   * @param properties
+   *          The properties. If the associated file is in the distribution, the
+   *          agent doesn't reload the distributed copy. However,it uses its
+   *          location to resolve any relative {@code grinder.script} path.
+   * @throws ConsoleException
+   *           If the {@code grinder.script} property is set to a relative path
+   *           outside of the distribution directory (e.g. {@code ../foo.py}.
+   * @throws ConsoleException
+   *           If an error occurred calculating file paths.
+   * @since 3.11
+   */
+  void startWorkerProcessesWithDistributedFiles(Directory distributionDirectory,
+                                                GrinderProperties properties)
+    throws ConsoleException;
 
   /**
    * Signal the worker processes to reset.
@@ -59,7 +82,8 @@ public interface ProcessControl {
   /**
    * Add a listener for process status data.
    *
-   * @param listener The listener.
+   * @param listener
+   *          The listener.
    */
   void addProcessStatusListener(Listener listener);
 
@@ -85,8 +109,8 @@ public interface ProcessControl {
   }
 
   /**
-   * Interface to the information the console has about an agent and its
-   * worker processes.
+   * Interface to the information the console has about an agent and its worker
+   * processes.
    */
   interface ProcessReports {
 
@@ -111,11 +135,12 @@ public interface ProcessControl {
    */
   final class ProcessReportsComparator implements Comparator<ProcessReports> {
     private final Comparator<ProcessReport> m_processReportComparator =
-      new ProcessReport.StateThenNameThenNumberComparator();
+        new ProcessReport.StateThenNameThenNumberComparator();
 
-    public int compare(ProcessReports o1, ProcessReports o2) {
-      return m_processReportComparator.compare(
-        o1.getAgentProcessReport(), o2.getAgentProcessReport());
+    @Override
+    public int compare(final ProcessReports o1, final ProcessReports o2) {
+      return m_processReportComparator.compare(o1.getAgentProcessReport(),
+                                               o2.getAgentProcessReport());
     }
   }
 }

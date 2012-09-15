@@ -1,4 +1,4 @@
-// Copyright (C) 2007 - 2011 Philip Aston
+// Copyright (C) 2007 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,12 +21,16 @@
 
 package net.grinder.console.communication;
 
+import java.io.File;
 import java.util.Timer;
 
 import net.grinder.common.GrinderProperties;
 import net.grinder.common.processidentity.AgentIdentity;
 import net.grinder.communication.MessageDispatchRegistry;
 import net.grinder.communication.MessageDispatchRegistry.AbstractHandler;
+import net.grinder.console.common.ConsoleException;
+import net.grinder.console.common.DisplayMessageConsoleException;
+import net.grinder.console.common.Resources;
 import net.grinder.messages.agent.ResetGrinderMessage;
 import net.grinder.messages.agent.StartGrinderMessage;
 import net.grinder.messages.agent.StopGrinderMessage;
@@ -35,6 +39,7 @@ import net.grinder.messages.console.AgentProcessReportMessage;
 import net.grinder.messages.console.WorkerProcessReportMessage;
 import net.grinder.util.AllocateLowestNumber;
 import net.grinder.util.AllocateLowestNumberImplementation;
+import net.grinder.util.Directory;
 
 
 /**
@@ -51,6 +56,8 @@ public class ProcessControlImplementation implements ProcessControl {
   private final AllocateLowestNumber m_agentNumberMap =
     new AllocateLowestNumberImplementation();
 
+  private final Resources m_resources;
+
   /**
    * Constructor.
    *
@@ -58,12 +65,16 @@ public class ProcessControlImplementation implements ProcessControl {
    *          Timer that can be used to schedule housekeeping tasks.
    * @param consoleCommunication
    *          The console communication handler.
+   * @param resources
+   *          Resources.
    */
   public ProcessControlImplementation(
-    Timer timer,
-    ConsoleCommunication consoleCommunication) {
+    final Timer timer,
+    final ConsoleCommunication consoleCommunication,
+    final Resources resources) {
 
     m_consoleCommunication = consoleCommunication;
+    m_resources = resources;
     m_processStatusSet =
       new ProcessStatusImplementation(timer, m_agentNumberMap);
 
@@ -73,7 +84,8 @@ public class ProcessControlImplementation implements ProcessControl {
     messageDispatchRegistry.set(
       AgentProcessReportMessage.class,
       new AbstractHandler<AgentProcessReportMessage>() {
-        public void handle(AgentProcessReportMessage message) {
+        @Override
+        public void handle(final AgentProcessReportMessage message) {
           m_processStatusSet.addAgentStatusReport(message);
         }
       }
@@ -82,7 +94,8 @@ public class ProcessControlImplementation implements ProcessControl {
     messageDispatchRegistry.set(
       WorkerProcessReportMessage.class,
       new AbstractHandler<WorkerProcessReportMessage>() {
-        public void handle(WorkerProcessReportMessage message) {
+        @Override
+        public void handle(final WorkerProcessReportMessage message) {
           m_processStatusSet.addWorkerStatusReport(message);
         }
       }
@@ -90,52 +103,98 @@ public class ProcessControlImplementation implements ProcessControl {
   }
 
   /**
-   * Signal the worker processes to start.
-   *
-   * @param properties
-   *            Properties that override the agent's local properties.
+   * {@inheritDoc}
    */
-  public void startWorkerProcesses(GrinderProperties properties) {
-    final GrinderProperties propertiesToSend =
-      properties != null ? properties : new GrinderProperties();
+  @Override
+  public void startWorkerProcesses(final GrinderProperties properties) {
 
     m_agentNumberMap.forEach(new AllocateLowestNumber.IteratorCallback() {
-      public void objectAndNumber(Object object, int number) {
+      @Override
+      public void objectAndNumber(final Object object, final int number) {
         m_consoleCommunication.sendToAddressedAgents(
           new AgentAddress((AgentIdentity)object),
-          new StartGrinderMessage(propertiesToSend, number));
+          new StartGrinderMessage(properties, number));
         }
       });
   }
 
   /**
-   * Signal the worker processes to reset.
+   * {@inheritDoc}
    */
+  @Override
+  public void startWorkerProcessesWithDistributedFiles(
+    final Directory distributionDirectory,
+    final GrinderProperties properties) throws ConsoleException {
+
+    // Check that the script file in the supplied properties belongs to
+    // the current distribution directory. The file may not exist.
+    final File configuredScript =
+        properties.getFile(GrinderProperties.SCRIPT,
+                           GrinderProperties.DEFAULT_SCRIPT);
+
+    final File resolvedScript =
+        properties.resolveRelativeFile(configuredScript);
+
+    final File path = distributionDirectory.relativeFile(resolvedScript, true);
+
+    // Allow the path to not be a child of the directory if it is absolute,
+    // since it is fairly obvious to the user what is going on.
+    if (path == null && !configuredScript.isAbsolute()) {
+      throw new DisplayMessageConsoleException(
+        m_resources,
+        "scriptNotInDirectoryError.text");
+    }
+
+    GrinderProperties propertiesToSend = properties;
+
+    final File associatedFile = properties.getAssociatedFile();
+
+    if (associatedFile != null) {
+      // If the properties refer to a file, rebase it to the
+      // distribution directory so relative script paths can be
+      // resolved based on the properties file location.
+      final File relativeFile =
+          distributionDirectory.relativeFile(associatedFile, true);
+
+      if (relativeFile != null && !relativeFile.equals(associatedFile)) {
+        // Copy, to avoid modifying the parameter.
+        propertiesToSend = new GrinderProperties();
+        propertiesToSend.putAll(properties);
+        propertiesToSend.setAssociatedFile(relativeFile);
+      }
+    }
+
+    startWorkerProcesses(propertiesToSend);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
   public void resetWorkerProcesses() {
     m_consoleCommunication.sendToAgents(new ResetGrinderMessage());
   }
 
   /**
-   * Signal the agent and worker processes to stop.
+   * {@inheritDoc}
    */
+  @Override
   public void stopAgentAndWorkerProcesses() {
     m_consoleCommunication.sendToAgents(new StopGrinderMessage());
   }
 
   /**
-   * Add a listener for process status data.
-   *
-   * @param listener The listener.
+   * {@inheritDoc}
    */
-  public void addProcessStatusListener(Listener listener) {
+  @Override
+  public void addProcessStatusListener(final Listener listener) {
     m_processStatusSet.addListener(listener);
   }
 
   /**
-   * How many agents are live?
-   *
-   * @return The number of agents.
+   * {@inheritDoc}
    */
+  @Override
   public int getNumberOfLiveAgents() {
     return m_processStatusSet.getNumberOfLiveAgents();
   }

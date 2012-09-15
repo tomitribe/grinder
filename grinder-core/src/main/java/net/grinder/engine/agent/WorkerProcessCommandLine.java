@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -22,7 +22,6 @@
 package net.grinder.engine.agent;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +30,6 @@ import java.util.Set;
 import java.util.StringTokenizer;
 
 import net.grinder.common.GrinderProperties;
-import net.grinder.engine.common.EngineException;
 import net.grinder.engine.process.WorkerProcessEntryPoint;
 import net.grinder.util.Directory;
 
@@ -49,11 +47,10 @@ final class WorkerProcessCommandLine implements CommandLine {
   private final List<String> m_command;
   private final int m_commandClassIndex;
 
-  public WorkerProcessCommandLine(GrinderProperties properties,
-                                  Properties systemProperties,
-                                  String jvmArguments,
-                                  Directory workingDirectory)
-    throws EngineException {
+  public WorkerProcessCommandLine(final GrinderProperties properties,
+                                  final Properties systemProperties,
+                                  final String jvmArguments,
+                                  final Directory workingDirectory) {
 
     m_workingDirectory = workingDirectory;
     m_command = new ArrayList<String>();
@@ -66,13 +63,8 @@ final class WorkerProcessCommandLine implements CommandLine {
       final File agent = findAgentJarFile(systemClasspath);
 
       if (agent != null) {
-        try {
-          m_command.add("-javaagent:" +
-                        workingDirectory.rebaseFromCWD(agent));
-        }
-        catch (IOException e) {
-          throw new EngineException(e.getMessage(), e);
-        }
+        m_command.add("-javaagent:" +
+                      workingDirectory.rebaseFromCWD(agent));
       }
     }
 
@@ -107,12 +99,7 @@ final class WorkerProcessCommandLine implements CommandLine {
     if (classpath.length() > 0) {
       m_command.add("-classpath");
 
-      try {
-        m_command.add(workingDirectory.rebasePath(classpath.toString()));
-      }
-      catch (IOException e) {
-        throw new EngineException(e.getMessage(), e);
-      }
+      m_command.add(workingDirectory.rebasePath(classpath.toString()));
     }
 
     m_commandClassIndex = m_command.size();
@@ -141,6 +128,7 @@ final class WorkerProcessCommandLine implements CommandLine {
       add("-server");
     } };
 
+  @Override
   public String toString() {
     final String[] commandArray = getCommandList().toArray(new String[0]);
 
@@ -175,15 +163,15 @@ final class WorkerProcessCommandLine implements CommandLine {
    *
    * @param path The path to search.
    */
-  static File findAgentJarFile(String path) {
-    for (String pathEntry : path.split(File.pathSeparator)) {
+  static File findAgentJarFile(final String path) {
+    for (final String pathEntry : path.split(File.pathSeparator)) {
       final File f = new File(pathEntry).getParentFile();
       final File parentFile = f != null ? f : new File(".");
 
       final File[] children = parentFile.listFiles();
 
       if (children != null) {
-        for (File candidate : children) {
+        for (final File candidate : children) {
           final String name = candidate.getName();
 
           if (name.startsWith(AGENT_JAR_FILENAME_PREFIX) &&

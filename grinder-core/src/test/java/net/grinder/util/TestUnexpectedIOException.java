@@ -1,4 +1,4 @@
-// Copyright (C) 2005-2012 Philip Aston
+// Copyright (C) 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -19,33 +19,26 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package net.grinder.common;
+package net.grinder.util;
 
+import static org.junit.Assert.assertSame;
+
+import java.io.IOException;
+
+import org.junit.Test;
 
 /**
- * Base unchecked exception class for The Grinder.
- *
+ * Unit tests for {@link UnexpectedIOException}.
+ * 
  * @author Philip Aston
  */
-public abstract class UncheckedGrinderException extends RuntimeException {
+public class TestUnexpectedIOException {
 
-  /**
-   * Constructor.
-   *
-   * @param message Helpful message.
-   */
-  public UncheckedGrinderException(final String message) {
-    super(message);
-  }
-
-  /**
-   * Constructor.
-   *
-   * @param message Helpful message.
-   * @param cause A nested {@code Throwable}.
-   */
-  public UncheckedGrinderException(final String message,
-                                   final Throwable cause) {
-    super(message, cause);
+  @Test
+  public void testConstruction() {
+    final IOException cause = new IOException();
+    
+    assertSame(cause,
+               new UnexpectedIOException(cause).getCause());
   }
 }

@@ -39,6 +39,7 @@
             WorkerIdentity
             WorkerProcessReport]
            [java.io
+            File
             FileWriter]))
 
 (declare called)
@@ -51,35 +52,66 @@
       (is @called)
     )))
 
-(defn- workers-start
-  [console-properties user-properties expected]
-  (with-redefs [called (atom false)]
-    (with-temporary-files [f1 f2]
-      (with-open [w (FileWriter. f2)]
-        (doseq [[k v] console-properties]
-          (.write w (format "%s: %s\n" k v))))
 
+(defn- workers-start
+  [user-properties expected]
+  (with-redefs [called (atom false)]
+
+    (with-temporary-files [f1]
       (let [pc (reify ProcessControl
                  (startWorkerProcesses [this p] (reset! called p)))
             cp (ConsoleProperties. nil f1)]
-        (.setPropertiesFile cp f2)
+
         (is (= :success (processes/workers-start pc cp user-properties)))
         (is (= expected @called))
         ))))
 
 (deftest test-workers-start-empty-properties
-  (workers-start {} {} {}))
+  (workers-start {} {}))
 
 (deftest test-workers-start-with-properties
-  (workers-start {"grinder.runs" 1
-                  "grinder.threads" 2}
-                 {"f1" "v1"
-                  :f2 :v2
-                  "grinder.runs" 99}
+  (workers-start {"f1" "v1"
+                 :f2 :v2
+                 "grinder.runs" 99}
                  {"grinder.runs" "99"
-                  "grinder.threads" "2"
                   "f1" "v1"
                   "f2" ":v2"}))
+
+
+(defn- workers-start-selected-properties
+  [selected-properties user-properties expected]
+  (with-redefs [called (atom false)]
+
+    (with-temporary-files [f1 f2]
+      (let [pc (reify ProcessControl
+                 (startWorkerProcessesWithDistributedFiles
+                   [this d p] (reset! called [d p]))
+                 )
+            cp (ConsoleProperties. nil f1)]
+
+      (do
+        (with-open [w (FileWriter. f2)]
+          (doseq [[k v] selected-properties]
+            (.write w (format "%s: %s\n" k v))))
+        (.setPropertiesFile cp f2))
+
+        (is (= :success (processes/workers-start pc cp user-properties)))
+        (is (= [(.getDistributionDirectory cp) expected] @called))
+        ))))
+
+(deftest test-workers-start-distriubted-empty-properties
+  (workers-start-selected-properties {} {} {}))
+
+(deftest test-workers-start-distributed-with-properties
+  (workers-start-selected-properties {"grinder.runs" 1
+                                      "grinder.threads" 2}
+                                     {"f1" "v1"
+                                      :f2 :v2
+                                      "grinder.runs" 99}
+                                     {"grinder.runs" "99"
+                                      "grinder.threads" "2"
+                                      "f1" "v1"
+                                      "f2" ":v2"}))
 
 (deftest test-workers-stop
   (with-redefs [called (atom nil)]

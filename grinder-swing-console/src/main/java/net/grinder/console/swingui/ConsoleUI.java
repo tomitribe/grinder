@@ -86,7 +86,6 @@ import net.grinder.common.GrinderProperties;
 import net.grinder.common.UncheckedInterruptedException;
 import net.grinder.console.ConsoleFoundation;
 import net.grinder.console.common.ConsoleException;
-import net.grinder.console.common.DisplayMessageConsoleException;
 import net.grinder.console.common.ErrorHandler;
 import net.grinder.console.common.Resources;
 import net.grinder.console.communication.ProcessControl;
@@ -1301,7 +1300,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
             return;
           }
 
-          m_processControl.startWorkerProcesses(null);
+          m_processControl.startWorkerProcesses(new GrinderProperties());
         }
         else {
           if (m_editorModel.isABufferDirty()) {
@@ -1344,47 +1343,12 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
             return;
           }
 
-          final GrinderProperties properties =
-            new GrinderProperties(propertiesFile);
-
-          final File scriptFile =
-            properties.resolveRelativeFile(
-              properties.getFile(GrinderProperties.SCRIPT,
-                                 GrinderProperties.DEFAULT_SCRIPT));
-
-          final Directory directory = m_properties.getDistributionDirectory();
-          
-          final File path = directory.relativeFile(scriptFile, true);
-          
-          // If path is absolute, it is not a child of the directory. We allow
-          // this, since it is fairly obvious to the user what is going on.
-          if (path == null && !scriptFile.isAbsolute()) {
-            throw new DisplayMessageConsoleException(
-              m_resources,
-              "scriptNotInDirectoryError.text");
-          }
-
-          final File associatedFile = properties.getAssociatedFile();
-          
-          if (associatedFile != null) {
-            // If the properties refer to a file, rebase it to the
-            // distribution directory so relative script paths can be
-            // resolved based on the properties file location.
-            final File relativeFile =
-                directory.relativeFile(associatedFile, true);
-    
-            if (relativeFile != null) {
-              properties.setAssociatedFile(relativeFile);
-            }
-          }
-
-          m_processControl.startWorkerProcesses(properties);
+          m_processControl.startWorkerProcessesWithDistributedFiles(
+            m_properties.getDistributionDirectory(),
+            new GrinderProperties(propertiesFile));
         }
       }
       catch (GrinderException e) {
-        getErrorHandler().handleException(e);
-      }
-      catch (IOException e) {
         getErrorHandler().handleException(e);
       }
     }
@@ -1573,7 +1537,6 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
               try {
                 final FileDistributionHandler.Result result =
                   distributionHandler.sendNextFile();
-
 
                 if (result == null) {
                   break;

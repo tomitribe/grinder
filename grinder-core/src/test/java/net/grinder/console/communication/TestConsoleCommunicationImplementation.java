@@ -135,6 +135,7 @@ public class TestConsoleCommunicationImplementation
                                              10000);
   }
 
+  @Override
   public void tearDown() throws Exception {
     super.tearDown();
 
@@ -222,7 +223,9 @@ public class TestConsoleCommunicationImplementation
     waitForNumberOfConnections(1);
 
     final ProcessControl processControl =
-      new ProcessControlImplementation(m_timer, m_consoleCommunication);
+      new ProcessControlImplementation(m_timer,
+                                       m_consoleCommunication,
+                                       s_resources);
 
     final CacheHighWaterMark cacheHighWaterMark =
       new StubCacheHighWaterMark("cache", 100);
@@ -254,6 +257,7 @@ public class TestConsoleCommunicationImplementation
     final CountDownLatch listenerCalledLatch = new CountDownLatch(1);
 
     doAnswer(new Answer<Void>() {
+        @Override
         public Void answer(InvocationOnMock invocation) {
           listenerCalledLatch.countDown();
           return null;
@@ -279,7 +283,7 @@ public class TestConsoleCommunicationImplementation
     assertEquals(properties, startGrinderMessage.getProperties());
     assertEquals(0, startGrinderMessage.getAgentNumber());
 
-    processControl.startWorkerProcesses(null);
+    processControl.startWorkerProcesses(new GrinderProperties());
     final StartGrinderMessage startGrinderMessage2 =
       (StartGrinderMessage)readMessage(socket);
     assertEquals(0, startGrinderMessage2.getProperties().size());
@@ -408,7 +412,9 @@ public class TestConsoleCommunicationImplementation
     m_processMessagesThread.start();
 
     final ProcessControl processControl =
-      new ProcessControlImplementation(m_timer, m_consoleCommunication);
+      new ProcessControlImplementation(m_timer,
+                                       m_consoleCommunication,
+                                       s_resources);
 
     assertEquals(0, processControl.getNumberOfLiveAgents());
 
@@ -591,11 +597,12 @@ public class TestConsoleCommunicationImplementation
       super("Process messages");
     }
 
+    @Override
     public void run() {
       try {
         while (m_consoleCommunication.processOneMessage()) { }
       }
-      catch (UncheckedInterruptedException e) {
+      catch (final UncheckedInterruptedException e) {
         // Time to go.
       }
     }

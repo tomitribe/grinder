@@ -21,6 +21,10 @@ The Grinder 3.11
   blank column, rather than the previous behaviour of using a NaN
   unicode character.
 
+  Fix bug 3569099 - relative grinder.script path not resolved
+  correctly when using the REST API. Thanks to Kevin Laurier for the
+  report.
+
 
 The Grinder 3.10
 ----------------

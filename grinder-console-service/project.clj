@@ -9,7 +9,7 @@
                  [ring-middleware-format "0.2.0"]
                  [compojure "1.0.4"]
                  [clj-stacktrace "0.2.4"]
-                 [net.sf.grinder/grinder-core "3.10-SNAPSHOT" :scope "provided"]]
+                 [net.sf.grinder/grinder-core "3.11-SNAPSHOT" :scope "provided"]]
   :profiles {:dev {:dependencies
                  [[ring/ring-devel "1.1.0"]
                   [org.clojure/tools.trace "0.7.3"]]}}

@@ -80,7 +80,7 @@ public final class Directory implements Serializable {
    * @exception DirectoryException If the path <code>directory</code>
    * represents a file that exists but is not a directory.
    */
-  public Directory(File directory) throws DirectoryException {
+  public Directory(final File directory) throws DirectoryException {
     if (directory == null) {
       m_directory = new File(".");
     }
@@ -126,7 +126,7 @@ public final class Directory implements Serializable {
    *            result is equivalent to {@link #getFile()}.
    * @return The <code>File</code>.
    */
-  public File getFile(File child) {
+  public File getFile(final File child) {
     if (child == null) {
       return getFile();
     }
@@ -145,7 +145,7 @@ public final class Directory implements Serializable {
    *         is empty if the directory does not exist.
    * @see #listContents(FileFilter, boolean, boolean)
    */
-  public File[] listContents(FileFilter filter) {
+  public File[] listContents(final FileFilter filter) {
     return listContents(filter, false, false);
   }
 
@@ -164,9 +164,9 @@ public final class Directory implements Serializable {
    * @return The list of files. More deeply nested files are later in the list.
    *         The list is empty if the directory does not exist.
    */
-  public File[] listContents(FileFilter filter,
-                             boolean includeDirectories,
-                             boolean absolutePaths) {
+  public File[] listContents(final FileFilter filter,
+                             final boolean includeDirectories,
+                             final boolean absolutePaths) {
 
     final List<File> resultList = new ArrayList<File>();
     final Set<File> visited = new HashSet<File>();
@@ -280,9 +280,8 @@ public final class Directory implements Serializable {
    *
    * @param file The input path. Relative to the CWD, or absolute.
    * @return The simplified path.
-   * @throws IOException If a canonical path could not be calculated.
    */
-  public File rebaseFromCWD(File file) throws IOException {
+  public File rebaseFromCWD(final File file) {
     final File absolute = file.getAbsoluteFile();
     final File relativeResult =  relativeFile(absolute, true);
 
@@ -309,11 +308,8 @@ public final class Directory implements Serializable {
    *          outside of the directory ({@code ../somewhere/else}), then
    *          {@code null} will be returned.
    * @return A path relative to this directory, or {@code null}.
-   * @throws IOException
-   *           If a canonical path could not be calculated.
    */
-  public File relativeFile(File file, boolean mustBeChild)
-      throws IOException {
+  public File relativeFile(final File file, final boolean mustBeChild) {
 
     final File f;
 
@@ -347,14 +343,22 @@ public final class Directory implements Serializable {
    * @return The relative path. {@code null} if {@code to} belongs to a
    *         different file system, or {@code mustBeChild} is {@code true} and
    *         {@code to} is not a child path of {@code from}.
-   * @throws IOException
+   * @throws UnexpectedIOException
    *           If a canonical path could not be calculated.
    */
-  static File relativePath(File from, File to, boolean mustBeChild)
-      throws IOException {
-    final String[] fromPaths = splitPath(from.getCanonicalPath());
-    final File canonicalTo = to.getCanonicalFile();
-    final String[] toPaths = splitPath(canonicalTo.getPath());
+  static File relativePath(final File from,
+                           final File to,
+                           final boolean mustBeChild) {
+    final String[] fromPaths;
+    final String[] toPaths;
+
+    try {
+      fromPaths = splitPath(from.getCanonicalPath());
+      toPaths = splitPath(to.getCanonicalFile().getPath());
+    }
+    catch (final IOException e) {
+      throw new UnexpectedIOException(e);
+    }
 
     int i = 0;
 
@@ -396,7 +400,7 @@ public final class Directory implements Serializable {
     return new File(result.toString());
   }
 
-  private static String[] splitPath(String path) {
+  private static String[] splitPath(final String path) {
     return path.split(File.separatorChar == '\\' ? "\\\\" : File.separator);
   }
 
@@ -407,10 +411,8 @@ public final class Directory implements Serializable {
    * @param path
    *          The path.
    * @return The result.
-   * @throws IOException
-   *           If a canonical path could not be calculated.
    */
-  public String rebasePath(String path) throws IOException {
+  public String rebasePath(final String path) {
     final String[] elements = path.split(File.pathSeparator);
 
     final StringBuilder result = new StringBuilder(path.length());
@@ -433,7 +435,7 @@ public final class Directory implements Serializable {
    * @param file File to test.
    * @return {@code boolean} => file is a descendant.
    */
-  public boolean isParentOf(File file) {
+  public boolean isParentOf(final File file) {
     final File thisFile = getFile();
 
     File candidate = file.getParentFile();
@@ -459,7 +461,7 @@ public final class Directory implements Serializable {
    * @throws IOException If a file could not be copied. The contents
    * of the target directory are left in an indeterminate state.
    */
-  public void copyTo(Directory target, boolean incremental)
+  public void copyTo(final Directory target, final boolean incremental)
     throws IOException {
 
     if (!getFile().exists()) {
@@ -528,7 +530,7 @@ public final class Directory implements Serializable {
    * problems.
    */
   public static final class DirectoryException extends IOException {
-    DirectoryException(String message) {
+    DirectoryException(final String message) {
       super(message);
     }
   }
@@ -550,7 +552,7 @@ public final class Directory implements Serializable {
    * @return <code>true</code> => equal.
    */
   @Override
-  public boolean equals(Object o) {
+  public boolean equals(final Object o) {
     if (o == this) {
       return true;
     }
@@ -564,7 +566,7 @@ public final class Directory implements Serializable {
 
   private static class MatchAllFilesFilter implements FileFilter {
     @Override
-    public boolean accept(File file) {
+    public boolean accept(final File file) {
       return true;
     }
   }

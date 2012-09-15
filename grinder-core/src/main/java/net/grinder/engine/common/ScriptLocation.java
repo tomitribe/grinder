@@ -22,7 +22,6 @@
 package net.grinder.engine.common;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 
 import net.grinder.util.Directory;
@@ -49,26 +48,19 @@ public final class ScriptLocation implements Serializable {
    * @param file
    *            The script file. May be relative (to {@code directory}).
    *            If absolute, it needn't be below the root directory.
-   * @throws EngineException
-   *    If a file operation failed.
    */
-  public ScriptLocation(Directory directory, File file) throws EngineException {
+  public ScriptLocation(final Directory directory, final File file) {
 
     m_directory = directory;
 
     // Try to shorten the name.
-    try {
-      final File relativeFile = directory.relativeFile(file, false);
+    final File relativeFile = directory.relativeFile(file, false);
 
-      if (relativeFile != null) {
-        m_shortFile = relativeFile;
-      }
-      else {
-        m_shortFile = file;
-      }
+    if (relativeFile != null) {
+      m_shortFile = relativeFile;
     }
-    catch (final IOException e) {
-      throw new EngineException(e.getMessage(), e);
+    else {
+      m_shortFile = file;
     }
 
     if (file.isAbsolute()) {
@@ -87,7 +79,7 @@ public final class ScriptLocation implements Serializable {
    * @throws EngineException
    *    If a file operation failed.
    */
-  public ScriptLocation(File file) throws EngineException {
+  public ScriptLocation(final File file) throws EngineException {
     this(new Directory(), file);
   }
 
@@ -134,10 +126,10 @@ public final class ScriptLocation implements Serializable {
    * Equality.
    *
    * @param other Object to compare.
-   * @return <code>true</code> if and only if we're equal to <code>other</code>.
+   * @return {@code true} if and only if we're equal to {@code other}.
    */
   @Override
-  public boolean equals(Object other) {
+  public boolean equals(final Object other) {
     if (this == other) {
       return true;
     }

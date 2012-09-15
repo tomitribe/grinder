@@ -245,7 +245,7 @@ public final class ConsoleProperties {
    * cannot be read or the properties file contains invalid data.
    *
    */
-  public ConsoleProperties(Resources resources, File file)
+  public ConsoleProperties(final Resources resources, final File file)
     throws ConsoleException {
 
     m_resources = resources;
@@ -253,7 +253,7 @@ public final class ConsoleProperties {
     try {
       m_backingProperties = new GrinderProperties(file);
     }
-    catch (GrinderProperties.PersistenceException e) {
+    catch (final GrinderProperties.PersistenceException e) {
       throw new DisplayMessageConsoleException(
         m_resources, "couldNotLoadOptionsError.text", e);
     }
@@ -264,7 +264,7 @@ public final class ConsoleProperties {
    *
    * @param properties The properties to copy.
    */
-  public ConsoleProperties(ConsoleProperties properties) {
+  public ConsoleProperties(final ConsoleProperties properties) {
     m_resources = properties.m_resources;
     m_backingProperties = new GrinderProperties();
     m_backingProperties.setAssociatedFile(
@@ -278,7 +278,7 @@ public final class ConsoleProperties {
    *
    * @param properties The properties to copy.
    */
-  public void set(ConsoleProperties properties) {
+  public void set(final ConsoleProperties properties) {
     m_backingProperties.clear();
     m_backingProperties.putAll(properties.m_backingProperties);
   }
@@ -288,7 +288,7 @@ public final class ConsoleProperties {
    *
    * @param listener The listener.
    */
-  public void addPropertyChangeListener(PropertyChangeListener listener) {
+  public void addPropertyChangeListener(final PropertyChangeListener listener) {
     m_changeSupport.addPropertyChangeListener(listener);
   }
 
@@ -302,7 +302,7 @@ public final class ConsoleProperties {
    *          The listener.
    */
   public void addPropertyChangeListener(
-    String property, PropertyChangeListener listener) {
+    final String property, final PropertyChangeListener listener) {
     m_changeSupport.addPropertyChangeListener(property, listener);
   }
 
@@ -315,7 +315,7 @@ public final class ConsoleProperties {
     try {
       m_backingProperties.save();
     }
-    catch (GrinderProperties.PersistenceException e) {
+    catch (final GrinderProperties.PersistenceException e) {
       throw new DisplayMessageConsoleException(
           m_resources, "couldNotSaveOptionsError.text", e);
     }
@@ -336,7 +336,7 @@ public final class ConsoleProperties {
    * @param n The number. 0 => forever.
    * @throws ConsoleException If the number is negative.
    */
-  public void setCollectSampleCount(int n) throws ConsoleException {
+  public void setCollectSampleCount(final int n) throws ConsoleException {
     if (n < 0) {
       throw new DisplayMessageConsoleException(
         m_resources, "collectNegativeError.text");
@@ -360,7 +360,7 @@ public final class ConsoleProperties {
    * @param n The number. Must be positive.
    * @throws ConsoleException If the number is negative or zero.
    */
-  public void setIgnoreSampleCount(int n) throws ConsoleException {
+  public void setIgnoreSampleCount(final int n) throws ConsoleException {
     if (n < 0) {
       throw new DisplayMessageConsoleException(
         m_resources, "ignoreSamplesNegativeError.text");
@@ -384,7 +384,7 @@ public final class ConsoleProperties {
    * @param interval The interval in milliseconds.
    * @throws ConsoleException If the number is negative or zero.
    */
-  public void setSampleInterval(int interval) throws ConsoleException {
+  public void setSampleInterval(final int interval) throws ConsoleException {
     if (interval <= 0) {
       throw new DisplayMessageConsoleException(
         m_resources, "intervalLessThanOneError.text");
@@ -408,7 +408,7 @@ public final class ConsoleProperties {
    * @param n The number of significant figures.
    * @throws ConsoleException If the number is negative.
    */
-  public void setSignificantFigures(int n) throws ConsoleException {
+  public void setSignificantFigures(final int n) throws ConsoleException {
     if (n <= 0) {
       throw new DisplayMessageConsoleException(
         m_resources, "significantFiguresNegativeError.text");
@@ -438,14 +438,14 @@ public final class ConsoleProperties {
    * @param address The address, as a string.
    * @throws ConsoleException If the address is invalid.
    */
-  private void checkAddress(String address) throws ConsoleException {
+  private void checkAddress(final String address) throws ConsoleException {
     if (address.length() > 0) {    // Empty string => all local hosts.
       final InetAddress newAddress;
 
       try {
         newAddress = InetAddress.getByName(address);
       }
-      catch (UnknownHostException e) {
+      catch (final UnknownHostException e) {
         throw new DisplayMessageConsoleException(
           m_resources, "unknownHostError.text");
       }
@@ -463,7 +463,7 @@ public final class ConsoleProperties {
    ** @param port The port.
    * @throws ConsoleException If the port is invalid.
    */
-  private void checkPort(int port) throws ConsoleException {
+  private void checkPort(final int port) throws ConsoleException {
 
     if (port < CommunicationDefaults.MIN_PORT ||
         port > CommunicationDefaults.MAX_PORT) {
@@ -484,7 +484,7 @@ public final class ConsoleProperties {
    * @throws ConsoleException If the address is not
    * valid.
    */
-  public void setConsoleHost(String s) throws ConsoleException {
+  public void setConsoleHost(final String s) throws ConsoleException {
     checkAddress(s);
     m_consoleHost.set(s);
   }
@@ -504,7 +504,7 @@ public final class ConsoleProperties {
    * @param i The port number.
    * @throws ConsoleException If the port number is not sensible.
    */
-  public void setConsolePort(int i) throws ConsoleException {
+  public void setConsolePort(final int i) throws ConsoleException {
     checkPort(i);
     m_consolePort.set(i);
   }
@@ -525,7 +525,7 @@ public final class ConsoleProperties {
    * @throws ConsoleException If the address is not
    * valid.
    */
-  public void setHttpHost(String s) throws ConsoleException {
+  public void setHttpHost(final String s) throws ConsoleException {
     checkAddress(s);
     m_httpHost.set(s);
   }
@@ -545,7 +545,7 @@ public final class ConsoleProperties {
    * @param i The port number.
    * @throws ConsoleException If the port number is not sensible.
    */
-  public void setHttpPort(int i) throws ConsoleException {
+  public void setHttpPort(final int i) throws ConsoleException {
     checkPort(i);
     m_httpPort.set(i);
   }
@@ -568,7 +568,7 @@ public final class ConsoleProperties {
    * @param b {@code true} => the console should be reset with
    * the worker processes.
    */
-  public void setResetConsoleWithProcesses(boolean b) {
+  public void setResetConsoleWithProcesses(final boolean b) {
     m_resetConsoleWithProcesses.set(b);
   }
 
@@ -591,7 +591,7 @@ public final class ConsoleProperties {
    * @throws ConsoleException
    *            If the property couldn't be persisted
    */
-  public void setResetConsoleWithProcessesAsk(boolean value)
+  public void setResetConsoleWithProcessesAsk(final boolean value)
     throws ConsoleException {
     m_resetConsoleWithProcessesAsk.set(value);
     m_resetConsoleWithProcessesAsk.save();
@@ -616,7 +616,8 @@ public final class ConsoleProperties {
    * @throws ConsoleException
    *           If the property couldn't be persisted.
    */
-  public void setPropertiesNotSetAsk(boolean value) throws ConsoleException {
+  public void setPropertiesNotSetAsk(final boolean value)
+      throws ConsoleException {
     m_propertiesNotSetAsk.set(value);
     m_propertiesNotSetAsk.save();
   }
@@ -641,7 +642,7 @@ public final class ConsoleProperties {
    * @throws ConsoleException
    *           If the property couldn't be persisted.
    */
-  public void setStartWithUnsavedBuffersAsk(boolean value)
+  public void setStartWithUnsavedBuffersAsk(final boolean value)
     throws ConsoleException {
     m_startWithUnsavedBuffersAsk.set(value);
     m_startWithUnsavedBuffersAsk.save();
@@ -665,7 +666,7 @@ public final class ConsoleProperties {
    *          {@code true} => the user wants to be asked.
    * @throws ConsoleException If the property couldn't be persisted.
    */
-  public void setStopProcessesAsk(boolean value)
+  public void setStopProcessesAsk(final boolean value)
     throws ConsoleException {
     m_stopProcessesAsk.set(value);
     m_stopProcessesAsk.save();
@@ -689,16 +690,16 @@ public final class ConsoleProperties {
    *          {@code true} => the user wants automatic distribution.
    * @throws ConsoleException If the property couldn't be persisted.
    */
-  public void setDistributeOnStartAsk(boolean value)
+  public void setDistributeOnStartAsk(final boolean value)
     throws ConsoleException {
     m_distributeOnStartAsk.set(value);
     m_distributeOnStartAsk.save();
   }
 
   /**
-   * Get the properties file.
+   * Get the selected properties file.
    *
-   * @return The properties file. {@code null} => No file set.
+   * @return The properties file. {@code null} => No file selected.
    */
   public File getPropertiesFile() {
     return m_propertiesFile.get();
@@ -706,12 +707,12 @@ public final class ConsoleProperties {
 
 
   /**
-   * Set and save the properties file.
+   * Set and save the selected properties file.
    *
    * @param propertiesFile
-   *          The properties file. {@code null} => No file set.
+   *          The properties file. {@code null} => No file selected.
    */
-  public void setPropertiesFile(File propertiesFile) {
+  public void setPropertiesFile(final File propertiesFile) {
     m_propertiesFile.set(propertiesFile);
   }
 
@@ -723,7 +724,7 @@ public final class ConsoleProperties {
    * @throws ConsoleException
    * @throws ConsoleException If the property could not be saved.
    */
-  public void setAndSavePropertiesFile(File propertiesFile)
+  public void setAndSavePropertiesFile(final File propertiesFile)
     throws ConsoleException {
     setPropertiesFile(propertiesFile);
     m_propertiesFile.save();
@@ -743,10 +744,9 @@ public final class ConsoleProperties {
    *
    * @param distributionDirectory The directory.
    */
-  public void setDistributionDirectory(Directory distributionDirectory) {
+  public void setDistributionDirectory(final Directory distributionDirectory) {
     m_distributionDirectory.set(distributionDirectory);
   }
-
 
   /**
    * Set and save the script distribution directory.
@@ -754,8 +754,8 @@ public final class ConsoleProperties {
    * @param distributionDirectory The directory.
    * @throws ConsoleException If the property could not be saved.
    */
-  public void setAndSaveDistributionDirectory(Directory distributionDirectory)
-    throws ConsoleException {
+  public void setAndSaveDistributionDirectory(
+    final Directory distributionDirectory) throws ConsoleException {
     setDistributionDirectory(distributionDirectory);
     m_distributionDirectory.save();
   }
@@ -798,7 +798,7 @@ public final class ConsoleProperties {
    * => use default pattern.
    * @throws ConsoleException If the pattern is invalid.
    */
-  public void setDistributionFileFilterExpression(String expression)
+  public void setDistributionFileFilterExpression(final String expression)
     throws ConsoleException {
     m_distributionFileFilterPattern.setExpression(expression);
   }
@@ -818,7 +818,8 @@ public final class ConsoleProperties {
    * @param i The port number.
    * @throws ConsoleException If the period is negative.
    */
-  public void setScanDistributionFilesPeriod(int i) throws ConsoleException {
+  public void setScanDistributionFilesPeriod(final int i)
+      throws ConsoleException {
     if (i < 0) {
       throw new DisplayMessageConsoleException(
         m_resources, "scanDistributionFilesPeriodNegativeError.text");
@@ -843,7 +844,7 @@ public final class ConsoleProperties {
    * @param lookAndFeel The Look and Feel name. {@code null} =>
    * use default.
    */
-  public void setLookAndFeel(String lookAndFeel) {
+  public void setLookAndFeel(final String lookAndFeel) {
     m_lookAndFeel.set(lookAndFeel);
   }
 
@@ -863,7 +864,7 @@ public final class ConsoleProperties {
    * @param command The path to the process to be used for external editing.
    * {@code null} => no external editor set.
    */
-  public void setExternalEditorCommand(File command) {
+  public void setExternalEditorCommand(final File command) {
     m_externalEditorCommand.set(command);
   }
 
@@ -881,7 +882,7 @@ public final class ConsoleProperties {
    *
    * @param arguments The arguments to be used with the external editor.
    */
-  public void setExternalEditorArguments(String arguments) {
+  public void setExternalEditorArguments(final String arguments) {
     m_externalEditorArguments.set(arguments);
   }
 
@@ -899,7 +900,7 @@ public final class ConsoleProperties {
    *
    * @param bounds The console frame bounds.
    */
-  public void setFrameBounds(Rectangle bounds) {
+  public void setFrameBounds(final Rectangle bounds) {
     m_frameBounds.set(bounds);
   }
 
@@ -909,7 +910,8 @@ public final class ConsoleProperties {
    * @param bounds The console frame bounds.
    * @throws ConsoleException If the property couldn't be persisted.
    */
-  public void setAndSaveFrameBounds(Rectangle bounds) throws ConsoleException {
+  public void setAndSaveFrameBounds(final Rectangle bounds)
+      throws ConsoleException {
     setFrameBounds(bounds);
     m_frameBounds.save();
   }
@@ -929,7 +931,8 @@ public final class ConsoleProperties {
    * @param b {@code true} => results files should include totals.
    * @throws ConsoleException If the property couldn't be persisted.
    */
-  public void setSaveTotalsWithResults(boolean b) throws ConsoleException {
+  public void setSaveTotalsWithResults(final boolean b)
+      throws ConsoleException {
     m_saveTotalsWithResults.set(b);
     m_saveTotalsWithResults.save();
   }
@@ -938,7 +941,7 @@ public final class ConsoleProperties {
     private final String m_propertyName;
     private final T m_defaultValue;
 
-    Property(String propertyName, T defaultValue) {
+    Property(final String propertyName, final T defaultValue) {
       m_propertyName = propertyName;
       m_defaultValue = defaultValue;
     }
@@ -947,7 +950,7 @@ public final class ConsoleProperties {
       try {
         m_backingProperties.saveSingleProperty(m_propertyName);
       }
-      catch (GrinderProperties.PersistenceException e) {
+      catch (final GrinderProperties.PersistenceException e) {
         throw new DisplayMessageConsoleException(
           m_resources, "couldNotSaveOptionsError.text", e);
       }
@@ -965,7 +968,7 @@ public final class ConsoleProperties {
 
     protected abstract void setToStorage(T value);
 
-    public final void set(T value) {
+    public final void set(final T value) {
       final T old = get();
 
       final T defaultValue = getDefaultValue();
@@ -990,7 +993,8 @@ public final class ConsoleProperties {
   }
 
   private final class StringProperty extends Property<String> {
-    public StringProperty(String propertyName, String defaultValue) {
+    public StringProperty(final String propertyName,
+                          final String defaultValue) {
       super(propertyName, defaultValue);
     }
 
@@ -1001,13 +1005,14 @@ public final class ConsoleProperties {
     }
 
     @Override
-    protected void setToStorage(String value) {
+    protected void setToStorage(final String value) {
       m_backingProperties.setProperty(getPropertyName(), value);
     }
   }
 
   private final class PatternProperty extends Property<Pattern> {
-    public PatternProperty(String propertyName, String defaultExpression) {
+    public PatternProperty(final String propertyName,
+                           final String defaultExpression) {
       super(propertyName, Pattern.compile(defaultExpression));
     }
 
@@ -1020,7 +1025,7 @@ public final class ConsoleProperties {
         try {
           return Pattern.compile(expression);
         }
-        catch (PatternSyntaxException e) {
+        catch (final PatternSyntaxException e) {
           // Fall through.
         }
       }
@@ -1029,11 +1034,11 @@ public final class ConsoleProperties {
     }
 
     @Override
-    protected void setToStorage(Pattern value) {
+    protected void setToStorage(final Pattern value) {
       m_backingProperties.put(getPropertyName(), value.pattern());
     }
 
-    public void setExpression(String expression) throws ConsoleException {
+    public void setExpression(final String expression) throws ConsoleException {
       if (expression == null) {
         m_backingProperties.remove(getPropertyName());
       }
@@ -1041,7 +1046,7 @@ public final class ConsoleProperties {
         try {
           set(Pattern.compile(expression));
         }
-        catch (PatternSyntaxException e) {
+        catch (final PatternSyntaxException e) {
           throw new DisplayMessageConsoleException(
               m_resources,
               "regularExpressionError.text",
@@ -1053,7 +1058,7 @@ public final class ConsoleProperties {
   }
 
   private final class IntProperty extends Property<Integer> {
-    public IntProperty(String propertyName, int defaultValue) {
+    public IntProperty(final String propertyName, final int defaultValue) {
       super(propertyName, defaultValue);
     }
 
@@ -1064,13 +1069,13 @@ public final class ConsoleProperties {
     }
 
     @Override
-    protected void setToStorage(Integer value) {
+    protected void setToStorage(final Integer value) {
       m_backingProperties.setInt(getPropertyName(), value);
     }
   }
 
   private final class FileProperty extends Property<File> {
-    public FileProperty(String propertyName) {
+    public FileProperty(final String propertyName) {
       super(propertyName, null);
     }
 
@@ -1080,13 +1085,13 @@ public final class ConsoleProperties {
     }
 
     @Override
-    protected void setToStorage(File value) {
+    protected void setToStorage(final File value) {
       m_backingProperties.setFile(getPropertyName(), value);
     }
   }
 
   private final class DirectoryProperty extends Property<Directory> {
-    public DirectoryProperty(String propertyName) {
+    public DirectoryProperty(final String propertyName) {
       super(propertyName, new Directory());
     }
 
@@ -1098,7 +1103,7 @@ public final class ConsoleProperties {
         try {
           return new Directory(f);
         }
-        catch (Directory.DirectoryException e) {
+        catch (final Directory.DirectoryException e) {
           // fall through.
         }
       }
@@ -1107,13 +1112,14 @@ public final class ConsoleProperties {
     }
 
     @Override
-    protected void setToStorage(Directory value) {
+    protected void setToStorage(final Directory value) {
       m_backingProperties.setFile(getPropertyName(), value.getFile());
     }
   }
 
   private final class BooleanProperty extends Property<Boolean> {
-    public BooleanProperty(String propertyName, boolean defaultValue) {
+    public BooleanProperty(final String propertyName,
+                           final boolean defaultValue) {
       super(propertyName, defaultValue);
     }
 
@@ -1124,16 +1130,17 @@ public final class ConsoleProperties {
     }
 
     @Override
-    protected void setToStorage(Boolean value) {
+    protected void setToStorage(final Boolean value) {
       m_backingProperties.setBoolean(getPropertyName(), value);
     }
   }
 
   private final class RectangleProperty extends Property<Rectangle> {
-    public RectangleProperty(String propertyName) {
+    public RectangleProperty(final String propertyName) {
       super(propertyName, null);
     }
 
+    @Override
     public Rectangle get() {
       final String property =
         m_backingProperties.getProperty(getPropertyName(), null);
@@ -1147,10 +1154,10 @@ public final class ConsoleProperties {
                                Integer.parseInt(tokenizer.nextToken()),
                                Integer.parseInt(tokenizer.nextToken()));
         }
-        catch (NoSuchElementException e) {
+        catch (final NoSuchElementException e) {
           // Ignore.
         }
-        catch (NumberFormatException e) {
+        catch (final NumberFormatException e) {
           // Ignore.
         }
       }
@@ -1158,7 +1165,8 @@ public final class ConsoleProperties {
       return getDefaultValue();
     }
 
-    public void setToStorage(Rectangle value) {
+    @Override
+    public void setToStorage(final Rectangle value) {
       m_backingProperties.setProperty(
         getPropertyName(),
         value.x + "," + value.y + "," + value.width + "," + value.height);

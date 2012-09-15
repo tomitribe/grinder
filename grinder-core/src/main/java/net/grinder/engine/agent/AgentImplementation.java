@@ -115,6 +115,7 @@ public final class AgentImplementation implements Agent {
    * @throws GrinderException
    *             If an error occurs.
    */
+  @Override
   public void run() throws GrinderException {
 
     StartGrinderMessage startMessage = null;
@@ -154,7 +155,7 @@ public final class AgentImplementation implements Agent {
               m_logger.info(
                 "connected to console at {}", connector.getEndpointAsString());
             }
-            catch (CommunicationException e) {
+            catch (final CommunicationException e) {
               if (m_proceedWithoutConsole) {
                 m_logger.warn(
                   "{}, proceeding without the console; set " +
@@ -187,7 +188,9 @@ public final class AgentImplementation implements Agent {
             final Directory fileStoreDirectory = m_fileStore.getDirectory();
 
             if (messageProperties.getAssociatedFile() != null) {
-              // If the properties is associated with a file in the file store.
+              // If the properties is associated with a file in the file store
+              // we rebase it so the script location is calculated relative to
+              // the file.
 
               messageProperties.setAssociatedFile(
                 fileStoreDirectory.getFile(
@@ -401,6 +404,7 @@ public final class AgentImplementation implements Agent {
   /**
    * Clean up resources.
    */
+  @Override
   public void shutdown() {
     m_timer.cancel();
     m_fanOutStreamSender.shutdown();
@@ -413,7 +417,7 @@ public final class AgentImplementation implements Agent {
     try {
       return InetAddress.getLocalHost().getHostName();
     }
-    catch (UnknownHostException e) {
+    catch (final UnknownHostException e) {
       return "UNNAMED HOST";
     }
   }
@@ -429,6 +433,7 @@ public final class AgentImplementation implements Agent {
       m_processIncrement = processIncrement;
     }
 
+    @Override
     public void run() {
       try {
         final boolean moreProcessesToStart =
@@ -438,7 +443,7 @@ public final class AgentImplementation implements Agent {
           super.cancel();
         }
       }
-      catch (EngineException e) {
+      catch (final EngineException e) {
         // Really an assertion. Can't use logger because its not thread-safe.
         System.err.println("Failed to start processes");
         e.printStackTrace();
@@ -490,6 +495,7 @@ public final class AgentImplementation implements Agent {
         new MessagePump(receiver, fileStoreMessageDispatcher, 1);
 
       m_reportRunningTask = new TimerTask() {
+        @Override
         public void run() {
           try {
             m_sender.send(
@@ -497,7 +503,7 @@ public final class AgentImplementation implements Agent {
                 ProcessReport.State.RUNNING,
                 m_fileStore.getCacheHighWaterMark()));
           }
-          catch (CommunicationException e) {
+          catch (final CommunicationException e) {
             cancel();
             e.printStackTrace();
           }
@@ -523,7 +529,7 @@ public final class AgentImplementation implements Agent {
             ProcessReport.State.FINISHED,
             m_fileStore.getCacheHighWaterMark()));
       }
-      catch (CommunicationException e) {
+      catch (final CommunicationException e) {
         // Ignore - peer has probably shut down.
       }
       finally {

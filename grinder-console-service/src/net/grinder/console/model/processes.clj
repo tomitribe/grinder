@@ -108,8 +108,13 @@
    ^ConsoleProperties cp
    supplied-properties]
   (let [f (.getPropertiesFile cp)
-        p (if f (GrinderProperties. f) (GrinderProperties.))]
-    (.startWorkerProcesses pc (into-grinder-properties p supplied-properties)))
+        directory (.getDistributionDirectory cp)
+        raw (if f (GrinderProperties. f) (GrinderProperties.))
+        p (into-grinder-properties raw supplied-properties)]
+
+    (if f
+      (.startWorkerProcessesWithDistributedFiles pc directory p)
+      (.startWorkerProcesses pc p)))
   :success)
 
 (defn workers-stop
