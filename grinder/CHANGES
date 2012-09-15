@@ -1,8 +1,8 @@
 The Grinder 3.11
 ----------------
 
-  Upgrade the packaged version of Jython to Jython 2.5.2, including
-  the Jython standard library.  Remove the support for the traditional
+  Upgrade the packaged version of Jython to Jython 2.5.3, including
+  the Jython standard library. Remove the support for the traditional
   Jython instrumenter.
 
   Fix bug 3561156 - Memory leak in MarkerFactory. Thanks to Fei for
