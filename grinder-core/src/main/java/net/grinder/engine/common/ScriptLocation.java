@@ -1,4 +1,4 @@
-// Copyright (C) 2007 - 2011 Philip Aston
+// Copyright (C) 2007 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -58,9 +58,16 @@ public final class ScriptLocation implements Serializable {
 
     // Try to shorten the name.
     try {
-      m_shortFile = directory.rebaseFile(file);
+      final File relativeFile = directory.relativeFile(file, false);
+
+      if (relativeFile != null) {
+        m_shortFile = relativeFile;
+      }
+      else {
+        m_shortFile = file;
+      }
     }
-    catch (IOException e) {
+    catch (final IOException e) {
       throw new EngineException(e.getMessage(), e);
     }
 
@@ -108,6 +115,7 @@ public final class ScriptLocation implements Serializable {
    *
    * @return The string.
    */
+  @Override
   public String toString() {
     return m_shortFile.getPath();
   }
@@ -117,6 +125,7 @@ public final class ScriptLocation implements Serializable {
    *
    * @return The hash code.
    */
+  @Override
   public int hashCode() {
     return getDirectory().hashCode() ^ getFile().hashCode();
   }
@@ -127,6 +136,7 @@ public final class ScriptLocation implements Serializable {
    * @param other Object to compare.
    * @return <code>true</code> if and only if we're equal to <code>other</code>.
    */
+  @Override
   public boolean equals(Object other) {
     if (this == other) {
       return true;

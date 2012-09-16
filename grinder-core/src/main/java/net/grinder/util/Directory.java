@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -191,8 +191,7 @@ public final class Directory implements Serializable {
 
       directoriesToVisit.clear();
 
-      for (int i = 0; i < directories.length; ++i) {
-        final File relativeDirectory = directories[i];
+      for (final File relativeDirectory : directories) {
         final File absoluteDirectory = getFile(relativeDirectory);
 
         visited.add(relativeDirectory);
@@ -210,9 +209,9 @@ public final class Directory implements Serializable {
           continue;
         }
 
-        for (int j = 0; j < children.length; ++j) {
-          final File relativeChild = new File(relativeDirectory, children[j]);
-          final File absoluteChild = new File(absoluteDirectory, children[j]);
+        for (final String element : children) {
+          final File relativeChild = new File(relativeDirectory, element);
+          final File absoluteChild = new File(absoluteDirectory, element);
 
           if (filter.accept(absoluteChild)) {
             // Links (hard or symbolic) are transparent to isFile(),
@@ -275,46 +274,84 @@ public final class Directory implements Serializable {
   }
 
   /**
-   * Calculate a {@code File} representing a file's path relative to the root of
-   * the directory.
+   * If possible, convert a path relative to the current working directory to
+   * a path relative to this directory. If not possible, return the absolute
+   * version of the path.
+   *
+   * @param file The input path. Relative to the CWD, or absolute.
+   * @return The simplified path.
+   * @throws IOException If a canonical path could not be calculated.
+   */
+  public File rebaseFromCWD(File file) throws IOException {
+    final File absolute = file.getAbsoluteFile();
+    final File relativeResult =  relativeFile(absolute, true);
+
+    if (relativeResult == null) {
+      return absolute;
+    }
+
+    return relativeResult;
+  }
+
+  /**
+   * Convert the supplied {@code file}, to a path relative to this directory.
+   * The file need not exist.
    *
    * <p>
-   * If {@code file} is relative, and the directory is not one of its parents,
-   * it is assumed to represent a relative path within the directory and is
-   * returned as the result.
+   * If {@code file} is relative, this directory is considered its base.
    * </p>
    *
    * @param file
    *          The file to search for.
-   * @return The relative path if it was found. Otherwise {@code file}.
+   * @param mustBeChild
+   *          If {@code true} and {@code path} belongs to another file system;
+   *          is absolute with a different base path; or is a relative path
+   *          outside of the directory ({@code ../somewhere/else}), then
+   *          {@code null} will be returned.
+   * @return A path relative to this directory, or {@code null}.
    * @throws IOException
    *           If a canonical path could not be calculated.
    */
-  public File rebaseFile(File file) throws IOException {
-    final File result = relativePath(getFile(), file);
+  public File relativeFile(File file, boolean mustBeChild)
+      throws IOException {
 
-    if (result.isAbsolute() && !file.isAbsolute()) {
+    final File f;
+
+    if (file.isAbsolute()) {
+      f = file;
+    }
+    else if (!mustBeChild) {
       return file;
     }
+    else {
+      f = getFile(file);
+    }
 
-    return result;
+    return relativePath(getFile(), f, mustBeChild);
   }
 
   /**
    * Calculate a relative path from {@code from} to {@code to}.
    *
-   * <p>Package scope for unit tests.</p>
+   * <p>
+   * Package scope for unit tests.
+   * </p>
    *
    * @param from
    *          Source file or directory.
    * @param to
    *          Target file or directory.
-   * @return The relative path, or if no relative path exists, an absolute path
-   *         to {@code to}.
+   * @param mustBeChild
+   *          If {@code true} and {@code to} is not a child of {@code from} or
+   *          equivalent to {@from}, return {@code null}.
+   * @return The relative path. {@code null} if {@code to} belongs to a
+   *         different file system, or {@code mustBeChild} is {@code true} and
+   *         {@code to} is not a child path of {@code from}.
    * @throws IOException
    *           If a canonical path could not be calculated.
    */
-  static File relativePath(File from, File to) throws IOException {
+  static File relativePath(File from, File to, boolean mustBeChild)
+      throws IOException {
     final String[] fromPaths = splitPath(from.getCanonicalPath());
     final File canonicalTo = to.getCanonicalFile();
     final String[] toPaths = splitPath(canonicalTo.getPath());
@@ -327,10 +364,14 @@ public final class Directory implements Serializable {
       ++i;
     }
 
+    if (mustBeChild && i != fromPaths.length) {
+      return null;
+    }
+
     // i == 0: The root file is different.
     // i == 1: The root file is the same, but there's no common path.
     if (i <= 1) {
-      return canonicalTo;
+      return null;
     }
 
     final StringBuilder result = new StringBuilder();
@@ -374,17 +415,12 @@ public final class Directory implements Serializable {
 
     final StringBuilder result = new StringBuilder(path.length());
 
-    boolean first = true;
-
-    for (String e : elements) {
-      if (first) {
-        first = false;
-      }
-      else {
+    for (final String e : elements) {
+      if (result.length() > 0) {
         result.append(File.pathSeparator);
       }
 
-      result.append(rebaseFile(new File(e)));
+      result.append(rebaseFromCWD(new File(e)));
     }
 
     return result.toString();
@@ -440,9 +476,9 @@ public final class Directory implements Serializable {
     final File[] files = listContents(s_matchAllFilesFilter, true, false);
     final StreamCopier streamCopier = new StreamCopier(4096, false);
 
-    for (int i = 0; i < files.length; ++i) {
-      final File source = getFile(files[i]);
-      final File destination = target.getFile(files[i]);
+    for (final File file : files) {
+      final File source = getFile(file);
+      final File destination = target.getFile(file);
 
       if (source.isDirectory()) {
         destination.mkdirs();
@@ -502,6 +538,7 @@ public final class Directory implements Serializable {
    *
    * @return The hash code.
    */
+  @Override
   public int hashCode() {
     return getFile().hashCode();
   }
@@ -512,6 +549,7 @@ public final class Directory implements Serializable {
    * @param o Object to compare.
    * @return <code>true</code> => equal.
    */
+  @Override
   public boolean equals(Object o) {
     if (o == this) {
       return true;
@@ -525,6 +563,7 @@ public final class Directory implements Serializable {
   }
 
   private static class MatchAllFilesFilter implements FileFilter {
+    @Override
     public boolean accept(File file) {
       return true;
     }

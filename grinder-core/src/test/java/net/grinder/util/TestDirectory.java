@@ -21,10 +21,12 @@
 
 package net.grinder.util;
 
+import static net.grinder.testutility.AssertUtilities.assertArraysEqual;
 import static net.grinder.testutility.FileUtilities.createRandomFile;
-import static net.grinder.testutility.AssertUtilities.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -58,7 +60,7 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
       new Directory(file);
       fail("Expected DirectoryException");
     }
-    catch (Directory.DirectoryException e) {
+    catch (final Directory.DirectoryException e) {
     }
 
     final Directory directory = new Directory(getDirectory());
@@ -137,22 +139,23 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
       new File(getDirectory(), "cantread"),
     };
 
-    for (int i = 0; i < badDirectories.length; ++i) {
-      badDirectories[i].getParentFile().mkdirs();
-      assertTrue(badDirectories[i].mkdir());
-      FileUtilities.setCanAccess(badDirectories[i], false);
+    for (final File badDirectorie : badDirectories) {
+      badDirectorie.getParentFile().mkdirs();
+      assertTrue(badDirectorie.mkdir());
+      FileUtilities.setCanAccess(badDirectorie, false);
     }
 
     final File[] filesAfterTimeT = directory.listContents(
       new FileFilter() {
+        @Override
         public boolean accept(File file) {
           return file.isDirectory() || file.lastModified() > 50000L;
         }
       });
 
-    for (int i=0; i<filesAfterTimeT.length; ++i) {
-      assertTrue("Contains " + filesAfterTimeT[i],
-                 expected.contains(filesAfterTimeT[i]));
+    for (final File element : filesAfterTimeT) {
+      assertTrue("Contains " + element,
+                 expected.contains(element));
     }
 
     final String[] warnings = directory.getWarnings();
@@ -160,18 +163,18 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
 
     final StringBuffer warningsBuffer = new StringBuffer();
 
-    for (int i = 0; i < warnings.length; ++i) {
-      warningsBuffer.append(warnings[i]);
+    for (final String warning : warnings) {
+      warningsBuffer.append(warning);
       warningsBuffer.append("\n");
     }
 
     final String warningsString = warningsBuffer.toString();
 
-    for (int i = 0; i < badDirectories.length; ++i) {
-      assertTrue(warningsBuffer + " contains " + badDirectories[i].getPath(),
-                 warningsString.indexOf(badDirectories[i].getPath()) > -1);
+    for (final File badDirectorie : badDirectories) {
+      assertTrue(warningsBuffer + " contains " + badDirectorie.getPath(),
+                 warningsString.indexOf(badDirectorie.getPath()) > -1);
 
-      FileUtilities.setCanAccess(badDirectories[i], true);
+      FileUtilities.setCanAccess(badDirectorie, true);
     }
 
     final File[] allFiles =
@@ -194,8 +197,8 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
       "another",
     };
 
-    for (int i = 0; i < files.length; ++i) {
-      final File file = new File(getDirectory(), files[i]);
+    for (final String file2 : files) {
+      final File file = new File(getDirectory(), file2);
       file.getParentFile().mkdirs();
       assertTrue(file.createNewFile());
     }
@@ -217,9 +220,9 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
       "down/a/few",
     };
 
-    for (int i=0; i<directories.length; ++i) {
+    for (final String directorie : directories) {
       final Directory directory =
-        new Directory(new File(getDirectory(), directories[i]));
+        new Directory(new File(getDirectory(), directorie));
       assertFalse(directory.getFile().exists());
       directory.create();
       assertTrue(directory.getFile().exists());
@@ -233,7 +236,7 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
       new Directory(new File(getDirectory(), "readonly/foo")).create();
       fail("Expected DirectoryException");
     }
-    catch (Directory.DirectoryException e) {
+    catch (final Directory.DirectoryException e) {
     }
   }
 
@@ -255,61 +258,71 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
       directory2.delete();
       fail("Expected DirectoryException");
     }
-    catch (Directory.DirectoryException e) {
+    catch (final Directory.DirectoryException e) {
     }
   }
 
-  @Test public void testRebaseFile() throws Exception {
-    final String[] files = {
-      "path1",
-      "some/other/path",
-    };
-
-    final Directory directory = new Directory(getDirectory());
-
-    for (int i = 0; i < files.length; ++i) {
-      final File absoluteFile = new File(getDirectory(), files[i]);
-
-      final File result = directory.rebaseFile(absoluteFile);
-      assertFalse(result.isAbsolute());
-      assertEquals(absoluteFile.getCanonicalFile(),
-                   new File(getDirectory(), result.getPath()));
-
-      final File relativeFile = new File(files[i]);
-
-      // If a relative path can be calculated (i.e. we're on the same
-      // file system as our temporary directory), it will be returned.
-      // Otherwise relativeFile will be returned.
-      // We cope with both cases by testing the operation is reflexive.
-      final File result2 = directory.rebaseFile(relativeFile);
-      assertFalse(result2.isAbsolute());
-      final File result3 = new Directory().rebaseFile(result2);
-      assertEquals(result3, result2);
-    }
-  }
-
-  @Test public void testRebaseFileDot() throws Exception {
-    final File result = new Directory().rebaseFile(new File("."));
+  @Test public void testRelativeFileDot() throws Exception {
+    final File result = new Directory().relativeFile(new File("."), false);
     assertEquals(new File("."), result);
   }
 
-  @Test public void testRebaseFileWithAbsoluteFile()
-    throws Exception {
+  @Test public void testRelativeFileWithAbsoluteFile() throws Exception {
 
     final Directory directory = new Directory(getDirectory());
 
     final File absoluteFile = new File("blah").getAbsoluteFile();
 
-    final File result = directory.rebaseFile(absoluteFile);
+    assertNull(directory.relativeFile(absoluteFile, true));
+  }
 
-    if (result.isAbsolute()) {
-      assertEquals(absoluteFile, result);
-    }
-    else {
-      assertEquals(absoluteFile,
-                   new File(getDirectory(),
-                            result.getPath()).getCanonicalFile());
-    }
+  @Test public void relativeFileWithAbsoluteChild1() throws Exception {
+
+    final File absoluteFile =
+        new File(getDirectory(), "blah").getAbsoluteFile();
+
+    final Directory directory = new Directory(getDirectory());
+    final File result = directory.relativeFile(absoluteFile, false);
+    assertTrue(!result.isAbsolute());
+    assertEquals("blah", result.getPath());
+  }
+
+  @Test public void testRelativeFileWithAbsouteChild2() throws Exception {
+
+    final File absoluteFile =
+        new File(getDirectory(), "blah").getAbsoluteFile();
+
+    final Directory directory = new Directory(getDirectory());
+    final File result = directory.relativeFile(absoluteFile, true);
+    assertTrue(!result.isAbsolute());
+    assertEquals("blah", result.getPath());
+  }
+
+  @Test public void testRelativeFileWithRelativeChild() throws Exception {
+
+    final File relaiveFile = new File("blah");
+
+    final Directory directory = new Directory(getDirectory());
+    final File result = directory.relativeFile(relaiveFile, true);
+    assertTrue(!result.isAbsolute());
+    assertEquals("blah", result.getPath());
+  }
+
+  @Test public void testRelativeFileWithRelativeNonChild1() throws Exception {
+
+    final File relativeFile = new File("../blah");
+
+    final Directory directory = new Directory(getDirectory());
+    assertNull(directory.relativeFile(relativeFile, true));
+  }
+
+  @Test public void testRelativeFileWithRelativeNonChild2() throws Exception {
+
+    final File relativeFile = new File("../blah");
+
+    final Directory directory = new Directory(getDirectory());
+    final File result = directory.relativeFile(relativeFile, false);
+    assertSame(relativeFile, result);
   }
 
   @Test public void testIsParentOf() throws Exception {
@@ -334,7 +347,7 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
       add(new File("directory/b/c/d/e"));
     }};
 
-    for (File relativeFile : files) {
+    for (final File relativeFile : files) {
       final File absoluteFile =
         new File(getDirectory(), relativeFile.getPath());
 
@@ -358,9 +371,9 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
     final File[] contents =
       outputDirectory.listContents(Directory.getMatchAllFilesFilter());
 
-    for (int i = 0; i < contents.length; ++i) {
-      assertTrue("Original contains '" + contents[i] + "'",
-                 files.contains(contents[i]));
+    for (final File content : contents) {
+      assertTrue("Original contains '" + content + "'",
+                 files.contains(content));
     }
 
     assertEquals(files.size(), contents.length);
@@ -381,9 +394,9 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
       new Directory(new File("output/output"))
       .listContents(Directory.getMatchAllFilesFilter());
 
-    for (int i = 0; i < contents3.length; ++i) {
-      assertTrue("Original contains '" + contents3[i] + "'",
-                 files.contains(contents3[i]));
+    for (final File element : contents3) {
+      assertTrue("Original contains '" + element + "'",
+                 files.contains(element));
     }
 
     assertEquals(files.size() * 2, contents2.length);
@@ -401,7 +414,7 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
       missingSourceDirectory.copyTo(missingOutputDirectory, false);
       fail("Expected DirectoryException");
     }
-    catch (Directory.DirectoryException e) {
+    catch (final Directory.DirectoryException e) {
     }
 
     assertFalse(missingSourceDirectory.getFile().exists());
@@ -417,7 +430,7 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
   private static File fromPath(String... elements) {
     File result = null;
 
-    for (String e : elements) {
+    for (final String e : elements) {
       result = new File(result, e);
     }
 
@@ -433,30 +446,45 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
                       actualElements);
   }
 
-  @Test public void testRelativePath1() throws IOException {
+  @Test public void testRelativePathNotChild1() throws IOException {
     final File f1 = fromPath("a", "b", "c");
     final File f2 = fromPath("a", "b", "x", "y");
 
-    final File relativePath = Directory.relativePath(f1, f2);
-
-    assertEqualPaths("../x/y", relativePath.getPath());
+    assertEqualPaths("../x/y", Directory.relativePath(f1, f2, false).getPath());
   }
 
-  @Test public void testRelativePath2() throws IOException {
+  @Test public void testRelativePathNotChild2() throws IOException {
+    final File f1 = fromPath("a", "b", "c");
+    final File f2 = fromPath("a", "b", "x", "y");
+
+    assertNull(Directory.relativePath(f1, f2, true));
+  }
+
+  @Test public void testRelativePathDifferentFS1() throws IOException {
     final File f1 = fromPath("/", "x", "y", "z");
     final File f2 = fromPath("/", "a", "b");
 
-    final File relativePath = Directory.relativePath(f1, f2);
-
-    assertEqualPaths("/a/b", relativePath.getPath());
+    assertNull(Directory.relativePath(f1, f2, false));
   }
 
-  @Test public void testRelativePath3() throws IOException {
+  @Test public void testRelativePathDifferentFS2() throws IOException {
+    final File f1 = fromPath("/", "x", "y", "z");
+    final File f2 = fromPath("/", "a", "b");
+
+    assertNull(Directory.relativePath(f1, f2, true));
+  }
+
+  @Test public void testRelativePathDot1() throws IOException {
     final File f1 = fromPath(".");
     final File f2 = fromPath(".");
 
-    final File relativePath = Directory.relativePath(f1, f2);
+    assertEqualPaths(".", Directory.relativePath(f1, f2, false).getPath());
+  }
 
-    assertEqualPaths(".", relativePath.getPath());
+  @Test public void testRelativePathDot2() throws IOException {
+    final File f1 = fromPath(".");
+    final File f2 = fromPath(".");
+
+    assertEqualPaths(".",  Directory.relativePath(f1, f2, true).getPath());
   }
 }

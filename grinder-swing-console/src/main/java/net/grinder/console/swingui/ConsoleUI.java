@@ -86,6 +86,7 @@ import net.grinder.common.GrinderProperties;
 import net.grinder.common.UncheckedInterruptedException;
 import net.grinder.console.ConsoleFoundation;
 import net.grinder.console.common.ConsoleException;
+import net.grinder.console.common.DisplayMessageConsoleException;
 import net.grinder.console.common.ErrorHandler;
 import net.grinder.console.common.Resources;
 import net.grinder.console.communication.ProcessControl;
@@ -1352,23 +1353,30 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
                                  GrinderProperties.DEFAULT_SCRIPT));
 
           final Directory directory = m_properties.getDistributionDirectory();
-
-          final File path = directory.rebaseFile(scriptFile);
-
+          
+          final File path = directory.relativeFile(scriptFile, true);
+          
           // If path is absolute, it is not a child of the directory. We allow
           // this, since it is fairly obvious to the user what is going on.
-          if (path.getPath().contains("..")) {
-            getErrorHandler().handleErrorMessage(
-              m_resources.getString("scriptNotInDirectoryError.text"),
-              (String) getValue(NAME));
-
-            return;
+          if (path == null && !scriptFile.isAbsolute()) {
+            throw new DisplayMessageConsoleException(
+              m_resources,
+              "scriptNotInDirectoryError.text");
           }
 
-          // Ensure the properties passed to the agent has a relative
-          // associated path.
-          properties.setAssociatedFile(
-            directory.rebaseFile(propertiesFile));
+          final File associatedFile = properties.getAssociatedFile();
+          
+          if (associatedFile != null) {
+            // If the properties refer to a file, rebase it to the
+            // distribution directory so relative script paths can be
+            // resolved based on the properties file location.
+            final File relativeFile =
+                directory.relativeFile(associatedFile, true);
+    
+            if (relativeFile != null) {
+              properties.setAssociatedFile(relativeFile);
+            }
+          }
 
           m_processControl.startWorkerProcesses(properties);
         }

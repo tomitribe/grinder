@@ -68,7 +68,7 @@ final class WorkerProcessCommandLine implements CommandLine {
       if (agent != null) {
         try {
           m_command.add("-javaagent:" +
-                        workingDirectory.rebaseFile(agent));
+                        workingDirectory.rebaseFromCWD(agent));
         }
         catch (IOException e) {
           throw new EngineException(e.getMessage(), e);
