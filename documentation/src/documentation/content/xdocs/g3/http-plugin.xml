@@ -149,7 +149,7 @@ proxyURL1.setProxyServer("localhost", 8001)
 proxyURL2.setProxyServer("localhost", 8002)
 </source>
 
-    <p>If the HTTP proxy requires authentication, enable the HTTPClient Authorization Module, as descirbed in the previous section. Having so, each worker thread can set up the appropriate authentication details using the <a href="site:api/AuthorizationInfo">AuthorizationInfo</a> API. For example:</p>
+    <p>If the HTTP proxy requires authentication, enable the HTTPClient Authorization Module, as described in the previous section. Having so, each worker thread can set up the appropriate authentication details using the <a href="site:api/AuthorizationInfo">AuthorizationInfo</a> API. For example:</p>
 
 <source class="jython">
 from net.grinder.plugin.http import HTTPRequest, HTTPPluginControl
