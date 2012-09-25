@@ -1,4 +1,4 @@
-// Copyright (C) 2011 Philip Aston
+// Copyright (C) 2011 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -31,9 +31,9 @@ import java.io.File;
 import java.io.StringReader;
 
 import net.grinder.engine.common.ScriptLocation;
-import net.grinder.scriptengine.ScriptExecutionException;
 import net.grinder.scriptengine.ScriptEngineService.ScriptEngine;
 import net.grinder.scriptengine.ScriptEngineService.WorkerRunnable;
+import net.grinder.scriptengine.ScriptExecutionException;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.util.Directory;
 
@@ -63,12 +63,12 @@ public class TestClojureScriptEngine extends AbstractJUnit4FileTestCase {
       new ClojureScriptEngineService().createScriptEngine(script);
       fail("Expected ScriptExecutionException");
     }
-    catch (ScriptExecutionException e) {
+    catch (final ScriptExecutionException e) {
       assertTrue(e.getCause() instanceof RuntimeException);
     }
   }
 
-  @Test public void testNoRunnerFactory() throws Exception {
+  @Test public void testNilRunnerFactory() throws Exception {
 
     final ScriptLocation script =
       new ScriptLocation(new Directory(getDirectory()), new File("my.clj"));
@@ -80,7 +80,24 @@ public class TestClojureScriptEngine extends AbstractJUnit4FileTestCase {
       new ClojureScriptEngineService().createScriptEngine(script);
       fail("Expected ScriptExecutionException");
     }
-    catch (ScriptExecutionException e) {
+    catch (final ScriptExecutionException e) {
+      assertContains(e.getMessage(), "should return a function");
+    }
+  }
+
+  @Test public void testNoneRunnerFactory() throws Exception {
+
+    final ScriptLocation script =
+      new ScriptLocation(new Directory(getDirectory()), new File("my.clj"));
+
+    createFile(script.getFile(),
+               "");
+
+    try {
+      new ClojureScriptEngineService().createScriptEngine(script);
+      fail("Expected ScriptExecutionException");
+    }
+    catch (final ScriptExecutionException e) {
       assertContains(e.getMessage(), "should return a function");
     }
   }
@@ -100,7 +117,27 @@ public class TestClojureScriptEngine extends AbstractJUnit4FileTestCase {
       scriptEngine.createWorkerRunnable();
       fail("Expected ScriptExecutionException");
     }
-    catch (ScriptExecutionException e) {
+    catch (final ScriptExecutionException e) {
+      assertContains(e.getMessage(), "should return a function");
+    }
+  }
+
+  @Test public void testNilWorkerRunnable() throws Exception {
+
+    final ScriptLocation script =
+      new ScriptLocation(new Directory(getDirectory()), new File("my.clj"));
+
+    createFile(script.getFile(),
+               "(fn [] nil)");
+
+    final ScriptEngine scriptEngine =
+      new ClojureScriptEngineService().createScriptEngine(script);
+
+    try {
+      scriptEngine.createWorkerRunnable();
+      fail("Expected ScriptExecutionException");
+    }
+    catch (final ScriptExecutionException e) {
       assertContains(e.getMessage(), "should return a function");
     }
   }
@@ -120,7 +157,7 @@ public class TestClojureScriptEngine extends AbstractJUnit4FileTestCase {
       scriptEngine.createWorkerRunnable();
       fail("Expected ScriptExecutionException");
     }
-    catch (ScriptExecutionException e) {
+    catch (final ScriptExecutionException e) {
       assertTrue(e.getCause() instanceof NullPointerException);
     }
   }
@@ -164,7 +201,7 @@ public class TestClojureScriptEngine extends AbstractJUnit4FileTestCase {
       workerRunnable.run();
       fail("Expected ScriptExecutionException");
     }
-    catch (ScriptExecutionException e) {
+    catch (final ScriptExecutionException e) {
       assertTrue(e.getCause() instanceof NullPointerException);
     }
 
@@ -185,7 +222,7 @@ public class TestClojureScriptEngine extends AbstractJUnit4FileTestCase {
       scriptEngine.createWorkerRunnable(this);
       fail("Expected ScriptExecutionException");
     }
-    catch (ScriptExecutionException e) {
+    catch (final ScriptExecutionException e) {
       assertContains(e.getShortMessage(), "testRunner is not a function");
     }
   }

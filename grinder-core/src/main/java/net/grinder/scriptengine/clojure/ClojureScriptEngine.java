@@ -1,4 +1,4 @@
-// Copyright (C) 2011 Philip Aston
+// Copyright (C) 2011 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -26,9 +26,9 @@ import java.util.concurrent.Callable;
 
 import net.grinder.engine.common.EngineException;
 import net.grinder.engine.common.ScriptLocation;
-import net.grinder.scriptengine.ScriptExecutionException;
 import net.grinder.scriptengine.ScriptEngineService.ScriptEngine;
 import net.grinder.scriptengine.ScriptEngineService.WorkerRunnable;
+import net.grinder.scriptengine.ScriptExecutionException;
 import clojure.lang.Compiler;
 
 
@@ -41,13 +41,19 @@ class ClojureScriptEngine implements ScriptEngine {
 
   private final Callable<?> m_runnerFactory;
 
-  public ClojureScriptEngine(ScriptLocation script) throws EngineException {
+  private static String describeResult(final Object r) {
+    return r == null ? "nil" : r.getClass().getName();
+  }
+
+  public ClojureScriptEngine(final ScriptLocation script)
+      throws EngineException {
+
     final Object result;
 
     try {
       result = Compiler.loadFile(script.getFile().getPath());
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       throw new ClojureScriptExecutionException("Failed to load " + script, e);
     }
 
@@ -55,12 +61,13 @@ class ClojureScriptEngine implements ScriptEngine {
       throw new ClojureScriptExecutionException(
         "The script should return a function that creates a test runner " +
         "function " +
-        "[It returned " + result.getClass().getName() + "]");
+        "[It returned " + describeResult(result) + "]");
     }
 
     m_runnerFactory = (Callable<?>)result;
   }
 
+  @Override
   public WorkerRunnable createWorkerRunnable() throws EngineException {
 
     final Object result;
@@ -68,7 +75,7 @@ class ClojureScriptEngine implements ScriptEngine {
     try {
       result = m_runnerFactory.call();
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       throw new ClojureScriptExecutionException(
         "Failed to create test runner function", e);
     }
@@ -77,13 +84,14 @@ class ClojureScriptEngine implements ScriptEngine {
       throw new ClojureScriptExecutionException(
         "The script should return a function that creates a test runner " +
         "function " +
-        "[When called, it returned " + result.getClass().getName() + "]");
+        "[It returned " + describeResult(result) + "]");
     }
 
     return new ClojureWorkerRunnable((Callable<?>) result);
   }
 
-  public WorkerRunnable createWorkerRunnable(Object testRunner)
+  @Override
+  public WorkerRunnable createWorkerRunnable(final Object testRunner)
     throws EngineException {
 
     if (testRunner instanceof Callable<?>) {
@@ -94,6 +102,7 @@ class ClojureScriptEngine implements ScriptEngine {
       "supplied testRunner is not a function");
   }
 
+  @Override
   public String getDescription() {
     final String versionString =
       "(let [v *clojure-version*] " +
@@ -102,6 +111,7 @@ class ClojureScriptEngine implements ScriptEngine {
     return Compiler.load(new StringReader(versionString)).toString();
   }
 
+  @Override
   public void shutdown() throws EngineException {
     // No-op, until we discover whether Clojure defines an exit hook mechanism.
   }
@@ -109,20 +119,22 @@ class ClojureScriptEngine implements ScriptEngine {
   private static final class ClojureWorkerRunnable implements WorkerRunnable {
     private final Callable<?> m_workerFn;
 
-    private ClojureWorkerRunnable(Callable<?> result) {
+    private ClojureWorkerRunnable(final Callable<?> result) {
       m_workerFn = result;
     }
 
+    @Override
     public void run() throws ScriptExecutionException {
       try {
         m_workerFn.call();
       }
-      catch (Exception e) {
+      catch (final Exception e) {
         throw new ClojureScriptExecutionException(
           "Worker thread raised exception", e);
       }
     }
 
+    @Override
     public void shutdown() throws ScriptExecutionException {
       // No-op.
     }
@@ -131,11 +143,11 @@ class ClojureScriptEngine implements ScriptEngine {
   private static final class ClojureScriptExecutionException
     extends ScriptExecutionException {
 
-    public ClojureScriptExecutionException(String s) {
+    public ClojureScriptExecutionException(final String s) {
       super(s);
     }
 
-    public ClojureScriptExecutionException(String s, Throwable t) {
+    public ClojureScriptExecutionException(final String s, final Throwable t) {
       super(s, t);
     }
   }
