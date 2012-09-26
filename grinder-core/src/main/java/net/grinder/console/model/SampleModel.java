@@ -1,4 +1,5 @@
 // Copyright (C) 2006 - 2012 Philip Aston
+// Copyright (C) 2012 Marc Holden
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -129,10 +130,9 @@ public interface SampleModel {
    * @return The cumulative statistics.
    */
   StatisticsSet getTotalCumulativeStatistics();
-  
+
   /**
-   * Get the latest statistics for this model
-   * 
+   * Get the total statistics for the latest sample.
    *
    * @return The cumulative statistics.
    */
@@ -210,12 +210,17 @@ public interface SampleModel {
    */
   abstract class AbstractListener implements Listener {
 
+    @Override
     public void newSample() { }
 
-    public void newTests(Set<Test> newTests, ModelTestIndex modelTestIndex) { }
+    @Override
+    public void newTests(final Set<Test> newTests,
+                         final ModelTestIndex modelTestIndex) { }
 
+    @Override
     public void resetTests() { }
 
+    @Override
     public void stateChanged() { }
   }
 }

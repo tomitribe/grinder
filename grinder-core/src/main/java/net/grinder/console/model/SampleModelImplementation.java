@@ -1,4 +1,5 @@
 // Copyright (C) 2001 - 2012 Philip Aston
+// Copyright (C) 2012 Marc Holden
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -105,11 +106,11 @@ public final class SampleModelImplementation implements SampleModel {
    *
    * @exception GrinderException if an error occurs
    */
-  public SampleModelImplementation(ConsoleProperties properties,
-                                   StatisticsServices statisticsServices,
-                                   Timer timer,
-                                   Resources resources,
-                                   ErrorHandler errorHandler)
+  public SampleModelImplementation(final ConsoleProperties properties,
+                                   final StatisticsServices statisticsServices,
+                                   final Timer timer,
+                                   final Resources resources,
+                                   final ErrorHandler errorHandler)
     throws GrinderException {
 
     m_properties = properties;
@@ -164,7 +165,7 @@ public final class SampleModelImplementation implements SampleModel {
    * {@inheritDoc}
    */
   @Override
-  public void registerTests(Collection<Test> tests) {
+  public void registerTests(final Collection<Test> tests) {
     // Need to copy collection, might be immutable.
     final Set<Test> newTests = new HashSet<Test>(tests);
 
@@ -188,7 +189,7 @@ public final class SampleModelImplementation implements SampleModel {
       new SampleAccumulator[testArray.length];
 
     synchronized (m_accumulators) {
-      for (Test test : newTests) {
+      for (final Test test : newTests) {
         m_accumulators.put(test,
                            new SampleAccumulator(
                              m_peakTPSExpression,
@@ -206,7 +207,9 @@ public final class SampleModelImplementation implements SampleModel {
 
     m_listeners.apply(
       new ListenerSupport.Informer<Listener>() {
-        public void inform(Listener l) { l.newTests(newTests, modelTestIndex); }
+        @Override
+        public void inform(final Listener l) {
+          l.newTests(newTests, modelTestIndex); }
       });
   }
 
@@ -217,16 +220,20 @@ public final class SampleModelImplementation implements SampleModel {
   public StatisticsSet getTotalCumulativeStatistics() {
     return m_totalSampleAccumulator.getCumulativeStatistics();
   }
-  
-  public StatisticsSet getTotalLatestStatistics(){
-	  return m_totalSampleAccumulator.getLastSampleStatistics();
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public StatisticsSet getTotalLatestStatistics() {
+    return m_totalSampleAccumulator.getLastSampleStatistics();
   }
 
   /**
    * {@inheritDoc}
    */
   @Override
-  public void addModelListener(Listener listener) {
+  public void addModelListener(final Listener listener) {
     m_listeners.add(listener);
   }
 
@@ -234,7 +241,8 @@ public final class SampleModelImplementation implements SampleModel {
    * {@inheritDoc}
    */
   @Override
-  public void addSampleListener(Test test, SampleListener listener) {
+  public void addSampleListener(final Test test,
+                                final SampleListener listener) {
     final SampleAccumulator sampleAccumulator = m_accumulators.get(test);
 
     if (sampleAccumulator != null) {
@@ -246,7 +254,7 @@ public final class SampleModelImplementation implements SampleModel {
    * {@inheritDoc}
    */
   @Override
-  public void addTotalSampleListener(SampleListener listener) {
+  public void addTotalSampleListener(final SampleListener listener) {
     m_totalSampleAccumulator.addSampleListener(listener);
   }
 
@@ -265,7 +273,8 @@ public final class SampleModelImplementation implements SampleModel {
 
     m_listeners.apply(
       new ListenerSupport.Informer<Listener>() {
-        public void inform(Listener l) { l.resetTests(); }
+        @Override
+        public void inform(final Listener l) { l.resetTests(); }
       });
   }
 
@@ -297,7 +306,7 @@ public final class SampleModelImplementation implements SampleModel {
    * {@inheritDoc}
    */
   @Override
-  public void addTestReport(TestStatisticsMap testStatisticsMap) {
+  public void addTestReport(final TestStatisticsMap testStatisticsMap) {
     getInternalState().newTestReport(testStatisticsMap);
   }
 
@@ -311,7 +320,8 @@ public final class SampleModelImplementation implements SampleModel {
 
   private void zero() {
     synchronized (m_accumulators) {
-      for (SampleAccumulator sampleAccumulator : m_accumulators.values()) {
+      for (final SampleAccumulator sampleAccumulator :
+        m_accumulators.values()) {
         sampleAccumulator.zero();
       }
     }
@@ -325,14 +335,15 @@ public final class SampleModelImplementation implements SampleModel {
     }
   }
 
-  private void setInternalState(InternalState newState) {
+  private void setInternalState(final InternalState newState) {
     synchronized (this) {
       m_state = newState;
     }
 
     m_listeners.apply(
       new ListenerSupport.Informer<Listener>() {
-        public void inform(Listener l) { l.stateChanged(); }
+        @Override
+        public void inform(final Listener l) { l.stateChanged(); }
       });
   }
 
@@ -383,7 +394,7 @@ public final class SampleModelImplementation implements SampleModel {
     }
 
     @Override
-    public void newTestReport(TestStatisticsMap testStatisticsMap) {
+    public void newTestReport(final TestStatisticsMap testStatisticsMap) {
       if (m_properties.getIgnoreSampleCount() == 0) {
         setInternalState(new CapturingState());
       }
@@ -407,7 +418,8 @@ public final class SampleModelImplementation implements SampleModel {
   }
 
   private final class StoppedState extends AbstractInternalState {
-    public void newTestReport(TestStatisticsMap testStatisticsMap) {
+    @Override
+    public void newTestReport(final TestStatisticsMap testStatisticsMap) {
     }
 
     @Override
@@ -427,9 +439,11 @@ public final class SampleModelImplementation implements SampleModel {
 
     private volatile long m_sampleCount = 1;
 
-    public final void newTestReport(TestStatisticsMap testStatisticsMap) {
+    @Override
+    public final void newTestReport(final TestStatisticsMap testStatisticsMap) {
       testStatisticsMap.new ForEach() {
-        public void next(Test test, StatisticsSet statistics) {
+        @Override
+        public void next(final Test test, final StatisticsSet statistics) {
           final SampleAccumulator sampleAccumulator = m_accumulators.get(test);
 
           if (sampleAccumulator == null) {
@@ -465,6 +479,7 @@ public final class SampleModelImplementation implements SampleModel {
 
       m_timer.schedule(
         new TimerTask() {
+          @Override
           public void run() { sample(); }
         },
         m_properties.getSampleInterval());
@@ -485,7 +500,8 @@ public final class SampleModelImplementation implements SampleModel {
         final long sampleInterval = m_properties.getSampleInterval();
 
         synchronized (m_accumulators) {
-          for (SampleAccumulator sampleAccumulator : m_accumulators.values()) {
+          for (final SampleAccumulator sampleAccumulator :
+            m_accumulators.values()) {
             sampleAccumulator.fireSample(sampleInterval, period);
           }
         }
@@ -502,7 +518,8 @@ public final class SampleModelImplementation implements SampleModel {
 
         m_listeners.apply(
           new ListenerSupport.Informer<Listener>() {
-            public void inform(Listener l) { l.newSample(); }
+            @Override
+            public void inform(final Listener l) { l.newSample(); }
           });
       }
       finally {

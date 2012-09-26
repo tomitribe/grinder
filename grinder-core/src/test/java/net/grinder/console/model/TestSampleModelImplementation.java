@@ -1,4 +1,5 @@
 // Copyright (C) 2008 - 2012 Philip Aston
+// Copyright (C) 2012 Marc Holden
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,9 +22,9 @@
 
 package net.grinder.console.model;
 
+import static net.grinder.console.model.SampleModel.State.Value.IgnoringInitialSamples;
 import static net.grinder.console.model.SampleModel.State.Value.Recording;
 import static net.grinder.console.model.SampleModel.State.Value.Stopped;
-import static net.grinder.console.model.SampleModel.State.Value.IgnoringInitialSamples;
 import static net.grinder.console.model.SampleModel.State.Value.WaitingForFirstReport;
 
 import java.io.File;
@@ -72,7 +73,7 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
 
   private ConsoleProperties m_consoleProperties;
 
-  private StatisticsServices m_statisticsServices =
+  private final StatisticsServices m_statisticsServices =
     StatisticsServicesImplementation.getInstance();
 
   private StubTimer m_timer;
@@ -87,6 +88,7 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
   final ErrorHandler m_errorHandler =
     m_errorHandlerStubFactory.getStub();
 
+  @Override
   protected void setUp() throws Exception {
     super.setUp();
     m_timer = new StubTimer();
@@ -94,6 +96,7 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
       new ConsoleProperties(null, new File(getDirectory(), "props"));
   }
 
+  @Override
   public void tearDown() throws Exception {
     super.tearDown();
     m_timer.cancel();
@@ -124,7 +127,7 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     assertNotNull(totalCumulativeStatistics);
     assertSame(totalCumulativeStatistics,
                sampleModelImplementation.getTotalCumulativeStatistics());
-    
+
     final StatisticsSet totalLatestStatistics =
     	      sampleModelImplementation.getTotalLatestStatistics();
     	    assertNotNull(totalLatestStatistics);
@@ -165,7 +168,7 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
 
     sampleModelImplementation.registerTests(testList);
 
-    Object[] callbackParameters = m_listenerStubFactory.assertSuccess(
+    final Object[] callbackParameters = m_listenerStubFactory.assertSuccess(
       "newTests", Set.class, ModelTestIndex.class).getParameters();
     m_listenerStubFactory.assertNoMoreCalls();
 
@@ -190,7 +193,7 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
 
     sampleModelImplementation.registerTests(testList2);
 
-    Object[] callbackParameters2 = m_listenerStubFactory.assertSuccess(
+    final Object[] callbackParameters2 = m_listenerStubFactory.assertSuccess(
       "newTests", Set.class, ModelTestIndex.class).getParameters();
     m_listenerStubFactory.assertNoMoreCalls();
 
