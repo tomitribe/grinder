@@ -117,6 +117,27 @@
           (.getDoubleValue e statistics)
           (.getLongValue e statistics))))))
 
+(defn- getdata
+  "Common implementation for (data) and (data-latest)."
+  [^SampleModel sample-model
+   ^ModelTestIndex test-index
+   view
+   totals
+   statistics-for-test]
+  (let [views (.getExpressionViews view)]
+    {:status (status sample-model)
+     :columns (vec (for [^ExpressionView v views] (.getDisplayName v)))
+     :tests
+     (vec
+       (for [i (range (.getNumberOfTests test-index))]
+         (let [test (.getTest test-index i)]
+           {
+            :test (.getNumber test)
+            :description (.getDescription test)
+            :statistics
+            (process-statistics views (statistics-for-test test-index i)) })))
+     :totals (process-statistics views totals)}))
+
 (defn data
   "Return a map containing the current recording data.
 
@@ -133,45 +154,23 @@
 "
   [^SampleModel sample-model
    ^SampleModelViews statistics-view]
-  (let [^ModelTestIndex test-index (get-test-index sample-model)
-        views (.getExpressionViews
-                (.getCumulativeStatisticsView statistics-view))]
-
-    {:status (status sample-model)
-     :columns (vec (for [^ExpressionView v views] (.getDisplayName v)))
-     :tests
-     (vec
-       (for [i (range (.getNumberOfTests test-index))]
-         (let [test (.getTest test-index i)]
-           {
-            :test (.getNumber test)
-            :description (.getDescription test)
-            :statistics
-            (process-statistics views
-                                (.getCumulativeStatistics test-index i)) })))
-     :totals (process-statistics views
-                                 (.getTotalCumulativeStatistics sample-model))}
-    ))
+  (getdata
+    sample-model
+    (get-test-index sample-model)
+    (.getCumulativeStatisticsView statistics-view)
+    (.getTotalCumulativeStatistics sample-model)
+    #(.getCumulativeStatistics %1 %2)))
 
 (defn data-latest
-  "Get the latest samlple data"
+  "Get the latest sample data.
+
+   The result has the same structure as that of (data).
+"
   [^SampleModel sample-model
    ^SampleModelViews statistics-view]
-  (let [^ModelTestIndex test-index (get-test-index sample-model)
-        views (.getExpressionViews
-                (.getIntervalStatisticsView statistics-view))]
-    {:status (status sample-model)
-     :columns (vec (for [^ExpressionView v views] (.getDisplayName v)))
-     :tests
-     (vec
-       (for [i (range (.getNumberOfTests test-index))]
-         (let [test (.getTest test-index i)]
-           {
-            :test (.getNumber test)
-            :description (.getDescription test)
-            :statistics
-            (process-statistics views
-                                (.getLastSampleStatistics test-index i)) })))
-    :totals (process-statistics views
-                                 (.getTotalLatestStatistics sample-model))}
-    ))
+  (getdata
+    sample-model
+    (get-test-index sample-model)
+    (.getIntervalStatisticsView statistics-view)
+    (.getTotalLatestStatistics sample-model)
+    #(.getLastSampleStatistics %1 %2)))
