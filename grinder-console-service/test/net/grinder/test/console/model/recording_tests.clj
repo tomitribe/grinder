@@ -175,8 +175,8 @@
       (.registerTests sm [(make-test 1 "test one")
                           (make-test 2 "test two")])
 
-    (let [{:keys [tests columns status]} (recording/data-latest sm sv)]
-      ;(is (= "[0 0 NaN 0.0 NaN]" (str (doall totals))))
+    (let [{:keys [tests columns status totals]} (recording/data-latest sm sv)]
+      (is (= "[0 0]" (str (doall totals))))
       (is (= ["Test time" "Errors"] columns))
       (is (= 2 (count tests)))
       (let [{:keys [test description statistics]} (first tests)]
