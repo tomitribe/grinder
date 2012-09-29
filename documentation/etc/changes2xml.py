@@ -13,7 +13,8 @@ class ElementStack:
         self._data.append(tag)
         result = "<%s" % tag
         for key,value in attributes.items():
-            result += " %s='%s'" % (key.replace("_", ":"), value)
+            if value:
+                result += " %s='%s'" % (key.replace("_", ":"), value)
         return result + ">\n"
 
     def ensureOpen(self, tag):
@@ -158,9 +159,7 @@ def changes2xml(file):
             line = line.strip()
             identity, date = findRelease(line)
 
-            formattedLine = "%s %s" % (line, date and "[%s]" % date or "")
-
-            output.openSection(formattedLine, identity or "id")
+            output.openSection(line, identity or "id", date=date)
         else:
             output.addLine(line)
             pass
