@@ -1,3 +1,13 @@
+Sourceforge upgrade
+-------------------
+
+  The Grinder now uses the new Sourceforge tooling. The existing bugs
+  and feature requests have been migrated to the new tracker tool and
+  assigned new numbers. The links to the old numbers in the version of
+  this file at http://grinder.sourceforge.net/development/changes.html
+  should redirect to the new tracker items.
+
+
 The Grinder 3.10
 ----------------
 
