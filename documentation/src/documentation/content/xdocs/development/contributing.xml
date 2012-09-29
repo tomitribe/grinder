@@ -27,13 +27,6 @@
   documentation refers to the latest released version of The Grinder,
   and so can lag the Git <code>HEAD</code>.</p>
 
-  <p>The Grinder repository previously used <a
-  href="ext:svn">Subversion</a>. The <a
-  href="ext:sourceforge/svn">Subversion repository</a> is still
-  available, but no new code will be added there and it will be
-  removed in the future.
-  </p>
-
   </section>
 
   <section>

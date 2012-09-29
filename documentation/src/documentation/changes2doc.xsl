@@ -20,6 +20,9 @@
   <xsl:template match="section">
     <section id="{@id}">
       <title><xsl:value-of select="@name"/></title>
+      <xsl:if test="@date">
+	<p><strong><sub>Released <xsl:value-of select="@date"/></sub></strong></p>
+      </xsl:if>
       <xsl:apply-templates/>
     </section>
   </xsl:template>

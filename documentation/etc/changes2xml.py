@@ -3,6 +3,8 @@
 # Inspiration drawn from o2x (http://www.sabren.com/code/python/)
 
 import re
+import subprocess
+from subprocess import PIPE
 
 class ElementStack:
     _data = []
@@ -11,7 +13,8 @@ class ElementStack:
         self._data.append(tag)
         result = "<%s" % tag
         for key,value in attributes.items():
-            result += " %s='%s'" % (key.replace("_", ":"), value)
+            if value:
+                result += " %s='%s'" % (key.replace("_", ":"), value)
         return result + ">\n"
 
     def ensureOpen(self, tag):
@@ -79,12 +82,12 @@ class XMLOutput:
         for difference in range(depth, self._stack.depth()):
             self._result += self._stack.close()
 
-    def openSection(self, name, **attributes):
+    def openSection(self, name, identity, **attributes):
         self._result += self._stack.perhapsClose(("li", "ul", "p"))
 
         self._result += self._stack.open("section",
                                          name=name,
-                                         id = self.uniqueID(name),
+                                         id = self.uniqueID(identity),
                                          **attributes)
         self._forceParagraph = 1
 
@@ -110,10 +113,38 @@ def quote(line, replaceNewLines=1):
     result = result.replace("&", "&amp;");
     result = result.replace("<", "&lt;");
     result = result.replace(">", "&gt;");
+    result = re.sub(r"(http://[^\s]*)", "<a href=\"\\1\">\\1</a>", result);
     result = re.sub(r"([Bb]ug)\s+(\d{6,})", '<a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=\\2&amp;group_id=18598&amp;atid=118598">\\1 \\2</a>', result)
     result = re.sub(r"([Rr]equest)\s+(\d{6,})", '<a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=\\2&amp;group_id=18598&amp;atid=368598">\\1 \\2</a>', result)
 
     return result
+
+
+def findRelease(line):
+    version = re.search(".*Grinder (.*)", line)
+
+    if not version:
+        return None, None
+
+    version = version.group(1)
+
+
+    def findReleaseTag(version):
+        return subprocess.Popen(["git", "tag", "-l", "release_%s" % version],
+                                stdout=PIPE).stdout.read().strip()
+
+    tag = findReleaseTag(version)
+
+    if not tag:
+        tag = findReleaseTag(version.replace(".", "_").replace("-", "_"))
+
+    date = None
+    if tag:
+        p2 = subprocess.Popen(["git", "log", "-1", "--pretty=format:%ad",
+                               "--date=short", tag],
+                              stdout=PIPE)
+        date = p2.stdout.read().strip()
+    return tag, date
 
 
 def changes2xml(file):
@@ -126,9 +157,13 @@ def changes2xml(file):
 
         if line and line[0] != " " and line[0] != "\t":
             output.closeToDepth(1)
-            output.openSection(line.strip())
+            line = line.strip()
+            identity, date = findRelease(line)
+
+            output.openSection(line, identity or "id", date=date)
         else:
             output.addLine(line)
+            pass
 
     return output.result()
 
