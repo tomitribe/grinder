@@ -113,6 +113,7 @@ def quote(line, replaceNewLines=1):
     result = result.replace("&", "&amp;");
     result = result.replace("<", "&lt;");
     result = result.replace(">", "&gt;");
+    result = re.sub(r"(http://[^\s]*)", "<a href=\"\\1\">\\1</a>", result);
     result = re.sub(r"([Bb]ug)\s+(\d{6,})", '<a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=\\2&amp;group_id=18598&amp;atid=118598">\\1 \\2</a>', result)
     result = re.sub(r"([Rr]equest)\s+(\d{6,})", '<a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=\\2&amp;group_id=18598&amp;atid=368598">\\1 \\2</a>', result)
 
