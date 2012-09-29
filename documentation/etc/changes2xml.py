@@ -3,6 +3,8 @@
 # Inspiration drawn from o2x (http://www.sabren.com/code/python/)
 
 import re
+import subprocess
+from subprocess import PIPE
 
 class ElementStack:
     _data = []
@@ -79,12 +81,12 @@ class XMLOutput:
         for difference in range(depth, self._stack.depth()):
             self._result += self._stack.close()
 
-    def openSection(self, name, **attributes):
+    def openSection(self, name, identity, **attributes):
         self._result += self._stack.perhapsClose(("li", "ul", "p"))
 
         self._result += self._stack.open("section",
                                          name=name,
-                                         id = self.uniqueID(name),
+                                         id = self.uniqueID(identity),
                                          **attributes)
         self._forceParagraph = 1
 
@@ -116,6 +118,33 @@ def quote(line, replaceNewLines=1):
     return result
 
 
+def findRelease(line):
+    version = re.search(".*Grinder (.*)", line)
+
+    if not version:
+        return None, None
+
+    version = version.group(1)
+
+
+    def findReleaseTag(version):
+        return subprocess.Popen(["git", "tag", "-l", "release_%s" % version],
+                                stdout=PIPE).stdout.read().strip()
+
+    tag = findReleaseTag(version)
+
+    if not tag:
+        tag = findReleaseTag(version.replace(".", "_").replace("-", "_"))
+
+    date = None
+    if tag:
+        p2 = subprocess.Popen(["git", "log", "-1", "--pretty=format:%ad",
+                               "--date=short", tag],
+                              stdout=PIPE)
+        date = p2.stdout.read().strip()
+    return tag, date
+
+
 def changes2xml(file):
     output = XMLOutput("changes")
 
@@ -126,9 +155,15 @@ def changes2xml(file):
 
         if line and line[0] != " " and line[0] != "\t":
             output.closeToDepth(1)
-            output.openSection(line.strip())
+            line = line.strip()
+            identity, date = findRelease(line)
+
+            formattedLine = "%s %s" % (line, date and "[%s]" % date or "")
+
+            output.openSection(formattedLine, identity or "id")
         else:
             output.addLine(line)
+            pass
 
     return output.result()
 

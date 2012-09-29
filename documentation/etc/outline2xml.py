@@ -21,7 +21,8 @@ def outline2xml(file):
 #            for difference in range(output._stack.depth(), depth):
 #                output.openSection("", depth=difference)
 				
-            output.openSection(line[depth:].strip(), depth = depth)
+            title = line[depth:].strip()
+            output.openSection(title, title, depth = depth)
         else:
             output.addLine(line)
 			
