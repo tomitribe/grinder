@@ -392,12 +392,6 @@ See http://forrest.apache.org/docs/linking.html for more info
         <summary href=";a=summary"/>
         <console-resources href=";a=tree;f=source/src/net/grinder/console/common/resources;hb=HEAD"/>
       </gitweb>
-      <svn href="scm/?type=svn&amp;group_id=18598"/>
-<!--
-      <vcview href="http://grinder.svn.sourceforge.net/viewvc/grinder/trunk/source/">
-        <console-resources href="src/net/grinder/console/common/resources/"/>
-      </vcview>
--->
     </sourceforge>
 
     <sourceforge-inc href="http://www.sourceforge.com/"/>
