@@ -17,7 +17,7 @@ class Script:
         f = open(filename, "rt")
         self.title = ""
 
-        self.text = quote(f.read(), replaceNewLines=0)
+        self.text = quote(f.read(), replaceNewLines=0, hyperlinks=0)
 
         f.close()
 
