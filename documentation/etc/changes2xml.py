@@ -117,6 +117,8 @@ def quote(line, replaceNewLines=1, hyperlinks=1):
         result = re.sub(r"(http://[^\s]*)", "<a href=\"\\1\">\\1</a>", result)
     result = re.sub(r"([Bb]ug)\s+(\d{6,})", '<a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=\\2&amp;group_id=18598&amp;atid=118598">\\1 \\2</a>', result)
     result = re.sub(r"([Rr]equest)\s+(\d{6,})", '<a href="http://sourceforge.net/tracker/index.php?func=detail&amp;aid=\\2&amp;group_id=18598&amp;atid=368598">\\1 \\2</a>', result)
+    result = re.sub(r"([Bb]ug)\s+(\d{1,5})(?!\d)", '<a href="http://sourceforge.net/p/grinder/bugs/\\2">\\1 \\2</a>', result)
+    result = re.sub(r"([Rr]equest)\s+(\d{1,5})(?!\d)", '<a href="http://sourceforge.net/p/grinder/feature-requests/\\2">\\1 \\2</a>', result)
 
     return result
 
