@@ -5,10 +5,10 @@ The Grinder 3.11
   the Jython standard library. Remove the support for the traditional
   Jython instrumenter.
 
-  Fix bug 3561156 - Memory leak in MarkerFactory. Thanks to Fei for
-  the report.
+  Fix bug 220 - Memory leak in MarkerFactory. Thanks to Fei for the
+  report.
 
-  Fix bug 3563238 - "time to establish connection" for re-used
+  Fix bug 221 - "time to establish connection" for re-used
   connection. The HTTP plugin host resolution and connection
   establishment times are now only recorded when a new connection is
   established; for tests that re-use connections, these values will be
@@ -21,11 +21,10 @@ The Grinder 3.11
   blank column, rather than the previous behaviour of using a NaN
   unicode character.
 
-  Fix bug 3569099 - relative grinder.script path not resolved
-  correctly when using the REST API. Thanks to Kevin Laurier for the
-  report.
+  Fix bug 223 - relative grinder.script path not resolved correctly
+  when using the REST API. Thanks to Kevin Laurier for the report.
 
-  Implement feature request 3566297 - latest Statistics from REST API.
+  Implement feature request 104 - latest Statistics from REST API.
   Thanks to Marc Holden for the request and the implementation.
 
 
