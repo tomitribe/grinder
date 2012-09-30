@@ -378,25 +378,21 @@ See http://forrest.apache.org/docs/linking.html for more info
       <oss href="http://oss.sonatype.org/"/>
     </sonatype>
 
-    <sourceforge href="http://www.sourceforge.net/">
-      <bug2314157 href="tracker/?func=detail&amp;aid=2314157&amp;group_id=18598&amp;atid=118598"/>
-      <bug2992248 href="tracker/?func=detail&amp;aid=2992248&amp;group_id=18598&amp;atid=118598"/>
+    <sourceforge href="https://www.sourceforge.net/">
       <grinder href="projects/grinder"/>
       <junit href="projects/junit"/>
-      <extra-line href="tracker/index.php?func=detail&amp;aid=1081136&amp;group_id=18598&amp;atid=118598"/>
-      <grinder-mail href="mail/?group_id=18598"/>
-      <git href="scm/?type=git&amp;group_id=18598"/>
-      <gitweb href="http://grinder.git.sourceforge.net/git/gitweb.cgi?p=grinder/grinder">
-        <summary href=";a=summary"/>
-        <console-resources href=";a=tree;f=source/src/net/grinder/console/common/resources;hb=HEAD"/>
-      </gitweb>
+      <bugs href="p/grinder/bugs/">
+        <extra-line href="54"/>
+	<shared-classes href="134"/>
+	<instrumentation href="158"/>
+      </bugs>
+      <grinder-mail href="p/grinder/mailman/"/>
+      <git href="p/grinder/code/">
+        <console-resources href="ci/master/tree/grinder-core/src/main/resources/net/grinder/console/common/resources/"/>
+      </git>
     </sourceforge>
 
     <sourceforge-inc href="http://www.sourceforge.com/"/>
-
-    <svn href="http://subversion.tigris.org/"/>
-
-    <svnant href="http://subclipse.tigris.org/svnant.html"/>
 
     <swtest-discuss href="http://lists.topica.com/lists/swtest-discuss/"/>
 

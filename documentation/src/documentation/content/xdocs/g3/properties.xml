@@ -318,7 +318,7 @@
           names of classes that should be shared between the worker engines when
           <code>grinder.debug.singleprocess</code> is <code>true</code>.
           Class names can end with a <code>*</code> wildcard. See
-          <a href="site:sourceforge/bug2314157">bug 2314157</a> for more details.
+          <a href="site:sourceforge/bugs/shared-classes">bug 134</a> for more details.
           </td>
 
           <td></td>
