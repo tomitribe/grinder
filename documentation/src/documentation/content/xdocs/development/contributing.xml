@@ -13,19 +13,12 @@
 
   <p>From September 2011, The Grinder source code and documentation is
   hosted in a <a href="ext:git">Git</a> repository. You can obtain a
-  copy from <a href="ext:sourceforge">Sourceforge</a> using <a
-  href="ext:sourceforge/git">read-only, anonymous access</a>. To check
-  out the source code, you'll want to do something like this:
+  copy from <a href="ext:sourceforge/git">Sourceforge</a>.
   </p>
 
-  <source class="sh">
-  $ git clone git://grinder.git.sourceforge.net/gitroot/grinder/grinder
-  </source>
-
-  <p>You can browse and monitor changes to the repository with <a
-  href="ext:sourceforge/gitweb/summary">GitWeb</a>. Note, the published
-  documentation refers to the latest released version of The Grinder,
-  and so can lag the Git <code>HEAD</code>.</p>
+  <p>Note, the published documentation branch refers to the latest
+  released version of The Grinder, and so can lag the Git
+  <code>HEAD</code>.</p>
 
   </section>
 
@@ -153,16 +146,15 @@ java -Duser.language="es" net.grinder.Console
       <title>How to provide or update a translation</title>
 
       <p>The translation properties files are stored in
-      <a href="ext:sourceforge/gitweb/console-resources">
+      <a href="ext:sourceforge/git/console-resources">
       the source repository</a>. Getting the file directly from the
-      repository will make your translation is as up
-      to date as possible, and avoid duplicating effort.
-      The definition of all English text used by the
-      console is contained in the <code>Console.properties</code>
-      file. Individual translations are contained in
-      <code>Console_XX.properties</code> where XX is the two letter <a
-      href="ext:iso-639">ISO 639 language code</a>. For example, the
-      Spanish translation is contained in
+      repository will make your translation is as up to date as
+      possible, and avoid duplicating effort.  The definition of all
+      English text used by the console is contained in the
+      <code>Console.properties</code> file. Individual translations
+      are contained in <code>Console_XX.properties</code> where XX is
+      the two letter <a href="ext:iso-639">ISO 639 language
+      code</a>. For example, the Spanish translation is contained in
       <code>Console_es.properties</code>. If you want to update an
       existing translation, make a copy of the file. If you want to
       create a new translation, create a new file.</p>

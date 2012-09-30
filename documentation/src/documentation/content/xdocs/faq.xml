@@ -1772,7 +1772,7 @@ grinder.test0.parameter.post=getPostData.dat
   <p>This is a known issue with The Grinder 2 that is fixed in
   The Grinder 3.0. I have no plans to backport the fix to The
   Grinder 2, but see the <a
-  href="site:sourceforge/extra-line">bug report</a> for how to
+  href="site:sourceforge/bugs/extra-line">bug report</a> for how to
   do this yourself.</p>
       </answer>
     </faq>

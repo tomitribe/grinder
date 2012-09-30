@@ -159,8 +159,9 @@ grinder.jvm.arguments = -Dpython.home=/opt/jython/jython2.2.1 -Dpython.cachedir=
 
     <p>The Grinder 3.5 improved the instrumentation of Java methods
     from Jython. If you are using an earlier version of The Grinder,
-    instrumentation of Java methods may not work as you expect. See <a
-    href="site:sourceforge/bug2992248">bug 2992248</a>.
+    instrumentation of Java methods <a
+    href="site:sourceforge/bugs/instrumentation">may not work</a> as
+    you expect.
     </p>
 
   </section>
