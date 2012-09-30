@@ -16,7 +16,7 @@
   copy from <a href="ext:sourceforge/git">Sourceforge</a>.
   </p>
 
-  <p>Note, the published documentation branch refers to the latest
+  <p>Note, the documentation branch (<em>docs</em>) refers to the latest
   released version of The Grinder, and so can lag the Git
   <code>HEAD</code>.</p>
 
