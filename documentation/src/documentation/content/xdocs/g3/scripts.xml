@@ -271,5 +271,18 @@ class TestRunner:
     </dl>
   </section>
 
+  <section id="cwd">
+    <title>Working directory</title>
+
+    <p>When the script has been distributed using the console, the
+    working directory (CWD) of the worker process will be the local
+    agent's cache of the distributed files. This allows the script to
+    conveniently refer to other distributed files using relative
+    paths.</p>
+
+    <p>Otherwise, the working directory of the worker process will be
+    that of the agent process that started it.</p>
+  </section>
+
 </body>
 </document>

@@ -12,15 +12,32 @@
   <section>
     <title>Scripts</title>
 
-    <p>The requirements for Jython scripts can be found in the <a
+    <p>The core requirements for Jython scripts can be found in the <a
     href="site:scripts-intro/jython-scripts/">introduction</a>. </p>
+
+    <section>
+      <title>Importing modules</title>
+
+      <p>Scripts can use code packaged in Jython <a
+      href="site:python/modules>modules"> modules</a>. The Grinder
+      adds both the directory containing the script and the <a
+      href="site:scripts-intro/cwd">working directory</a> of the worker
+      process (which may be the same) to the Python path, allowing
+      modules to be imported from these locations.</p>
+
+      <p>If you want to load modules from other locations, you should
+      adjust the Python path. One way to do this is to set the <a
+      href="site:jython/environment">JYTHONPATH</a> environment
+      variable.</p>
+
+    </section>
 
   </section>
 
   <section id="jython-installation">
     <title>The Jython distribution and installation</title>
 
-    <p>The Grinder 3.11 includes Jython 2.5.2 and the Jython
+    <p>The Grinder 3.11 includes Jython 2.5.3 and the Jython
     implementation of the standard Python library.</p>
 
 
@@ -61,7 +78,7 @@ java -Dgrinder.jvm.arguments = -Dpython.cachedir=/tmp/mycache net.grinder.Grinde
     either use the registry, or do this:</p>
 
     <source class="sh">
-grinder.jvm.arguments = -Dpython.home=/opt/jython/jython2.5.2 -Dpython.cachedir=/tmp/mycache
+grinder.jvm.arguments = -Dpython.home=/opt/jython/jython2.5.3 -Dpython.cachedir=/tmp/mycache
     </source>
 
     </section>
@@ -82,19 +99,19 @@ grinder.jvm.arguments = -Dpython.home=/opt/jython/jython2.5.2 -Dpython.cachedir=
       file:</p>
 
       <source class="sh">
-grinder.jvm.arguments = -Dpython.home=/opt/jython/jython2.5.2
+grinder.jvm.arguments = -Dpython.home=/opt/jython/jython2.5.3
       </source>
 
       <p>or on the agent command line:</p>
 
       <source class="sh">
-java -Dgrinder.jvm.arguments=-Dpython.home=/opt/jython/jython2.5.2 net.grinder.Grinder
+java -Dgrinder.jvm.arguments=-Dpython.home=/opt/jython/jython2.5.3 net.grinder.Grinder
       </source>
 
-      <p>In both cases, change <code>/opt/jython/jython2.5.2</code> to
+      <p>In both cases, change <code>/opt/jython/jython2.5.3</code> to
       the directory in which you installed Jython. You must install
       Jython on all of the agent machines. If the version of Jython is
-      different to that included with The Grinder (2.5.2), you should
+      different to that included with The Grinder (2.5.3), you should
       also add the installation's <code>jython.jar</code> to the start
       of the <code>CLASSPATH</code> used to launch the agent.</p>
 

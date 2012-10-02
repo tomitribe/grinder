@@ -71,6 +71,7 @@ See http://forrest.apache.org/docs/linking.html for more info
       <scripts-intro label="Introduction" href="scripts.html">
          <jython-scripts href="#jython-scripts"/>
          <tests href="#tests"/>
+         <cwd href="#cwd"/>
       </scripts-intro>
       <jython label="Jython" href="jython.html">
          <jython-installation href="#jython-installation"/>
@@ -291,7 +292,7 @@ See http://forrest.apache.org/docs/linking.html for more info
   </advanced>
   <https href="https.html"/>
         <urlcon-vs-httpclient href="urlcon_vs_httpclient.html"/>
-  <jsse-zip href="JSSE.zip"/>
+	<jsse-zip href="JSSE.zip"/>
       </httpclient>
     </innovation>
 
@@ -307,6 +308,7 @@ See http://forrest.apache.org/docs/linking.html for more info
 
     <jython href="http://www.jython.org/">
       <registry href="docs/registry.html"/>
+      <environment href="docs/using/cmdline.html#environment-variables"/>
     </jython>
 
     <jython-bugs href="http://bugs.jython.org/">
@@ -366,7 +368,9 @@ See http://forrest.apache.org/docs/linking.html for more info
     <picocontainer href="http://picocontainer.org/">
     </picocontainer>
 
-    <python href="http://www.python.org/"/>
+    <python href="http://www.python.org/">
+      <modules href="http://docs.python.org/tutorial/modules.html"/>
+    </python>
 
     <zephyrfalcon href="http://zephyrfalcon.org/">
        <pythonpitfalls href="labs/python_pitfalls.html"/>
