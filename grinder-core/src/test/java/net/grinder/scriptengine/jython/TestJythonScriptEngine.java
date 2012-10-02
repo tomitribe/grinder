@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2011 Philip Aston
+// Copyright (C) 2005 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,7 @@
 
 package net.grinder.scriptengine.jython;
 
+import static net.grinder.testutility.AssertUtilities.assertContains;
 import static net.grinder.testutility.FileUtilities.createFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
@@ -35,7 +36,6 @@ import net.grinder.engine.common.ScriptLocation;
 import net.grinder.scriptengine.ScriptEngineService.ScriptEngine;
 import net.grinder.scriptengine.ScriptEngineService.WorkerRunnable;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
-import net.grinder.testutility.AssertUtilities;
 import net.grinder.util.Directory;
 
 import org.junit.Before;
@@ -74,8 +74,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       new JythonScriptEngine(m_script);
       fail("Expected JythonScriptExecutionException");
     }
-    catch (JythonScriptExecutionException e) {
-      AssertUtilities.assertContains(e.getShortMessage(), "IOError");
+    catch (final JythonScriptExecutionException e) {
+      assertContains(e.getShortMessage(), "IOError");
     }
   }
 
@@ -86,8 +86,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       new JythonScriptEngine(m_script);
       fail("Expected EngineException");
     }
-    catch (EngineException e) {
-      AssertUtilities.assertContains(e.getMessage(), "no callable");
+    catch (final EngineException e) {
+      assertContains(e.getMessage(), "no callable");
     }
   }
 
@@ -99,8 +99,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       new JythonScriptEngine(m_script);
       fail("Expected EngineException");
     }
-    catch (EngineException e) {
-      AssertUtilities.assertContains(e.getMessage(), "no callable");
+    catch (final EngineException e) {
+      assertContains(e.getMessage(), "no callable");
     }
   }
 
@@ -109,17 +109,17 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
                "class TestRunner:pass");
 
     final ScriptEngine scriptEngine = new JythonScriptEngine(m_script);
-    AssertUtilities.assertContains(scriptEngine.getDescription(), "Jython");
+    assertContains(scriptEngine.getDescription(), "Jython");
     scriptEngine.shutdown();
   }
 
   @Test public void testInitialiseJythonException() throws Exception {
-    final File directory = new File(getDirectory(), "foo");
+    final File directory = new File(getDirectory(), "bah/foo");
     assertTrue(directory.mkdirs());
 
     // Bad root directory, causes import to fail.
     final ScriptLocation script =
-      new ScriptLocation(new Directory(new File("")),
+      new ScriptLocation(new Directory(new File("bah")),
                          new File(getDirectory(), "script"));
 
     createFile(script.getFile(),
@@ -130,18 +130,46 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       new JythonScriptEngine(script);
       fail("Expected JythonScriptExecutionException");
     }
-    catch (JythonScriptExecutionException e) {
-      AssertUtilities.assertContains(e.getShortMessage(), "ImportError");
+    catch (final JythonScriptExecutionException e) {
+      assertContains(e.getShortMessage(), "ImportError");
     }
+  }
 
-    // Good root directory, import works.
-    createFile(m_script.getFile(),
+  @Test public void testInitialisePathScriptWorkingDirectory()
+      throws Exception {
+    final File directory = new File(getDirectory(), "bah/foo");
+    assertTrue(directory.mkdirs());
+
+    // Import works from ScriptLocation directory.
+    final ScriptLocation script =
+        new ScriptLocation(new Directory(new File(getDirectory(), "bah")),
+                           new File(getDirectory(), "script"));
+
+    createFile(script.getFile(),
                "import foo",
                "class TestRunner:pass");
 
-    final ScriptEngine scriptEngine = new JythonScriptEngine(m_script);
+    final ScriptEngine scriptEngine = new JythonScriptEngine(script);
     scriptEngine.shutdown();
   }
+
+  @Test public void testInitialisePathScriptDirectory() throws Exception {
+    final File directory = new File(getDirectory(), "bah/foo");
+    assertTrue(directory.mkdirs());
+
+    // Import works from script directory.
+    final ScriptLocation script =
+        new ScriptLocation(new Directory(new File("bah")),
+                           new File(getDirectory(), "script"));
+
+    createFile(script.getFile(),
+               "import bah.foo",
+               "class TestRunner:pass");
+
+    final ScriptEngine scriptEngine = new JythonScriptEngine(script);
+    scriptEngine.shutdown();
+  }
+
 
   @Test public void testShutdownExitHook() throws Exception {
 
@@ -178,8 +206,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       scriptEngine.shutdown();
       fail("Expected JythonScriptExecutionException");
     }
-    catch (JythonScriptExecutionException e) {
-      AssertUtilities.assertContains(e.getShortMessage(), "a problem");
+    catch (final JythonScriptExecutionException e) {
+      assertContains(e.getShortMessage(), "a problem");
     }
   }
 
@@ -195,8 +223,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       scriptEngine.createWorkerRunnable();
       fail("Expected EngineException");
     }
-    catch (EngineException e) {
-      AssertUtilities.assertContains(e.getMessage(), "is not callable");
+    catch (final EngineException e) {
+      assertContains(e.getMessage(), "is not callable");
     }
   }
 
@@ -214,8 +242,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       scriptEngine.createWorkerRunnable();
       fail("Expected JythonScriptExecutionException");
     }
-    catch (JythonScriptExecutionException e) {
-      AssertUtilities.assertContains(e.getShortMessage(), "a problem");
+    catch (final JythonScriptExecutionException e) {
+      assertContains(e.getShortMessage(), "a problem");
     }
   }
 
@@ -254,8 +282,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       runnable.run();
       fail("Expected JythonScriptExecutionException");
     }
-    catch (JythonScriptExecutionException e) {
-      AssertUtilities.assertContains(e.getShortMessage(), "a problem");
+    catch (final JythonScriptExecutionException e) {
+      assertContains(e.getShortMessage(), "a problem");
     }
   }
 
@@ -274,8 +302,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       runnable.shutdown();
       fail("Expected JythonScriptExecutionException");
     }
-    catch (JythonScriptExecutionException e) {
-      AssertUtilities.assertContains(e.getShortMessage(), "a problem");
+    catch (final JythonScriptExecutionException e) {
+      assertContains(e.getShortMessage(), "a problem");
     }
 
     // Try it again, __del__ should now be disabled.
@@ -293,8 +321,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       scriptEngine.createWorkerRunnable(null);
       fail("Expected JythonScriptExecutionException");
     }
-    catch (JythonScriptExecutionException e) {
-      AssertUtilities.assertContains(e.getMessage(), "is not callable");
+    catch (final JythonScriptExecutionException e) {
+      assertContains(e.getMessage(), "is not callable");
     }
 
     final Object badRunner = new Object();
@@ -303,8 +331,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       scriptEngine.createWorkerRunnable(badRunner);
       fail("Expected JythonScriptExecutionException");
     }
-    catch (JythonScriptExecutionException e) {
-      AssertUtilities.assertContains(e.getMessage(), "is not callable");
+    catch (final JythonScriptExecutionException e) {
+      assertContains(e.getMessage(), "is not callable");
     }
 
     m_interpreter.exec("result=1");
@@ -325,12 +353,12 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
       scriptEngine.createWorkerRunnable(badRunner2);
       fail("Expected JythonScriptExecutionException");
     }
-    catch (JythonScriptExecutionException e) {
-      AssertUtilities.assertContains(e.getMessage(), "is not callable");
+    catch (final JythonScriptExecutionException e) {
+      assertContains(e.getMessage(), "is not callable");
     }
   }
 
-  public static void callback(Object o) {
+  public static void callback(final Object o) {
     s_lastCallbackObject = o;
   }
 }

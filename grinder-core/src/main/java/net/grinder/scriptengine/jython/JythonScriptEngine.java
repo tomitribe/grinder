@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2011 Philip Aston
+// Copyright (C) 2001 - 2012 Philip Aston
 // Copyright (C) 2005 Martin Wagner
 // All rights reserved.
 //
@@ -27,9 +27,9 @@ import java.io.File;
 import net.grinder.engine.common.EngineException;
 import net.grinder.engine.common.ScriptLocation;
 import net.grinder.scriptengine.ScriptEngineService;
-import net.grinder.scriptengine.ScriptExecutionException;
 import net.grinder.scriptengine.ScriptEngineService.ScriptEngine;
 import net.grinder.scriptengine.ScriptEngineService.WorkerRunnable;
+import net.grinder.scriptengine.ScriptExecutionException;
 
 import org.python.core.PyClass;
 import org.python.core.PyException;
@@ -59,7 +59,7 @@ final class JythonScriptEngine implements ScriptEngine {
   private final PyClass m_dieQuietly;  // The softly spoken Welshman.
   private final String m_version;
 
-  private PyObject m_testRunnerFactory;
+  private final PyObject m_testRunnerFactory;
 
   /**
    * Constructor for JythonScriptEngine.
@@ -67,7 +67,8 @@ final class JythonScriptEngine implements ScriptEngine {
    *
    * @throws EngineException If the script engine could not be created.
    */
-  public JythonScriptEngine(ScriptLocation script) throws EngineException {
+  public JythonScriptEngine(final ScriptLocation script)
+      throws EngineException {
 
     // Work around Jython issue 1894900.
     // If the python.cachedir has not been specified, and Jython is loaded
@@ -105,20 +106,29 @@ final class JythonScriptEngine implements ScriptEngine {
     try {
       version = PySystemState.class.getField("version").get(null).toString();
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       version = "Unknown";
     }
 
     m_version = version;
 
+    // Prepend the script directory to the Python path. This matches the
+    // behaviour of the Jython interpreter.
     m_systemState.path.insert(0,
+      new PyString(script.getFile().getParent()));
+
+    // Additionally, add the working directory to the Python path. I think
+    // this will always be the same as the worker's CWD. Users expect to be
+    // able to import from the directory the agent is running in or (when the
+    // script has been distributed), the distribution directory.
+    m_systemState.path.insert(1,
       new PyString(script.getDirectory().getFile().getPath()));
 
     try {
       // Run the test script, script does global set up here.
       m_interpreter.execfile(script.getFile().getPath());
     }
-    catch (PyException e) {
+    catch (final PyException e) {
       throw new JythonScriptExecutionException("initialising test script", e);
     }
 
@@ -138,9 +148,9 @@ final class JythonScriptEngine implements ScriptEngine {
    * @param path The path to search.
    * @param fileName Name of the jar file to find.
    */
-  private static File findFileInPath(String path, String fileName) {
+  private static File findFileInPath(final String path, final String fileName) {
 
-    for (String pathEntry : path.split(File.pathSeparator)) {
+    for (final String pathEntry : path.split(File.pathSeparator)) {
       final File file = new File(pathEntry);
 
      if (file.exists() && file.getName().equals(fileName)) {
@@ -164,7 +174,7 @@ final class JythonScriptEngine implements ScriptEngine {
       // returns a callable object.
       pyTestRunner = m_testRunnerFactory.__call__();
     }
-    catch (PyException e) {
+    catch (final PyException e) {
       throw new JythonScriptExecutionException(
         "creating per-thread TestRunner object", e);
     }
@@ -181,7 +191,7 @@ final class JythonScriptEngine implements ScriptEngine {
   /**
    * {@inheritDoc}
    */
-  @Override public WorkerRunnable createWorkerRunnable(Object testRunner)
+  @Override public WorkerRunnable createWorkerRunnable(final Object testRunner)
     throws EngineException {
 
     if (testRunner instanceof PyObject) {
@@ -208,6 +218,7 @@ final class JythonScriptEngine implements ScriptEngine {
    * @throws EngineException
    *           If the engine could not be shut down.
    */
+  @Override
   public void shutdown() throws EngineException {
 
     final PyObject exitfunc = m_systemState.__findattr__("exitfunc");
@@ -216,7 +227,7 @@ final class JythonScriptEngine implements ScriptEngine {
       try {
         exitfunc.__call__();
       }
-      catch (PyException e) {
+      catch (final PyException e) {
         throw new JythonScriptExecutionException(
           "calling script exit function", e);
       }
@@ -228,6 +239,7 @@ final class JythonScriptEngine implements ScriptEngine {
    *
    * @return The description.
    */
+  @Override
   public String getDescription() {
     return "Jython " + m_version;
   }
@@ -240,16 +252,17 @@ final class JythonScriptEngine implements ScriptEngine {
 
     private final PyObject m_testRunner;
 
-    public JythonWorkerRunnable(PyObject testRunner) {
+    public JythonWorkerRunnable(final PyObject testRunner) {
       m_testRunner = testRunner;
     }
 
+    @Override
     public void run() throws ScriptExecutionException {
 
       try {
         m_testRunner.__call__();
       }
-      catch (PyException e) {
+      catch (final PyException e) {
         throw new JythonScriptExecutionException("calling TestRunner", e);
       }
     }
@@ -285,6 +298,7 @@ final class JythonScriptEngine implements ScriptEngine {
      * method, the {@code PyObject} that underlies this class is made invalid.
      * </p>
      */
+    @Override
     public void shutdown() throws ScriptExecutionException {
 
       final PyObject del = m_testRunner.__findattr__("__del__");
@@ -293,7 +307,7 @@ final class JythonScriptEngine implements ScriptEngine {
         try {
           del.__call__();
         }
-        catch (PyException e) {
+        catch (final PyException e) {
           throw new JythonScriptExecutionException(
             "deleting TestRunner instance", e);
         }

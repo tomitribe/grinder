@@ -27,6 +27,10 @@ The Grinder 3.11
   Implement feature request 104 - latest Statistics from REST API.
   Thanks to Marc Holden for the request and the implementation.
 
+  Fix bug 222 - Script directory should be added to the python
+  path. This matches the behaviour of the Python interpretter. Thanks
+  to Poornima Mallur for the report.
+
 
 Sourceforge upgrade
 -------------------
