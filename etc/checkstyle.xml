@@ -65,8 +65,6 @@
 
         <!-- <module name="DesignForExtension"/> -->
 
-        <module name="DoubleCheckedLocking"/>
-
         <module name="EmptyBlock">
           <property name="option" value="text"/>
         </module>
