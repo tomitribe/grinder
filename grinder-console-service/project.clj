@@ -1,5 +1,5 @@
-(defproject net.sf.grinder/grinder-console-service "3.10-SNAPSHOT"
-  :parent [net.sf.grinder/grinder-parent "3.10-SNAPSHOT"]
+(defproject net.sf.grinder/grinder-console-service "3.11-SNAPSHOT"
+  :parent [net.sf.grinder/grinder-parent "3.11-SNAPSHOT"]
   :description "REST API to The Grinder console."
   :url "http://grinder.sourceforge.net"
   :dependencies [[org.clojure/clojure "1.4.0"]
