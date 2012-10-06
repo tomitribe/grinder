@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,17 +21,20 @@
 
 package net.grinder.engine.agent;
 
+import static java.util.Arrays.asList;
+import static net.grinder.testutility.AssertUtilities.assertContainsPattern;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import net.grinder.common.GrinderProperties;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
-import static net.grinder.testutility.AssertUtilities.assertContainsPattern;
 import net.grinder.util.Directory;
 
 import org.junit.Test;
@@ -137,30 +140,44 @@ public class TestWorkerProcessCommandLine extends AbstractJUnit4FileTestCase {
     assertEquals(expectedSuffix, commandLine);
   }
 
+  private static List<File> path(final String... strings) {
+    final List<File> result = new ArrayList<File>(strings.length);
+
+    for (final String s : strings) {
+      result.add(new File(s));
+    }
+
+    return result;
+  }
+
   @Test public void testFindAgentJarFile() throws Exception {
-    assertNull(WorkerProcessCommandLine.findAgentJarFile("foo.jar"));
+    assertNull(WorkerProcessCommandLine.findAgentJarFile(path("foo.jar")));
 
-    assertNull(WorkerProcessCommandLine.findAgentJarFile("/foo.jar"));
-
-    assertNull(WorkerProcessCommandLine.findAgentJarFile("/notthere/foo.jar"));
+    assertNull(WorkerProcessCommandLine.findAgentJarFile(path("/foo.jar")));
 
     assertNull(
-     WorkerProcessCommandLine.findAgentJarFile(
-       "somewhere " + File.pathSeparatorChar + "somewhereelse"));
+      WorkerProcessCommandLine.findAgentJarFile(path("/notthere/foo.jar")));
+
+    assertNull(
+      WorkerProcessCommandLine.findAgentJarFile(
+        path("somewhere ", "somewhereelse")));
 
     final File directories = new File(getDirectory(), "a/b");
     directories.mkdirs();
 
-    assertNull(WorkerProcessCommandLine.findAgentJarFile(directories.getPath()
-                                                         + "/c.jar"));
+    assertNull(
+      WorkerProcessCommandLine.findAgentJarFile(path(directories.getPath()
+                                                     + "/c.jar")));
 
     final File f = new File(directories, "grinder-dcr-agent.jar");
     f.createNewFile();
-    assertNotNull(WorkerProcessCommandLine.findAgentJarFile(f.getAbsolutePath()));
+
+    assertNotNull(
+      WorkerProcessCommandLine.findAgentJarFile(path(f.getAbsolutePath())));
 
     assertNull(
       WorkerProcessCommandLine.findAgentJarFile(
-        new File(getDirectory().getAbsoluteFile(), "c.jar").getPath()));
+        asList(new File(getDirectory().getAbsoluteFile(), "c.jar"))));
 
     // I'd like also to test with relative paths, but this is impossible to
     // do in a platform independent manner.

@@ -148,7 +148,12 @@
 
           <td>Use to adjust the classpath used for the worker process
           JVMs. Anything specified here will be prepended to the
-          classpath used to start the Grinder processes.</td>
+          classpath used to start the Grinder processes. <p>Relative
+          paths are evaluated based on the worker process <a
+          href="site:scripts-intro/cwd">working directory</a>.
+          Scripts distributed using the console can refer to libraries
+          in the distribution directory by using relative
+          paths in this property.</p></td>
 
           <td></td>
   </tr>

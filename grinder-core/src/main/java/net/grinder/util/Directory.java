@@ -412,20 +412,18 @@ public final class Directory implements Serializable {
    *          The path.
    * @return The result.
    */
-  public String rebasePath(final String path) {
+  public List<File> rebasePath(final String path) {
     final String[] elements = path.split(File.pathSeparator);
 
-    final StringBuilder result = new StringBuilder(path.length());
+    final List<File> result = new ArrayList<File>(elements.length);
 
     for (final String e : elements) {
-      if (result.length() > 0) {
-        result.append(File.pathSeparator);
+      if (!e.isEmpty()) {
+        result.add(rebaseFromCWD(new File(e)));
       }
-
-      result.append(rebaseFromCWD(new File(e)));
     }
 
-    return result.toString();
+    return result;
   }
 
   /**

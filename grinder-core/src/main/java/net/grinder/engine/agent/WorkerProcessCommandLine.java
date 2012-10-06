@@ -56,16 +56,14 @@ final class WorkerProcessCommandLine implements CommandLine {
     m_command = new ArrayList<String>();
     m_command.add(properties.getProperty("grinder.jvm", "java"));
 
-    final String systemClasspath =
-      systemProperties.getProperty("java.class.path");
+    final List<File> systemClasspath =
+      workingDirectory.rebasePath(
+        systemProperties.getProperty("java.class.path", ""));
 
-    if (systemClasspath != null) {
-      final File agent = findAgentJarFile(systemClasspath);
+    final File agent = findAgentJarFile(systemClasspath);
 
-      if (agent != null) {
-        m_command.add("-javaagent:" +
-                      workingDirectory.rebaseFromCWD(agent));
-      }
+    if (agent != null) {
+      m_command.add("-javaagent:" + agent);
     }
 
     if (jvmArguments != null) {
@@ -79,6 +77,8 @@ final class WorkerProcessCommandLine implements CommandLine {
       }
     }
 
+    // Relative paths in grinder.jvm.classpath are not altered, so
+    // are evaluated based on the working directory.
     final String additionalClasspath =
       properties.getProperty("grinder.jvm.classpath");
 
@@ -88,18 +88,18 @@ final class WorkerProcessCommandLine implements CommandLine {
       classpath.append(additionalClasspath);
     }
 
-    if (systemClasspath != null) {
+    for (final File f : systemClasspath) {
       if (classpath.length() > 0) {
         classpath.append(File.pathSeparatorChar);
       }
 
-      classpath.append(systemClasspath);
+      classpath.append(f.getPath());
     }
 
     if (classpath.length() > 0) {
       m_command.add("-classpath");
 
-      m_command.add(workingDirectory.rebasePath(classpath.toString()));
+      m_command.add(classpath.toString());
     }
 
     m_commandClassIndex = m_command.size();
@@ -161,11 +161,11 @@ final class WorkerProcessCommandLine implements CommandLine {
   /**
    * Package scope for unit tests.
    *
-   * @param path The path to search.
+   * @param systemClasspath The path to search.
    */
-  static File findAgentJarFile(final String path) {
-    for (final String pathEntry : path.split(File.pathSeparator)) {
-      final File f = new File(pathEntry).getParentFile();
+  static File findAgentJarFile(final List<File> systemClasspath) {
+    for (final File pathEntry : systemClasspath) {
+      final File f = pathEntry.getParentFile();
       final File parentFile = f != null ? f : new File(".");
 
       final File[] children = parentFile.listFiles();

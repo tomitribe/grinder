@@ -31,6 +31,11 @@ The Grinder 3.11
   path. This matches the behaviour of the Python interpretter. Thanks
   to Poornima Mallur for the report.
 
+  Implement feature request 100 - grinder.jvm.classpath should allow
+  relative paths. The grinder.jvm.classpath property is now evaluated
+  based on the worker process working directory, not the agent
+  directory. Thanks to Horace for the request.
+
 
 Sourceforge upgrade
 -------------------
