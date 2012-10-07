@@ -36,6 +36,9 @@ The Grinder 3.11
   based on the worker process working directory, not the agent
   directory. Thanks to Horace for the request.
 
+  Fix bug 217 - wrong selection of agent JAR in command line. Thanks
+  to Arne for the report.
+
 
 Sourceforge upgrade
 -------------------

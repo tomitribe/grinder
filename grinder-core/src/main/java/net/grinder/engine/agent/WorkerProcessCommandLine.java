@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.grinder.common.GrinderProperties;
 import net.grinder.engine.process.WorkerProcessEntryPoint;
@@ -41,7 +43,8 @@ import net.grinder.util.Directory;
  */
 final class WorkerProcessCommandLine implements CommandLine {
 
-  private static final String AGENT_JAR_FILENAME_PREFIX = "grinder-dcr-agent";
+  private static final Pattern AGENT_JAR_FILENAME_PATTERN =
+      Pattern.compile("^grinder-dcr-agent-([\\d.]*)(-.*)?.jar$");
 
   private final Directory m_workingDirectory;
   private final List<String> m_command;
@@ -158,6 +161,17 @@ final class WorkerProcessCommandLine implements CommandLine {
     return buffer.toString();
   }
 
+  static boolean isAgentJar(final String name) {
+    final Matcher matcher = AGENT_JAR_FILENAME_PATTERN.matcher(name);
+
+    if (matcher.matches()) {
+      final String maybeSnapshot = matcher.group(2);
+      return maybeSnapshot == null || "-SNAPSHOT".equals(maybeSnapshot);
+    }
+
+    return false;
+  }
+
   /**
    * Package scope for unit tests.
    *
@@ -172,10 +186,7 @@ final class WorkerProcessCommandLine implements CommandLine {
 
       if (children != null) {
         for (final File candidate : children) {
-          final String name = candidate.getName();
-
-          if (name.startsWith(AGENT_JAR_FILENAME_PREFIX) &&
-              name.endsWith(".jar")) {
+          if (isAgentJar(candidate.getName())) {
             return candidate;
           }
         }

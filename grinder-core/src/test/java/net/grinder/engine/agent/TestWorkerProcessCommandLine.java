@@ -24,6 +24,7 @@ package net.grinder.engine.agent;
 import static java.util.Arrays.asList;
 import static net.grinder.testutility.AssertUtilities.assertContainsPattern;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -89,7 +90,7 @@ public class TestWorkerProcessCommandLine extends AbstractJUnit4FileTestCase {
 
     final Properties overrideProperties = new Properties();
 
-    final File agentFile = new File(getDirectory(), "grinder-dcr-agent.jar");
+    final File agentFile = new File(getDirectory(), "grinder-dcr-agent-1.jar");
     final File someJar = new File(getDirectory(), "some.jar");
     overrideProperties.put("java.class.path", someJar.getAbsolutePath());
     agentFile.createNewFile();
@@ -150,6 +151,25 @@ public class TestWorkerProcessCommandLine extends AbstractJUnit4FileTestCase {
     return result;
   }
 
+  @Test public void testIsAgentJarValidNames() {
+
+    for (final String s : asList("grinder-dcr-agent-1.jar",
+                                 "grinder-dcr-agent-3.11.jar",
+                                 "grinder-dcr-agent-3.11-SNAPSHOT.jar")) {
+      assertTrue(s, WorkerProcessCommandLine.isAgentJar(s));
+    }
+  }
+
+  @Test public void testIsAgentJarInvalidNames() {
+
+    for (final String s : asList("grinder-dcr-agent.jar",
+                                 "grinder-dcr-agent-3.11.jar.asc",
+                                 "grinder-dcr-agent-3.11-sources.jar",
+                                 "xgrinder-dcr-agent-3.11.jar")) {
+      assertFalse(s, WorkerProcessCommandLine.isAgentJar(s));
+    }
+  }
+
   @Test public void testFindAgentJarFile() throws Exception {
     assertNull(WorkerProcessCommandLine.findAgentJarFile(path("foo.jar")));
 
@@ -169,7 +189,7 @@ public class TestWorkerProcessCommandLine extends AbstractJUnit4FileTestCase {
       WorkerProcessCommandLine.findAgentJarFile(path(directories.getPath()
                                                      + "/c.jar")));
 
-    final File f = new File(directories, "grinder-dcr-agent.jar");
+    final File f = new File(directories, "grinder-dcr-agent-1.20.jar");
     f.createNewFile();
 
     assertNotNull(
