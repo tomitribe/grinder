@@ -1,4 +1,4 @@
-// Copyright (C) 2002 - 2009 Philip Aston
+// Copyright (C) 2002 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.grinder.common.SSLContextFactory;
-import net.grinder.common.SkeletonThreadLifeCycleListener;
 import net.grinder.common.SSLContextFactory.SSLContextFactoryException;
+import net.grinder.common.SkeletonThreadLifeCycleListener;
 import net.grinder.plugininterface.PluginException;
 import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.plugininterface.PluginThreadListener;
@@ -57,10 +57,10 @@ class HTTPPluginThreadState
   private final Sleeper m_slowClientSleeper;
   private final TimeAuthorityAdapter m_timeAuthority;
 
-  HTTPPluginThreadState(PluginThreadContext threadContext,
-                        SSLContextFactory sslContextFactory,
-                        Sleeper slowClientSleeper,
-                        TimeAuthority timeAuthority)
+  HTTPPluginThreadState(final PluginThreadContext threadContext,
+                        final SSLContextFactory sslContextFactory,
+                        final Sleeper slowClientSleeper,
+                        final TimeAuthority timeAuthority)
     throws PluginException {
     m_threadContext = threadContext;
     m_sslContextFactory = sslContextFactory;
@@ -72,7 +72,7 @@ class HTTPPluginThreadState
     return m_threadContext;
   }
 
-  public HTTPConnectionWrapper getConnectionWrapper(URI uri)
+  public HTTPConnectionWrapper getConnectionWrapper(final URI uri)
     throws ParseException,
            ProtocolNotSuppException,
            SSLContextFactoryException {
@@ -93,10 +93,8 @@ class HTTPPluginThreadState
     final HTTPConnection httpConnection = new HTTPConnection(uri);
     httpConnection.setContext(this);
 
-    if ("https".equals(uri.getScheme())) {
-      httpConnection.setSSLSocketFactory(
-        m_sslContextFactory.getSSLContext().getSocketFactory());
-    }
+    httpConnection.setSSLSocketFactory(
+      m_sslContextFactory.getSSLContext().getSocketFactory());
 
     httpConnection.setTimeAuthority(m_timeAuthority);
 
@@ -110,19 +108,21 @@ class HTTPPluginThreadState
     return newConnectionWrapper;
   }
 
+  @Override
   public void beginRun() {
     // Discard our cookies.
     CookieModule.discardAllCookies(this);
 
     // Close connections from previous run.
-    for (HTTPConnectionWrapper connection : m_httpConnectionWrappers.values()) {
+    for (final HTTPConnectionWrapper connection :
+      m_httpConnectionWrappers.values()) {
       connection.close();
     }
 
     m_httpConnectionWrappers.clear();
   }
 
-  public void setLastResponse(HTTPResponse lastResponse) {
+  public void setLastResponse(final HTTPResponse lastResponse) {
     m_lastResponse = lastResponse;
   }
 
@@ -135,10 +135,11 @@ class HTTPPluginThreadState
 
     private final TimeAuthority m_timeAuthority;
 
-    public TimeAuthorityAdapter(TimeAuthority timeAuthority) {
+    public TimeAuthorityAdapter(final TimeAuthority timeAuthority) {
       m_timeAuthority = timeAuthority;
     }
 
+    @Override
     public long getTimeInMilliseconds() {
       return m_timeAuthority.getTimeInMilliseconds();
     }

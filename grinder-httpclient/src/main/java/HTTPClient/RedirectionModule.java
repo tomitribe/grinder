@@ -26,7 +26,11 @@
  *
  *  The HTTPClient's home page is located at:
  *
- *  http://www.innovation.ch/java/HTTPClient/ 
+ *  http://www.innovation.ch/java/HTTPClient/
+ *
+ * This file contains modifications for use with "The Grinder"
+ * (http://grinder.sourceforge.net) under the terms of the LGPL. They
+ * are marked below with the comment "GRINDER MODIFICATION".
  *
  */
 
@@ -351,6 +355,15 @@ class RedirectionModule implements HTTPClientModule
 
 			mvd.setSSLSocketFactory(req.getConnection().getSSLSocketFactory());
 			mvd.setContext(req.getConnection().getContext());
+
+            /* GRINDER MODIFICATION++ */
+            mvd.setCheckCertificates(
+              req.getConnection().getCheckCertificates());
+            mvd.setTestConnectionHealthWithBlockingRead(
+              req.getConnection().getTestConnectionHealthWithBlockingRead());
+		    mvd.setTimeAuthority(req.getConnection().getTimeAuthority());
+            /* --GRINDER MODIFICATION */
+
 			new_con = true;
 		    }
 

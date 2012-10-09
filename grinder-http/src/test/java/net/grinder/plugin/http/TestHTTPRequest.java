@@ -63,6 +63,7 @@ import net.grinder.scriptengine.Recorder;
 import net.grinder.scriptengine.java.JavaScriptEngineService;
 import net.grinder.statistics.StatisticsIndexMap;
 import net.grinder.statistics.StatisticsServicesImplementation;
+import net.grinder.util.InsecureSSLContextFactory;
 import net.grinder.util.StandardTimeAuthority;
 import net.grinder.util.TimeAuthority;
 
@@ -89,10 +90,12 @@ import HTTPClient.ParseException;
 public class TestHTTPRequest {
   private static final Random s_random = new Random();
 
+  private final SSLContextFactory m_sslContextFactory =
+      new InsecureSSLContextFactory();
+
   @Mock private ScriptContext m_scriptContext;
   @Mock private Statistics m_statistics;
   @Mock private PluginThreadContext m_threadContext;
-  @Mock private SSLContextFactory m_sslContextFactory;
   @Mock private PluginProcessContext m_pluginProcessContext;
   @Mock private StatisticsForTest m_statisticsForTest;
 
@@ -127,7 +130,8 @@ public class TestHTTPRequest {
         setInstance(this);
       }
 
-      public void register(GrinderPlugin plugin) throws GrinderException {
+      @Override
+      public void register(final GrinderPlugin plugin) throws GrinderException {
         plugin.initialize(m_pluginProcessContext);
       }
     };
@@ -161,7 +165,7 @@ public class TestHTTPRequest {
         request.GET("http://idontexist.grinder.sf.net");
         fail("Expected TimeoutException");
       }
-      catch (TimeoutException e) {
+      catch (final TimeoutException e) {
       }
 
       try {
@@ -170,7 +174,7 @@ public class TestHTTPRequest {
         request2.GET("http://idontexist.grinder.sf.net");
         fail("Expected TimeoutException");
       }
-      catch (TimeoutException e) {
+      catch (final TimeoutException e) {
       }
     }
     finally {
@@ -188,7 +192,7 @@ public class TestHTTPRequest {
       httpRequest.setUrl("foo/bah");
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     assertNull(httpRequest.getUrl());
@@ -197,7 +201,7 @@ public class TestHTTPRequest {
       httpRequest.setUrl("http://foo:bah/blah");
       fail("Expected ParseException");
     }
-    catch (ParseException e) {
+    catch (final ParseException e) {
     }
 
     assertNull(httpRequest.getUrl());
@@ -228,14 +232,14 @@ public class TestHTTPRequest {
       request.DELETE();
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     try {
       request.DELETE("/partial");
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     final HTTPResponse response = request.DELETE(m_handler.getURL());
@@ -284,14 +288,14 @@ public class TestHTTPRequest {
       request.GET();
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     try {
       request.GET("#partial");
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     final HTTPResponse response = request.GET(m_handler.getURL());
@@ -368,14 +372,14 @@ public class TestHTTPRequest {
       request.HEAD();
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     try {
       request.HEAD("?partial");
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     final HTTPResponse response = request.HEAD(m_handler.getURL());
@@ -430,14 +434,14 @@ public class TestHTTPRequest {
       request.OPTIONS();
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     try {
       request.OPTIONS("///::partial");
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     final HTTPResponse response = request.OPTIONS(m_handler.getURL());
@@ -504,14 +508,14 @@ public class TestHTTPRequest {
       request.POST();
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     try {
       request.POST("#:/partial");
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     final HTTPResponse response = request.POST(m_handler.getURL());
@@ -653,14 +657,14 @@ public class TestHTTPRequest {
       request.PUT();
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     try {
       request.PUT("?:/partial");
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     final HTTPResponse response = request.PUT(m_handler.getURL());
@@ -718,14 +722,14 @@ public class TestHTTPRequest {
       request.TRACE();
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     try {
       request.TRACE("??partial");
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     final HTTPResponse response = request.TRACE(m_handler.getURL());
@@ -812,11 +816,10 @@ public class TestHTTPRequest {
         307,
     };
 
-    for (int i = 0; i < redirectCodes.length; ++i) {
-      final int redirectCode = redirectCodes[i];
-
+    for (final int redirectCode : redirectCodes) {
       final HTTPRequestHandler handler = new HTTPRequestHandler() {
-        protected void writeHeaders(StringBuffer response) {
+        @Override
+        protected void writeHeaders(final StringBuffer response) {
           response.append("HTTP/1.0 ");
           response.append(redirectCode);
           response.append(" Moved Temporarily\r\n"); // whatever
@@ -843,7 +846,8 @@ public class TestHTTPRequest {
 
   @Test public void testBadRequestResponseProcessing() throws Exception {
     final HTTPRequestHandler handler = new HTTPRequestHandler() {
-      protected void writeHeaders(StringBuffer response) {
+      @Override
+      protected void writeHeaders(final StringBuffer response) {
         response.append("HTTP/1.0 400 Bad Request\r\n");
       }
     };
@@ -868,7 +872,8 @@ public class TestHTTPRequest {
     final Object[] resultHolder = new Object[1];
 
     final HTTPRequest request = new HTTPRequest() {
-        public void processResponse(HTTPResponse response) {
+        @Override
+        public void processResponse(final HTTPResponse response) {
           resultHolder[0] = response;
         }
       };
@@ -927,7 +932,7 @@ public class TestHTTPRequest {
       timeAuthority.getTimeInMilliseconds();
       fail("Not all times used");
     }
-    catch (ArrayIndexOutOfBoundsException e) {
+    catch (final ArrayIndexOutOfBoundsException e) {
     }
 
     assertTrue(response.getInputStream() instanceof ByteArrayInputStream);
@@ -983,7 +988,7 @@ public class TestHTTPRequest {
       timeAuthority.getTimeInMilliseconds();
       fail("Not all times used");
     }
-    catch (ArrayIndexOutOfBoundsException e) {
+    catch (final ArrayIndexOutOfBoundsException e) {
     }
 
     assertTrue(response.getInputStream() instanceof ByteArrayInputStream);
@@ -1049,7 +1054,7 @@ public class TestHTTPRequest {
       timeAuthority.getTimeInMilliseconds();
       fail("Not all times used");
     }
-    catch (ArrayIndexOutOfBoundsException e) {
+    catch (final ArrayIndexOutOfBoundsException e) {
     }
   }
 
@@ -1069,7 +1074,7 @@ public class TestHTTPRequest {
       request.GET(m_handler.getURL());
       fail("Expected PluginException");
     }
-    catch (PluginException e) {
+    catch (final PluginException e) {
       assertSame(exception, e.getCause());
     }
   }
@@ -1107,7 +1112,7 @@ public class TestHTTPRequest {
       request.GET();
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     // GET() delegates to two more general versions.
@@ -1119,7 +1124,7 @@ public class TestHTTPRequest {
       request.GET("#partial");
       fail("Expected URLException");
     }
-    catch (URLException e) {
+    catch (final URLException e) {
     }
 
     // GET(String) delegates to one more general version.
@@ -1154,7 +1159,7 @@ public class TestHTTPRequest {
         new HTTPRequest().GET(httpServer.getURL());
         fail("Expected TimeoutException");
       }
-      catch (TimeoutException e) {
+      catch (final TimeoutException e) {
       }
 
       // Need another HTTPRequestHandler - the first will have closed its
@@ -1176,7 +1181,7 @@ public class TestHTTPRequest {
         new HTTPRequest().GET(httpServer2.getURL());
         fail("Expected TimeoutException");
       }
-      catch (TimeoutException e) {
+      catch (final TimeoutException e) {
       }
 
       connection.close();
@@ -1190,7 +1195,7 @@ public class TestHTTPRequest {
     try {
       new HTTPRequest().GET(m_handler.getURL(), null, null);
     }
-    catch (NullPointerException e) {
+    catch (final NullPointerException e) {
       assertContains(e.getMessage(), "headers");
     }
   }
@@ -1203,7 +1208,7 @@ public class TestHTTPRequest {
     try {
       new HTTPRequest().GET(m_handler.getURL(), null, headers);
     }
-    catch (NullPointerException e) {
+    catch (final NullPointerException e) {
       assertContains(e.getMessage(), "headers[1]");
     }
   }
@@ -1216,12 +1221,12 @@ public class TestHTTPRequest {
     try {
       new HTTPRequest().GET(m_handler.getURL(), null, headers);
     }
-    catch (NullPointerException e) {
+    catch (final NullPointerException e) {
       assertContains(e.getMessage(), "headers[1].getName()");
     }
   }
 
-  private static byte[] randomBytes(int max) {
+  private static byte[] randomBytes(final int max) {
     final byte[] result = new byte[s_random.nextInt(max)];
     s_random.nextBytes(result);
     return result;
@@ -1232,15 +1237,16 @@ public class TestHTTPRequest {
     private long[] m_times;
     private int m_last;
 
-    ListTimeAuthority(long[] times) {
+    ListTimeAuthority(final long[] times) {
       setTimes(times);
     }
 
-    public void setTimes(long[] times) {
+    public void setTimes(final long[] times) {
       m_times = times;
       m_last = -1;
     }
 
+    @Override
     public long getTimeInMilliseconds() {
       return m_times[++m_last];
     }

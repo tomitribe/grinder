@@ -32,6 +32,7 @@ import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginProcessContext;
 import net.grinder.plugininterface.PluginRegistry;
 import net.grinder.script.Grinder.ScriptContext;
+import net.grinder.util.InsecureSSLContextFactory;
 import net.grinder.util.StandardTimeAuthority;
 
 import org.junit.Test;
@@ -47,7 +48,7 @@ public class TestHTTPPluginControl {
   @Test public void testHTTPPluginControl() throws Exception {
     final HTTPPluginThreadState threadState =
       new HTTPPluginThreadState(null,
-                                null,
+                                new InsecureSSLContextFactory(),
                                 null,
                                 new StandardTimeAuthority());
 
@@ -64,7 +65,8 @@ public class TestHTTPPluginControl {
     new PluginRegistry() {
       { setInstance(this); }
 
-      public void register(GrinderPlugin plugin) throws GrinderException {
+      @Override
+      public void register(final GrinderPlugin plugin) throws GrinderException {
         plugin.initialize(pluginProcessContext);
       }
     };

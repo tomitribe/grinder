@@ -37,6 +37,7 @@ import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.Statistics;
 import net.grinder.statistics.StatisticsServicesImplementation;
+import net.grinder.util.InsecureSSLContextFactory;
 import net.grinder.util.StandardTimeAuthority;
 import net.grinder.util.TimeAuthority;
 
@@ -56,11 +57,13 @@ import HTTPClient.NVPair;
  */
 public class TestHTTPUtilitiesImplementation {
 
+  private final SSLContextFactory m_sslContextFactory =
+      new InsecureSSLContextFactory();
+
   @Mock private PluginProcessContext m_pluginProcessContext;
   @Mock(answer = RETURNS_MOCKS) private ScriptContext m_scriptContext;
   @Mock private Statistics m_statistics;
   @Mock private PluginThreadContext m_threadContext;
-  @Mock private SSLContextFactory m_sslContextFactory;
 
   @Before public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
@@ -89,7 +92,8 @@ public class TestHTTPUtilitiesImplementation {
         setInstance(this);
       }
 
-      public void register(GrinderPlugin plugin) throws GrinderException {
+      @Override
+      public void register(final GrinderPlugin plugin) throws GrinderException {
         plugin.initialize(m_pluginProcessContext);
       }
     };

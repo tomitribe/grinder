@@ -39,6 +39,9 @@ The Grinder 3.11
   Fix bug 217 - wrong selection of agent JAR in command line. Thanks
   to Arne for the report.
 
+  Fix bug 224 - HTTPS and follow redirects. Thanks to Gerald Boersma
+  for the report.
+
 
 Sourceforge upgrade
 -------------------

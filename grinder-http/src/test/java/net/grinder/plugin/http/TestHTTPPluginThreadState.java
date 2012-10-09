@@ -1,4 +1,4 @@
-// Copyright (C) 2007 - 2010 Philip Aston
+// Copyright (C) 2007 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,17 +21,22 @@
 
 package net.grinder.plugin.http;
 
-import HTTPClient.HTTPConnection;
-import HTTPClient.HTTPResponse;
-import HTTPClient.URI;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 import net.grinder.common.SSLContextFactory;
 import net.grinder.plugininterface.PluginThreadContext;
-import net.grinder.testutility.DelegatingStubFactory;
-import net.grinder.testutility.RandomStubFactory;
 import net.grinder.util.InsecureSSLContextFactory;
 import net.grinder.util.Sleeper;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import HTTPClient.HTTPConnection;
+import HTTPClient.HTTPResponse;
+import HTTPClient.URI;
 
 
 /**
@@ -39,24 +44,21 @@ import junit.framework.TestCase;
  *
  * @author Philip Aston
  */
-public class TestHTTPPluginThreadState extends TestCase {
+public class TestHTTPPluginThreadState {
 
-  private final RandomStubFactory<PluginThreadContext>
-    m_threadContextStubFactory =
-      RandomStubFactory.create(PluginThreadContext.class);
-  private final PluginThreadContext m_threadContext =
-    m_threadContextStubFactory.getStub();
-
-  private final DelegatingStubFactory<InsecureSSLContextFactory>
-    m_sslContextFactoryStubFactory =
-      DelegatingStubFactory.create(new InsecureSSLContextFactory());
   private final SSLContextFactory m_sslContextFactory =
-    m_sslContextFactoryStubFactory.getStub();
+      new InsecureSSLContextFactory();
 
-  private final RandomStubFactory<Sleeper> m_sleeperStubFactory =
-    RandomStubFactory.create(Sleeper.class);
-  private final Sleeper m_sleeper = m_sleeperStubFactory.getStub();
+  @Mock private PluginThreadContext m_threadContext;
 
+  @Mock private Sleeper m_sleeper;
+
+  @Before
+  public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
+  }
+
+  @Test
   public void testHTTPPluginThreadState() throws Exception {
     final HTTPPluginThreadState pluginThreadState =
       new HTTPPluginThreadState(m_threadContext,
@@ -78,11 +80,10 @@ public class TestHTTPPluginThreadState extends TestCase {
       pluginThreadState.getConnectionWrapper(new URI("http://blah.com"));
 
     assertNotNull(wrapper1);
+    assertNotNull(m_sslContextFactory.getSSLContext().getSocketFactory());
 
     final HTTPConnectionWrapper wrapper2 =
       pluginThreadState.getConnectionWrapper(new URI("https://secure.com"));
-
-    m_sslContextFactoryStubFactory.assertSuccess("getSSLContext");
 
     assertNotNull(wrapper2);
 
@@ -106,11 +107,9 @@ public class TestHTTPPluginThreadState extends TestCase {
     pluginThreadState.endThread();
 
     pluginThreadState.beginShutdown();
-
-    m_sslContextFactoryStubFactory.assertNoMoreCalls();
   }
 
-  public void testSetResponse() throws Exception {
+  @Test public void testSetResponse() throws Exception {
     final HTTPRequestHandler handler = new HTTPRequestHandler();
     handler.start();
 
