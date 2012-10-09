@@ -1,4 +1,4 @@
-// Copyright (C) 2002 - 2008 Philip Aston
+// Copyright (C) 2002 - 2012 Philip Aston
 // Copyright (C) 2003 Richard Perks
 // Copyright (C) 2004 Bertrand Ave
 // All rights reserved.
@@ -52,103 +52,116 @@ final class HTTPPluginConnectionDefaults implements HTTPPluginConnection {
   private InetAddress m_localAddress;
   private int m_slowClientTargetBPS;
 
-  public void setFollowRedirects(boolean followRedirects) {
+  @Override
+  public synchronized void setFollowRedirects(final boolean followRedirects) {
     m_followRedirects = followRedirects;
   }
 
-  boolean getFollowRedirects() {
+  synchronized boolean getFollowRedirects() {
     return m_followRedirects;
   }
 
-  public void setUseCookies(boolean useCookies) {
+  @Override
+  public synchronized void setUseCookies(final boolean useCookies) {
     m_useCookies = useCookies;
   }
 
-  boolean getUseCookies() {
+  synchronized boolean getUseCookies() {
     return m_useCookies;
   }
 
-  public void setUseContentEncoding(boolean useContentEncoding) {
+  @Override
+  public synchronized
+    void setUseContentEncoding(final boolean useContentEncoding) {
     m_useContentEncoding = useContentEncoding;
   }
 
-  boolean getUseContentEncoding() {
+  synchronized boolean getUseContentEncoding() {
     return m_useContentEncoding;
   }
 
-  public void setUseTransferEncoding(boolean useTransferEncoding) {
+  @Override
+  public synchronized
+    void setUseTransferEncoding(final boolean useTransferEncoding) {
     m_useTransferEncoding = useTransferEncoding;
   }
 
-  boolean getUseAuthorizationModule() {
+  synchronized boolean getUseAuthorizationModule() {
     return m_useAuthorizationModule;
   }
 
-  public void setUseAuthorizationModule(boolean b) {
+  @Override
+  public synchronized void setUseAuthorizationModule(final boolean b) {
     m_useAuthorizationModule = b;
   }
 
-  boolean getUseTransferEncoding() {
+  synchronized boolean getUseTransferEncoding() {
     return m_useTransferEncoding;
   }
 
-  public void setDefaultHeaders(NVPair[] defaultHeaders) {
+  @Override
+  public synchronized void setDefaultHeaders(final NVPair[] defaultHeaders) {
     m_defaultHeaders = defaultHeaders;
   }
 
-  NVPair[] getDefaultHeaders() {
+  synchronized NVPair[] getDefaultHeaders() {
     return m_defaultHeaders;
   }
 
-  public void setTimeout(int timeout)  {
+  @Override
+  public synchronized void setTimeout(final int timeout)  {
     m_timeout = timeout;
   }
 
-  int getTimeout() {
+  synchronized int getTimeout() {
     return m_timeout;
   }
 
-  public void setVerifyServerDistinguishedName(boolean b) {
+  @Override
+  public synchronized void setVerifyServerDistinguishedName(final boolean b) {
     m_verifyServerDistinguishedName = b;
   }
 
-  boolean getVerifyServerDistinguishedName() {
+  synchronized boolean getVerifyServerDistinguishedName() {
     return m_verifyServerDistinguishedName;
   }
 
-  public void setProxyServer(String host, int port) {
+  @Override
+  public synchronized void setProxyServer(final String host, final int port) {
     m_proxyHost = host;
     m_proxyPort = port;
   }
 
-  String getProxyHost() {
+  synchronized String getProxyHost() {
     return m_proxyHost;
   }
 
-  int getProxyPort() {
+  synchronized int getProxyPort() {
     return m_proxyPort;
   }
 
-  public void setLocalAddress(String localAddress)
+  @Override
+  public synchronized void setLocalAddress(final String localAddress)
     throws URLException {
 
     try {
       m_localAddress = InetAddress.getByName(localAddress);
     }
-    catch (UnknownHostException e) {
+    catch (final UnknownHostException e) {
       throw new URLException(e.getMessage(), e);
     }
   }
 
-  InetAddress getLocalAddress() {
+  synchronized InetAddress getLocalAddress() {
     return m_localAddress;
   }
 
-  public void setBandwidthLimit(int targetBPS) {
+  @Override
+  public synchronized void setBandwidthLimit(final int targetBPS) {
     m_slowClientTargetBPS = targetBPS;
   }
 
-  int getBandwidthLimit() {
+  synchronized int getBandwidthLimit() {
     return m_slowClientTargetBPS;
   }
 
@@ -159,6 +172,7 @@ final class HTTPPluginConnectionDefaults implements HTTPPluginConnection {
     return s_defaultConnectionDefaults;
   }
 
+  @Override
   public void close() {
     // A no-op.
   }
