@@ -5,10 +5,10 @@ The Grinder 3.11
   the Jython standard library. Remove the support for the traditional
   Jython instrumenter.
 
-  Fix bug 220 - Memory leak in MarkerFactory. Thanks to Fei for the
+  Fix bug #220 - Memory leak in MarkerFactory. Thanks to Fei for the
   report.
 
-  Fix bug 221 - "time to establish connection" for re-used
+  Fix bug #221 - "time to establish connection" for re-used
   connection. The HTTP plugin host resolution and connection
   establishment times are now only recorded when a new connection is
   established; for tests that re-use connections, these values will be
@@ -21,25 +21,25 @@ The Grinder 3.11
   blank column, rather than the previous behaviour of using a NaN
   unicode character.
 
-  Fix bug 223 - relative grinder.script path not resolved correctly
+  Fix bug #223 - relative grinder.script path not resolved correctly
   when using the REST API. Thanks to Kevin Laurier for the report.
 
-  Implement feature request 104 - latest Statistics from REST API.
+  Implement feature request #104 - latest Statistics from REST API.
   Thanks to Marc Holden for the request and the implementation.
 
-  Fix bug 222 - Script directory should be added to the python
+  Fix bug #222 - Script directory should be added to the python
   path. This matches the behaviour of the Python interpretter. Thanks
   to Poornima Mallur for the report.
 
-  Implement feature request 100 - grinder.jvm.classpath should allow
+  Implement feature request #100 - grinder.jvm.classpath should allow
   relative paths. The grinder.jvm.classpath property is now evaluated
   based on the worker process working directory, not the agent
   directory. Thanks to Horace for the request.
 
-  Fix bug 217 - wrong selection of agent JAR in command line. Thanks
+  Fix bug #217 - wrong selection of agent JAR in command line. Thanks
   to Arne for the report.
 
-  Fix bug 224 - HTTPS and follow redirects. Thanks to Gerald Boersma
+  Fix bug #224 - HTTPS and follow redirects. Thanks to Gerald Boersma
   for the report.
 
 
