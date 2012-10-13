@@ -410,7 +410,12 @@ public class Cookie implements Serializable
     value = '.' + value;
 
       // must be the same domain as in the url
-      if (!cookie.domain.endsWith(value))
+      if (!cookie.domain.endsWith(value)
+          /** ++GRINDER MODIFICATION **/
+          // See bug #219
+          && !cookie.domain.equals(value.substring(1))
+          /** --GRINDER MODIFICATION **/
+          )
       {
     Log.write(Log.COOKI, "Cooki: Bad Set-Cookie header: " + set_cookie +
              "\n       Current domain " + cookie.domain +

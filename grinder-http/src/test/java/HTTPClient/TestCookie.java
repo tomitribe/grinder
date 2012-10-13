@@ -28,8 +28,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.grinder.testutility.RandomStubFactory;
 import junit.framework.TestCase;
+import net.grinder.testutility.RandomStubFactory;
 
 
 /**
@@ -51,7 +51,7 @@ public class TestCookie extends TestCase {
       Cookie.parse("foo", m_roRequest);
       fail("Expected ProtocolException for bad set cookie header");
     }
-    catch (ProtocolException e) {
+    catch (final ProtocolException e) {
     }
 
     final Cookie[] cookies = Cookie.parse("foo=bah", m_roRequest);
@@ -131,6 +131,36 @@ public class TestCookie extends TestCase {
     assertEquals(0, cookies2.length);
   }
 
+  public void testFixForBug219() throws Exception {
+    m_roRequestStubFactory.setHost("foo.bah.com");
+
+    final String[] cookiesWithGoodDomains = {
+      "k=v;Domain=.foo.bah.com",
+      "k=v;Domain=foo.bah.com",
+      "k=v;Domain=.bah.com",
+    };
+
+    for (final String s : cookiesWithGoodDomains) {
+      final Cookie[] cookies = Cookie.parse(s, m_roRequest);
+
+      assertEquals(s, 1, cookies.length);
+    }
+
+    final String[] cookiesWithBadDomains = {
+      "k=v;Domain=..foo.bah.com",
+      "k=v;Domain=blah.foo.bah.com",
+      "k=v;Domain=ffoo.bah.com",
+      "k=v;Domain=.com",
+    };
+
+    for (final String s : cookiesWithBadDomains) {
+      final Cookie[] cookies = Cookie.parse(s, m_roRequest);
+
+      assertEquals(s, 0, cookies.length);
+    }
+  }
+
+
   public static final class RoRequestStubFactory
     extends RandomStubFactory<RoRequest> {
 
@@ -141,19 +171,19 @@ public class TestCookie extends TestCase {
       super(RoRequest.class);
     }
 
-    public HTTPConnection override_getConnection(Object proxy) {
+    public HTTPConnection override_getConnection(final Object proxy) {
       return new HTTPConnection(m_host);
     }
 
-    public String override_getRequestURI(Object proxy) {
+    public String override_getRequestURI(final Object proxy) {
       return m_requestURI;
     }
 
-    public void setHost(String host) {
+    public void setHost(final String host) {
       m_host = host;
     }
 
-    public void setRequestURI(String requestURI) {
+    public void setRequestURI(final String requestURI) {
       m_requestURI = requestURI;
     }
   }
