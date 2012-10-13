@@ -42,10 +42,10 @@ The Grinder 3.11
   Fix bug #224 - HTTPS and follow redirects. Thanks to Gerald Boersma
   for the report.
 
-  Fix bug #219 - Accept cookies where the domain is set to the
+  Fix bug #218, #219 - Accept cookies where the domain is set to the
   request-host and incorrectly has a leading dot. This is contrary to
   RFC 2965, but matches the behaviour of popular browsers. Thanks to
-  the anonymous reporters.
+  Greg Merill, and an anonymous reporter.
 
 
 Sourceforge upgrade
