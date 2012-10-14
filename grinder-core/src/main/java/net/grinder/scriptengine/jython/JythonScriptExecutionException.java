@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2011 Philip Aston
+// Copyright (C) 2000 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,12 +21,12 @@
 
 package net.grinder.scriptengine.jython;
 
+import net.grinder.scriptengine.ScriptExecutionException;
+
 import org.python.core.Py;
 import org.python.core.PyClass;
 import org.python.core.PyException;
 import org.python.core.PyTraceback;
-
-import net.grinder.scriptengine.ScriptExecutionException;
 
 
 /**
@@ -46,7 +46,7 @@ final class JythonScriptExecutionException extends ScriptExecutionException {
    *
    * @param message
    */
-  public JythonScriptExecutionException(String message) {
+  public JythonScriptExecutionException(final String message) {
     super(message);
     m_message = message;
     m_shortMessage = message;
@@ -58,7 +58,8 @@ final class JythonScriptExecutionException extends ScriptExecutionException {
    * @param doingWhat What we were doing.
    * @param e <code>PyException</code> that we caught.
    */
-  public JythonScriptExecutionException(String doingWhat, PyException e) {
+  public JythonScriptExecutionException(final String doingWhat,
+                                        final PyException e) {
     super("");
     setStackTrace(new StackTraceElement[0]);
 
@@ -85,7 +86,7 @@ final class JythonScriptExecutionException extends ScriptExecutionException {
       }
 
       m_shortMessage =
-        "Jython exception: " + pyExceptionMessage +
+        "Jython exception, " + pyExceptionMessage +
         " [" + doingWhat + "]";
       m_message =
         tracebackToMessage(pyExceptionMessage.toString(), e.traceback);
@@ -105,6 +106,7 @@ final class JythonScriptExecutionException extends ScriptExecutionException {
    *
    * @return A short message, without the Jython stack trace.
    */
+  @Override
   public String getShortMessage() {
     return m_shortMessage;
   }
@@ -114,6 +116,7 @@ final class JythonScriptExecutionException extends ScriptExecutionException {
    *
    * @return The message.
    */
+  @Override
   public String getMessage() {
     return m_message;
   }
@@ -123,6 +126,7 @@ final class JythonScriptExecutionException extends ScriptExecutionException {
    *
    * @return A string representation of this instance.
    */
+  @Override
   public String toString() {
     return getLocalizedMessage();
   }
@@ -136,8 +140,8 @@ final class JythonScriptExecutionException extends ScriptExecutionException {
    * <li>The indentation style is different.</li>
    * </ul>
    */
-  private static String tracebackToMessage(String prefix,
-                                           PyTraceback traceback) {
+  private static String tracebackToMessage(final String prefix,
+                                           final PyTraceback traceback) {
     final StringBuilder result = new StringBuilder(prefix);
 
     if (traceback != null) {

@@ -28,7 +28,7 @@ The Grinder 3.11
   Thanks to Marc Holden for the request and the implementation.
 
   Fix bug #222 - Script directory should be added to the python
-  path. This matches the behaviour of the Python interpretter. Thanks
+  path. This matches the behaviour of the Python interpreter. Thanks
   to Poornima Mallur for the report.
 
   Implement feature request #100 - grinder.jvm.classpath should allow
@@ -46,6 +46,9 @@ The Grinder 3.11
   request-host and incorrectly has a leading dot. This is contrary to
   RFC 2965, but matches the behaviour of popular browsers. Thanks to
   Greg Merill, and an anonymous reporter.
+
+  Fix bug #215 - Log script initialisation errors to the process log
+  file as well as the terminal. Thanks to Ouray Viney for the report.
 
 
 Sourceforge upgrade

@@ -50,13 +50,13 @@ class GrinderThread implements Runnable {
   /**
    * The constructor.
    */
-  public GrinderThread(Logger logger,
-                       ThreadContext context,
-                       WorkerThreadSynchronisation threadSynchronisation,
-                       ProcessLifeCycleListener processLifeCycle,
-                       GrinderProperties properties,
-                       Sleeper sleeper,
-                       WorkerRunnableFactory workerRunnableFactory)
+  public GrinderThread(final Logger logger,
+                       final ThreadContext context,
+                       final WorkerThreadSynchronisation threadSynchronisation,
+                       final ProcessLifeCycleListener processLifeCycle,
+                       final GrinderProperties properties,
+                       final Sleeper sleeper,
+                       final WorkerRunnableFactory workerRunnableFactory)
     throws EngineException {
 
     m_logger = logger;
@@ -76,6 +76,7 @@ class GrinderThread implements Runnable {
   /**
    * The thread's main loop.
    */
+  @Override
   public void run() {
     m_processLifeCycle.threadStarted(m_context);
 
@@ -117,7 +118,7 @@ class GrinderThread implements Runnable {
         try {
           workerRunnable.run();
         }
-        catch (ScriptExecutionException e) {
+        catch (final ScriptExecutionException e) {
           final Throwable cause = e.getCause();
 
           if (cause instanceof ShutdownException ||
@@ -127,7 +128,7 @@ class GrinderThread implements Runnable {
           }
 
           m_logger.error(m_context.getLogMarker(),
-                         "Aborted run: " + e.getShortMessage(),
+                         "aborted run - " + e.getShortMessage(),
                          e);
         }
 
@@ -146,21 +147,21 @@ class GrinderThread implements Runnable {
       try {
         workerRunnable.shutdown();
       }
-      catch (ScriptExecutionException e) {
+      catch (final ScriptExecutionException e) {
         m_logger.error(m_context.getLogMarker(),
-                       "Aborted test runner shut down: " + e.getShortMessage(),
+                       "aborted test runner shut down - " + e.getShortMessage(),
                        e);
       }
 
       m_context.fireEndThreadEvent();
     }
-    catch (ScriptExecutionException e) {
+    catch (final ScriptExecutionException e) {
       m_logger.error(m_context.getLogMarker(),
-                     "Aborting thread: {}" + e.getShortMessage(),
+                     "aborting thread - {}" + e.getShortMessage(),
                      e);
     }
-    catch (Exception e) {
-      m_logger.error(m_context.getLogMarker(), "Aborting thread: " + e, e);
+    catch (final Exception e) {
+      m_logger.error(m_context.getLogMarker(), "aborting thread - " + e, e);
     }
     finally {
       m_context.setCurrentRunNumber(-1);
