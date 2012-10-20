@@ -6,7 +6,7 @@
   <groupId>net.sf.grinder</groupId>
   <artifactId>grinder-parent</artifactId>
   <packaging>pom</packaging>
-  <version>3.11-SNAPSHOT</version>
+  <version>3.11</version>
   <name>${project.artifactId}</name>
   <url>http://grinder.sourceforge.net</url>
   <description>Parent Maven project for The Grinder load testing framework.</description>
@@ -259,6 +259,7 @@
     <url>http://sourceforge.net/scm/?type=git&amp;group_id=18598</url>
     <connection>git://grinder.git.sourceforge.net/gitroot/grinder/grinder</connection>
     <developerConnection>scm:git:file://${basedir}</developerConnection>
+    <tag>release_3.11</tag>
   </scm>
 
   <properties>
@@ -539,7 +540,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore/>
+                    <ignore />
                   </action>
                 </pluginExecution>
               </pluginExecutions>
