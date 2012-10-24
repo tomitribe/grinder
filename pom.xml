@@ -366,6 +366,9 @@
           <autoVersionSubmodules>true</autoVersionSubmodules>
           <tagNameFormat>release_@{project.version}</tagNameFormat>
           <localCheckout>true</localCheckout>
+          <!-- Speculative workaround for issue with MRELEASE-271 like
+               symptoms. -->
+	  <preparationGoals>clean install</preparationGoals>
         </configuration>
       </plugin>
     </plugins>
