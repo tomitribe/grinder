@@ -1,11 +1,3 @@
-The Grinder 3.11.1
-------------------
-
-  Following feedback from Travis Bear on on 3.11, the worker process
-  summary statistics table prints 0/0 as a '-' character, rather than
-  a NaN unicode character or a blank column.
-
-
 The Grinder 3.11
 ----------------
 
@@ -26,8 +18,8 @@ The Grinder 3.11
   the report.
 
   The worker process summary statistics table now prints 0/0 as a
-  blank column, rather than the previous behaviour of using a NaN
-  unicode character.
+  '-' character, rather than the previous behaviour of using a NaN
+  unicode character. Thanks to Travis Bear for the feedback.
 
   Fix bug #223 - relative grinder.script path not resolved correctly
   when using the REST API. Thanks to Kevin Laurier for the report.
