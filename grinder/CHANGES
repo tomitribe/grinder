@@ -1,3 +1,11 @@
+The Grinder 3.11.1
+------------------
+
+  Following feedback from Travis Bear on on 3.11, the worker process
+  summary statistics table prints 0/0 as a '-' character, rather than
+  a NaN unicode character or a blank column.
+
+
 The Grinder 3.11
 ----------------
 

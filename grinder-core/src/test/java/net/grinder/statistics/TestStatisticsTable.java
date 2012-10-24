@@ -78,8 +78,8 @@ public class TestStatisticsTable  {
 
     m_statisticsView = new StatisticsView();
 
-    for (int i = 0; i < expressionViews.length; ++i) {
-      m_statisticsView.add(expressionViews[i]);
+    for (final ExpressionView expressionView : expressionViews) {
+      m_statisticsView.add(expressionView);
     }
 
     final net.grinder.common.Test[] tests = {
@@ -123,7 +123,7 @@ public class TestStatisticsTable  {
     in.println();
     in.println("Test 3       1            2            3            0.50         ");
     in.println("Test 9       0            1            1            0.00          \"Test 9\"");
-    in.println("Test 113     0            0            0                          \"Another test\"");
+    in.println("Test 113     0            0            0            -             \"Another test\"");
     in.println("Test 12345678 3            4            7            0.75          \"A test with a long name\"");
     in.println();
     in.println("Totals       4            7            11           0.57         ");
@@ -159,7 +159,7 @@ public class TestStatisticsTable  {
     in.println("Test 3       1            2            3            0.50         ");
     in.println("(Test 4      0            1            1            0.00)         \"T4\"");
     in.println("Test 9       0            1            1            0.00          \"Test 9\"");
-    in.println("Test 113     0            0            0                          \"Another test\"");
+    in.println("Test 113     0            0            0            -             \"Another test\"");
     in.println("Test 12345678 3            4            7            0.75          \"A test with a long name\"");
     in.println();
     in.println("Totals       4            7            11           0.57         ");

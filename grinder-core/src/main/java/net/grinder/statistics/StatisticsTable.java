@@ -78,9 +78,9 @@ public class StatisticsTable {
    * @param statisticsIndexMap The statistics index map.
    * @param testStatisticsMap Tests and associated statistics.
    */
-  public StatisticsTable(StatisticsView statisticsView,
-                         StatisticsIndexMap statisticsIndexMap,
-                         TestStatisticsMap testStatisticsMap) {
+  public StatisticsTable(final StatisticsView statisticsView,
+                         final StatisticsIndexMap statisticsIndexMap,
+                         final TestStatisticsMap testStatisticsMap) {
     m_statisticsView = statisticsView;
     m_testStatisticsMap = testStatisticsMap;
 
@@ -144,7 +144,8 @@ public class StatisticsTable {
     synchronized (m_testStatisticsMap) {
 
       m_testStatisticsMap.new ForEach() {
-        public void next(Test test, StatisticsSet statistics) {
+        @Override
+        public void next(final Test test, final StatisticsSet statistics) {
           statistics.setValue(m_periodIndex, elapsedTime);
           out.print(formatter.format("Test " + test.getNumber(), statistics));
 
@@ -210,12 +211,12 @@ public class StatisticsTable {
   private class LineFormatter {
     private final ExpressionView[] m_expressionViews;
 
-    public LineFormatter(ExpressionView[] expressionViews) {
+    public LineFormatter(final ExpressionView[] expressionViews) {
       m_expressionViews = expressionViews;
     }
 
-    public String format(String rowLabel,
-                         StatisticsSet statistics) {
+    public String format(final String rowLabel,
+                         final StatisticsSet statistics) {
 
       final StringBuilder result = new StringBuilder();
 
@@ -248,7 +249,7 @@ public class StatisticsTable {
       return result.toString();
     }
 
-    protected String startOfLine(StatisticsSet statistics) {
+    protected String startOfLine(final StatisticsSet statistics) {
       if (statistics.isComposite()) {
         return "(";
       }
@@ -256,7 +257,7 @@ public class StatisticsTable {
       return "";
     }
 
-    protected String endOfLine(StatisticsSet statistics) {
+    protected String endOfLine(final StatisticsSet statistics) {
       if (statistics.isComposite()) {
         return ")";
       }
@@ -264,8 +265,8 @@ public class StatisticsTable {
       return "";
     }
 
-    protected String formatExpression(ExpressionView expressionView,
-                                      StatisticsSet statistics) {
+    protected String formatExpression(final ExpressionView expressionView,
+                                      final StatisticsSet statistics) {
 
       final StatisticExpression expression = expressionView.getExpression();
 
@@ -273,7 +274,7 @@ public class StatisticsTable {
         final double value = expression.getDoubleValue(statistics);
 
         if (Double.isNaN(value)) {
-          return "";
+          return "-";
         }
 
         return m_twoDPFormat.format(value);
@@ -286,12 +287,13 @@ public class StatisticsTable {
 
   private class CompositeStatisticsLineFormater extends LineFormatter {
 
-    public CompositeStatisticsLineFormater(ExpressionView[] expressionViews) {
+    public CompositeStatisticsLineFormater(final ExpressionView[] expressionViews) {
       super(expressionViews);
     }
 
-    protected String formatExpression(ExpressionView expressionView,
-                                      StatisticsSet statistics) {
+    @Override
+    protected String formatExpression(final ExpressionView expressionView,
+                                      final StatisticsSet statistics) {
 
       if (expressionView.getShowForCompositeStatistics()) {
         final StringBuilder result = new StringBuilder("(");
@@ -305,11 +307,13 @@ public class StatisticsTable {
       }
     }
 
-    protected String startOfLine(StatisticsSet statistics) {
+    @Override
+    protected String startOfLine(final StatisticsSet statistics) {
       return "";
     }
 
-    protected String endOfLine(StatisticsSet statistics) {
+    @Override
+    protected String endOfLine(final StatisticsSet statistics) {
       return "";
     }
   }
