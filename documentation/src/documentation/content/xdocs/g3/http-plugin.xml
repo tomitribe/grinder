@@ -225,11 +225,11 @@ control.setLocalAddress("<em>(local IP Address)</em>")
   <section>
     <title>Setting Timeout Value</title>
     <p>The timeout value for used for creating connections and reading responses can be
-    controlled via the HTTPPlugin.</p>
+    controlled via the HTTPPlugin. The time is specified in milliseconds.</p>
     <p>The following example sets a default timeout value of 30 seconds for all connections.</p>
 <source class="jython">
 control = HTTPPluginControl.getConnectionDefaults()
-control.setTimeout(30)
+control.setTimeout(30000)
 </source>
   </section>
 
