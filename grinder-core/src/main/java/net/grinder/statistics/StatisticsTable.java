@@ -287,7 +287,8 @@ public class StatisticsTable {
 
   private class CompositeStatisticsLineFormater extends LineFormatter {
 
-    public CompositeStatisticsLineFormater(final ExpressionView[] expressionViews) {
+    public CompositeStatisticsLineFormater(
+      final ExpressionView[] expressionViews) {
       super(expressionViews);
     }
 
