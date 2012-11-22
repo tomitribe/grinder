@@ -282,6 +282,31 @@ class TestRunner:
 
     <p>Otherwise, the working directory of the worker process will be
     that of the agent process that started it.</p>
+
+    <section>
+      <title>Distributing Java code</title>
+
+      <p>You can add Java <code>jar</code> or <code>.class</code>
+      files to your console distribution directory and use the file
+      distribution mechanism to push the code to the agent's cache.
+      Use relative paths and the <code>grinder.jvm.classpath</code>
+      property to add the files to the worker process
+      <code>CLASSPATH</code>.
+      </p>
+
+      <p>For example, you might distribute the following files</p>
+      <source class="text">     
+grinder.properties
+myscript.py
+lib/myfile.jar
+      </source>
+
+      <p>where <code>grinder.properties</code> contains:</p>
+      <source class="text">
+grinder.script=myscript.py
+grinder.jvm.classpath=lib/myfile.jar
+      </source>
+    </section>
   </section>
 
 </body>
