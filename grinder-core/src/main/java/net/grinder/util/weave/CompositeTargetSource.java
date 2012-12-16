@@ -22,26 +22,28 @@
 package net.grinder.util.weave;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import net.grinder.util.weave.Weaver.TargetSource;
 
 /**
- * {@link TargetSource} that specifies the target is the class containing
- * the instrumented code.
+ * Composite {@link TargetSource}.
  *
  * @author Philip Aston
  */
-public final class ClassSource implements TargetSource {
+public final class CompositeTargetSource implements TargetSource {
+
+  private final Set<TargetSource> m_sources;
 
   /**
-   * Singleton instance. Relies on object equality.
+   * Constructor.
+   *
+   * @param sources The included target sources.
    */
-  public static final ClassSource INSTANCE = new ClassSource();
-
-  /**
-   * Private constructor.
-   */
-  private ClassSource() {
+  public CompositeTargetSource(final TargetSource... sources) {
+    m_sources = new HashSet<TargetSource>(Arrays.asList(sources));
   }
 
   /**
@@ -49,6 +51,12 @@ public final class ClassSource implements TargetSource {
    */
   @Override
   public boolean canApply(final Method method) {
+    for (final TargetSource s : m_sources) {
+      if (!s.canApply(method)) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -57,6 +65,44 @@ public final class ClassSource implements TargetSource {
    */
   @Override
   public int targetCount() {
-    return 1;
+    int n = 0;
+
+    for (final TargetSource s : m_sources) {
+      n += s.targetCount();
+    }
+
+    return n;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public int hashCode() {
+    return m_sources.hashCode();
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    return m_sources.equals(((CompositeTargetSource) o).m_sources);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String toString() {
+    return m_sources.toString();
   }
 }

@@ -97,5 +97,12 @@ public interface Weaver {
      * @return {@code true} if the source can be used.
      */
     boolean canApply(Method method);
+
+    /**
+     * The number of target objects specified by this source.
+     *
+     * @return How many target objects.
+     */
+    int targetCount();
   }
 }
