@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -87,46 +87,15 @@ public interface Weaver {
   void applyChanges() throws WeavingException;
 
   /**
-   * Source of the target object that the weaving will pass on to the advice.
+   * Source of the target objects that the weaving will pass on to the advice.
    */
-  enum TargetSource {
-    /**
-     * The class is the target object.
-     */
-    CLASS(0),
-
-    /**
-     * The first parameter is the target object. For non-static methods,
-     * the first parameter is {@code this}.
-     */
-    FIRST_PARAMETER(0),
-
-    /**
-     * The second parameter is the target object.  For non-static methods,
-     * the first parameter is {@code this}.
-     */
-    SECOND_PARAMETER(1),
-
-    /**
-     * The third parameter is the target object.  For non-static methods,
-     * the first parameter is {@code this}.
-     */
-    THIRD_PARAMETER(2);
-
-    private final int m_minimumParameters;
-
-    TargetSource(int minimumParameters) {
-      this.m_minimumParameters = minimumParameters;
-    }
-
+  interface TargetSource {
     /**
      * Whether this target source can be used to instrument a given method.
      *
      * @param method The method to test.
      * @return {@code true} if the source can be used.
      */
-    public boolean canApply(Method method) {
-      return method.getParameterTypes().length >= m_minimumParameters;
-    }
+    boolean canApply(Method method);
   }
 }

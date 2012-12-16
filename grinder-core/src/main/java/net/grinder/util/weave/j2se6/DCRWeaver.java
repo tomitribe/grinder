@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import net.grinder.util.Pair;
+import net.grinder.util.weave.ClassSource;
 import net.grinder.util.weave.Weaver;
 import net.grinder.util.weave.WeavingException;
 
@@ -62,8 +63,8 @@ public final class DCRWeaver implements Weaver {
    * @param transformerFactory Used to create the transformer.
    * @param instrumentation Access to the JVM instrumentation.
    */
-  public DCRWeaver(ClassFileTransformerFactory transformerFactory,
-                   Instrumentation instrumentation) {
+  public DCRWeaver(final ClassFileTransformerFactory transformerFactory,
+                   final Instrumentation instrumentation) {
 
     m_instrumentation = instrumentation;
 
@@ -75,14 +76,15 @@ public final class DCRWeaver implements Weaver {
   /**
    * {@inheritDoc}
    */
-  @Override public String weave(Constructor<?> constructor) {
+  @Override public String weave(final Constructor<?> constructor) {
     return m_pointCutRegistry.add(constructor);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public String weave(Method method, TargetSource targetSource)
+  @Override public String weave(final Method method,
+                                final TargetSource targetSource)
     throws WeavingException {
     if (!targetSource.canApply(method)) {
       throw new WeavingException("Insufficient parameters for " +
@@ -102,7 +104,7 @@ public final class DCRWeaver implements Weaver {
           m_instrumentation.retransformClasses(
             m_pendingClasses.toArray(new Class<?>[0]));
         }
-        catch (UnmodifiableClassException e) {
+        catch (final UnmodifiableClassException e) {
           throw new WeavingException("Failed to modify class", e);
         }
 
@@ -155,30 +157,33 @@ public final class DCRWeaver implements Weaver {
       m_internalClassNameToMethodToLocation =
         new HashMap<String, Map<Method, List<WeavingDetails>>>();
 
+    @Override
     public Map<Constructor<?>, List<WeavingDetails>>
-      getConstructorPointCutsForClass(String className) {
+      getConstructorPointCutsForClass(final String className) {
         return m_internalClassNameToConstructorToLocation.get(className);
     }
 
+    @Override
     public Map<Method, List<WeavingDetails>>
-      getMethodPointCutsForClass(String className) {
+      getMethodPointCutsForClass(final String className) {
         return m_internalClassNameToMethodToLocation.get(className);
     }
 
-    public String add(Constructor<?> constructor) {
+    public String add(final Constructor<?> constructor) {
       return add(constructor,
-                 TargetSource.CLASS,
+                 ClassSource.INSTANCE,
                  m_internalClassNameToConstructorToLocation);
     }
 
-    public String add(Method method, TargetSource targetSource) {
+    public String add(final Method method, final TargetSource targetSource) {
       return add(method, targetSource, m_internalClassNameToMethodToLocation);
     }
 
     private <T extends Member> String add(
-      T member,
-      TargetSource targetSource,
-      Map<String, Map<T, List<WeavingDetails>>> classNameToMemberToLocation) {
+      final T member,
+      final TargetSource targetSource,
+      final Map<String, Map<T, List<WeavingDetails>>>
+        classNameToMemberToLocation) {
 
       final Pair<Member, TargetSource> locationKey =
           Pair.of((Member) member, targetSource);

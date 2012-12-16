@@ -24,7 +24,7 @@ package net.grinder.scriptengine.jython.instrumentation.dcr;
 import net.grinder.script.NonInstrumentableTypeException;
 import net.grinder.scriptengine.DCRContext;
 import net.grinder.scriptengine.Recorder;
-import net.grinder.util.weave.Weaver.TargetSource;
+import net.grinder.util.weave.ParameterSource;
 
 import org.python.core.PyClass;
 import org.python.core.PyFunction;
@@ -46,7 +46,7 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
    *
    * @param context The DCR context.
    */
-  public Jython22Instrumenter(DCRContext context) {
+  public Jython22Instrumenter(final DCRContext context) {
     super(context);
   }
 
@@ -60,7 +60,8 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
   /**
    * {@inheritDoc}
    */
-  @Override protected void transform(Recorder recorder, PyInstance target)
+  @Override protected void transform(final Recorder recorder,
+                                     final PyInstance target)
     throws NonInstrumentableTypeException {
 
     instrumentPublicMethodsByName(target,
@@ -72,7 +73,8 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
   /**
    * {@inheritDoc}
    */
-  @Override protected void transform(Recorder recorder, PyFunction target)
+  @Override protected void transform(final Recorder recorder,
+                                     final PyFunction target)
     throws NonInstrumentableTypeException {
 
     instrumentPublicMethodsByName(target,
@@ -84,7 +86,8 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
   /**
    * {@inheritDoc}
    */
-  @Override protected void transform(Recorder recorder, PyClass target)
+  @Override protected void transform(final Recorder recorder,
+                                     final PyClass target)
     throws NonInstrumentableTypeException {
 
     instrumentPublicMethodsByName(target,
@@ -96,7 +99,8 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
   /**
    * {@inheritDoc}
    */
-  @Override protected void transform(Recorder recorder, PyProxy target)
+  @Override protected void transform(final Recorder recorder,
+                                     final PyProxy target)
     throws NonInstrumentableTypeException {
 
     // For some reason, static linking to _getPyInstance fails.
@@ -107,7 +111,7 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
           (PyObject)
           target.getClass().getMethod("_getPyInstance").invoke(target);
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       throw new NonInstrumentableTypeException(e.getMessage(), e);
     }
 
@@ -120,7 +124,8 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
   /**
    * {@inheritDoc}
    */
-  @Override protected void transform(Recorder recorder, PyMethod target)
+  @Override protected void transform(final Recorder recorder,
+                                     final PyMethod target)
     throws NonInstrumentableTypeException {
 
     // PyMethod is a wrapper around a callable. Sometimes Jython bypasses
@@ -145,7 +150,7 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
       instrumentPublicMethodsByName(target.im_func.getClass(),
                                     target.im_self,
                                     "__call__",
-                                    TargetSource.SECOND_PARAMETER,
+                                    ParameterSource.SECOND_PARAMETER,
                                     recorder,
                                     false);
     }

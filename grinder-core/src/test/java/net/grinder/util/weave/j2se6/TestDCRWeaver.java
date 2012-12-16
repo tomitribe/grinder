@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -41,9 +41,10 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
+import net.grinder.util.weave.ClassSource;
+import net.grinder.util.weave.ParameterSource;
 import net.grinder.util.weave.Weaver;
 import net.grinder.util.weave.WeavingException;
-import net.grinder.util.weave.Weaver.TargetSource;
 import net.grinder.util.weave.j2se6.DCRWeaver.ClassFileTransformerFactory;
 
 import org.junit.Before;
@@ -92,11 +93,11 @@ public class TestDCRWeaver {
 
     final Method method = getClass().getDeclaredMethod("myMethod");
 
-    final String l1 = weaver.weave(method, TargetSource.FIRST_PARAMETER);
-    final String l2 = weaver.weave(method, TargetSource.FIRST_PARAMETER);
+    final String l1 = weaver.weave(method, ParameterSource.FIRST_PARAMETER);
+    final String l2 = weaver.weave(method, ParameterSource.FIRST_PARAMETER);
     assertEquals(l1, l2);
 
-    weaver.weave(method, TargetSource.FIRST_PARAMETER);
+    weaver.weave(method, ParameterSource.FIRST_PARAMETER);
 
     final PointCutRegistry pointCutRegistry =
       m_pointCutRegistryCaptor.getValue();
@@ -120,8 +121,8 @@ public class TestDCRWeaver {
 
     final Method method2 = getClass().getDeclaredMethod("myOtherMethod");
 
-    weaver.weave(method, TargetSource.FIRST_PARAMETER);
-    weaver.weave(method2, TargetSource.FIRST_PARAMETER);
+    weaver.weave(method, ParameterSource.FIRST_PARAMETER);
+    weaver.weave(method2, ParameterSource.FIRST_PARAMETER);
 
     final Map<Method, List<WeavingDetails>> pointCuts2 =
       pointCutRegistry.getMethodPointCutsForClass(internalClassName);
@@ -131,7 +132,8 @@ public class TestDCRWeaver {
     final List<WeavingDetails> locations2 = pointCuts2.get(method);
     assertEquals(1, locations2.size());
 
-    assertEquals(new WeavingDetails(location1, TargetSource.FIRST_PARAMETER),
+    assertEquals(new WeavingDetails(location1,
+                                    ParameterSource.FIRST_PARAMETER),
                  locations2.get(0));
     assertNotNull(pointCuts2.get(method2));
 
@@ -187,13 +189,13 @@ public class TestDCRWeaver {
     verify(m_instrumentation).addTransformer(m_transformer, true);
 
     final Method method = getClass().getDeclaredMethod("myMethod");
-    weaver.weave(method, TargetSource.FIRST_PARAMETER);
+    weaver.weave(method, ParameterSource.FIRST_PARAMETER);
 
     weaver.applyChanges();
 
     verify(m_instrumentation).retransformClasses(new Class[] { getClass(),});
 
-    weaver.weave(method, TargetSource.FIRST_PARAMETER);
+    weaver.weave(method, ParameterSource.FIRST_PARAMETER);
     weaver.applyChanges();
 
     verifyNoMoreInteractions(m_classFileTransformerFactory,
@@ -211,9 +213,9 @@ public class TestDCRWeaver {
 
     final Method method = getClass().getDeclaredMethod("myMethod");
 
-    weaver.weave(method, TargetSource.FIRST_PARAMETER);
+    weaver.weave(method, ParameterSource.FIRST_PARAMETER);
     weaver.applyChanges();
-    weaver.weave(method, TargetSource.CLASS);
+    weaver.weave(method, ClassSource.INSTANCE);
     weaver.applyChanges();
 
     verify(m_instrumentation, times(2))
@@ -229,8 +231,8 @@ public class TestDCRWeaver {
 
     final Method method = getClass().getDeclaredMethod("myMethod");
 
-    weaver.weave(method, TargetSource.FIRST_PARAMETER);
-    weaver.weave(method, TargetSource.FIRST_PARAMETER);
+    weaver.weave(method, ParameterSource.FIRST_PARAMETER);
+    weaver.weave(method, ParameterSource.FIRST_PARAMETER);
 
     final Exception uce = new UnmodifiableClassException();
 
@@ -242,7 +244,7 @@ public class TestDCRWeaver {
       verifyNoMoreInteractions(m_instrumentation);
       fail("Expected WeavingException");
     }
-    catch (WeavingException e) {
+    catch (final WeavingException e) {
       assertSame(e.getCause(), uce);
     }
   }
@@ -254,6 +256,6 @@ public class TestDCRWeaver {
 
     final Method method = getClass().getDeclaredMethod("myMethod");
 
-    weaver.weave(method, TargetSource.SECOND_PARAMETER);
+    weaver.weave(method, ParameterSource.SECOND_PARAMETER);
   }
 }

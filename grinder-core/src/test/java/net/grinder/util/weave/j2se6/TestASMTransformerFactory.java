@@ -42,6 +42,8 @@ import junit.framework.TestCase;
 import net.grinder.testutility.CallData;
 import net.grinder.testutility.CallRecorder;
 import net.grinder.testutility.RandomStubFactory;
+import net.grinder.util.weave.ClassSource;
+import net.grinder.util.weave.ParameterSource;
 import net.grinder.util.weave.Weaver.TargetSource;
 import net.grinder.util.weave.WeavingException;
 import net.grinder.util.weave.agent.ExposeInstrumentation;
@@ -79,7 +81,7 @@ public class TestASMTransformerFactory extends TestCase {
       new ASMTransformerFactory(BadAdvice1.class);
       fail("Expected WeavingException");
     }
-    catch (WeavingException e) {
+    catch (final WeavingException e) {
       assertTrue(e.getCause() instanceof NoSuchMethodException);
     }
 
@@ -87,7 +89,7 @@ public class TestASMTransformerFactory extends TestCase {
       new ASMTransformerFactory(BadAdvice2.class);
       fail("Expected WeavingException");
     }
-    catch (WeavingException e) {
+    catch (final WeavingException e) {
       assertTrue(e.getCause() instanceof NoSuchMethodException);
     }
 
@@ -95,14 +97,14 @@ public class TestASMTransformerFactory extends TestCase {
       new ASMTransformerFactory(BadAdvice3.class);
       fail("Expected WeavingException");
     }
-    catch (WeavingException e) {
+    catch (final WeavingException e) {
     }
 
     try {
       new ASMTransformerFactory(BadAdvice4.class);
       fail("Expected WeavingException");
     }
-    catch (WeavingException e) {
+    catch (final WeavingException e) {
     }
   }
 
@@ -155,7 +157,7 @@ public class TestASMTransformerFactory extends TestCase {
       a.m2();
       fail("Expected RuntimeException");
     }
-    catch (RuntimeException e) {
+    catch (final RuntimeException e) {
     }
 
     s_callRecorder.assertSuccess("enter", a, "loc2");
@@ -166,7 +168,7 @@ public class TestASMTransformerFactory extends TestCase {
       a.m4();
       fail("Expected RuntimeException");
     }
-    catch (RuntimeException e) {
+    catch (final RuntimeException e) {
     }
 
     s_callRecorder.assertSuccess("enter", a, "loc4");
@@ -223,7 +225,7 @@ public class TestASMTransformerFactory extends TestCase {
       a.m2();
       fail("Expected RuntimeException");
     }
-    catch (RuntimeException e) {
+    catch (final RuntimeException e) {
     }
 
     s_callRecorder.assertSuccess("enter", a, "loc2");
@@ -431,7 +433,7 @@ public class TestASMTransformerFactory extends TestCase {
       A4.class,
       A4.class.getDeclaredMethod("m1", String.class),
       "X",
-      TargetSource.SECOND_PARAMETER);
+      ParameterSource.SECOND_PARAMETER);
 
     final ClassFileTransformer transformer =
       transformerFactory.create(m_pointCutRegistry);
@@ -452,7 +454,7 @@ public class TestASMTransformerFactory extends TestCase {
       A4.class,
       A4.class.getDeclaredMethod("m1", String.class),
       "Y",
-      TargetSource.FIRST_PARAMETER);
+      ParameterSource.FIRST_PARAMETER);
 
     instrumentation.retransformClasses(new Class[] { A4.class, });
 
@@ -499,7 +501,7 @@ public class TestASMTransformerFactory extends TestCase {
   }
 
   public static final class A2 {
-    public A2(int x) {
+    public A2(final int x) {
     }
 
     protected int m1() {
@@ -521,15 +523,15 @@ public class TestASMTransformerFactory extends TestCase {
     private A4() {
     }
 
-    protected A4(String a) {
+    protected A4(final String a) {
       this();
     }
 
-    public void m1(int a) {
+    public void m1(final int a) {
       m1(Integer.toString(a));
     }
 
-    private void m1(String a) {
+    private void m1(final String a) {
     }
   }
 
@@ -548,7 +550,7 @@ public class TestASMTransformerFactory extends TestCase {
       }
     }
 
-    public double m1(int a) {
+    public double m1(final int a) {
       final int[][] x = new int[3][2];
 
       // Hacked at this until the compile generated LOOKUPSWITCH
@@ -563,7 +565,7 @@ public class TestASMTransformerFactory extends TestCase {
       }
     }
 
-    private float m1(String a) {
+    private float m1(final String a) {
       return m_y;
     }
 
@@ -593,21 +595,21 @@ public class TestASMTransformerFactory extends TestCase {
         EXIT_METHOD = MyAdvice.class.getMethod(
           "exit", Object.class, String.class, Boolean.TYPE);
       }
-      catch (Exception e) {
+      catch (final Exception e) {
         throw new ExceptionInInitializerError(e);
       }
     }
 
-    public static void enter(Object reference, String location) {
+    public static void enter(final Object reference, final String location) {
       s_callRecorder.record(new CallData(ENTER_METHOD,
                                          null,
                                          reference,
                                          location));
     }
 
-    public static void exit(Object reference,
-                            String location,
-                            boolean success) {
+    public static void exit(final Object reference,
+                            final String location,
+                            final boolean success) {
 
       s_callRecorder.record(new CallData(EXIT_METHOD,
                                          null,
@@ -621,23 +623,23 @@ public class TestASMTransformerFactory extends TestCase {
   }
 
   public static final class BadAdvice2 {
-    public static void enter(Object reference, String location) { }
+    public static void enter(final Object reference, final String location) { }
 
-    public static void exit(Object reference, String location) { }
+    public static void exit(final Object reference, final String location) { }
   }
 
   public static final class BadAdvice3 {
-    public void enter(Object reference, String location) { }
+    public void enter(final Object reference, final String location) { }
 
-    public static void exit(Object reference,
-                            String location,
-                            boolean success) { }
+    public static void exit(final Object reference,
+                            final String location,
+                            final boolean success) { }
   }
 
   public static final class BadAdvice4 {
-    public static void enter(Object reference, String location) { }
+    public static void enter(final Object reference, final String location) { }
 
-    public void exit(Object reference, String location, boolean success) { }
+    public void exit(final Object reference, final String location, final boolean success) { }
   }
 
   public static final class PointCutRegistryStubFactory
@@ -660,27 +662,27 @@ public class TestASMTransformerFactory extends TestCase {
     }
 
     public Map<Constructor<?>, List<WeavingDetails>>
-      override_getConstructorPointCutsForClass(Object stub, String className) {
+      override_getConstructorPointCutsForClass(final Object stub, final String className) {
       return m_constructors.get(className);
     }
 
     public Map<Method, List<WeavingDetails>>
-      override_getMethodPointCutsForClass(Object stub, String className) {
+      override_getMethodPointCutsForClass(final Object stub, final String className) {
       return m_methods.get(className);
     }
 
-    public void addConstructor(Class<?> theClass,
-                               Constructor<?> constructor,
-                               String location) {
+    public void addConstructor(final Class<?> theClass,
+                               final Constructor<?> constructor,
+                               final String location) {
       addMember(theClass, constructor, location, m_constructors, null);
     }
 
     /**
      * Convenience for methods that have no parameters.
      */
-    public void addMethod(Class<?> theClass,
-                          String methodName,
-                          String location)
+    public void addMethod(final Class<?> theClass,
+                          final String methodName,
+                          final String location)
       throws SecurityException, NoSuchMethodException {
 
       addMethod(theClass,
@@ -688,24 +690,24 @@ public class TestASMTransformerFactory extends TestCase {
                 location);
     }
 
-    public void addMethod(Class<?> theClass,
-                          Method method,
-                          String location) {
+    public void addMethod(final Class<?> theClass,
+                          final Method method,
+                          final String location) {
       addMethod(theClass, method, location, null);
     }
 
-    public void addMethod(Class<?> theClass,
-                          Method method,
-                          String location,
-                          TargetSource source) {
+    public void addMethod(final Class<?> theClass,
+                          final Method method,
+                          final String location,
+                          final TargetSource source) {
       addMember(theClass, method, location, m_methods, source);
     }
 
     public <T extends Member> void addMember(
-      Class<?> theClass,
-      T member,
-      String location,
-      Map<String, Map<T, List<WeavingDetails>>> members,
+      final Class<?> theClass,
+      final T member,
+      final String location,
+      final Map<String, Map<T, List<WeavingDetails>>> members,
       TargetSource source) {
 
       final String internalClassName = theClass.getName().replace('.', '/');
@@ -727,10 +729,10 @@ public class TestASMTransformerFactory extends TestCase {
 
         if (Modifier.isStatic(member.getModifiers()) ||
             member instanceof Constructor<?>) {
-          source = TargetSource.CLASS;
+          source = ClassSource.INSTANCE;
         }
         else {
-          source = TargetSource.FIRST_PARAMETER;
+          source = ParameterSource.FIRST_PARAMETER;
         }
       }
 
@@ -738,7 +740,7 @@ public class TestASMTransformerFactory extends TestCase {
     }
   }
 
-  private static <K, V> List<V> getList(Map<K, List<V>> map, K key) {
+  private static <K, V> List<V> getList(final Map<K, List<V>> map, final K key) {
 
     final List<V> existing = map.get(key);
 

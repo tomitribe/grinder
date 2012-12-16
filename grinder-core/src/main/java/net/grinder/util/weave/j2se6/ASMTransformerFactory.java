@@ -34,6 +34,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import net.grinder.util.Pair;
+import net.grinder.util.weave.ClassSource;
+import net.grinder.util.weave.ParameterSource;
 import net.grinder.util.weave.Weaver;
 import net.grinder.util.weave.WeavingException;
 import net.grinder.util.weave.j2se6.DCRWeaver.ClassFileTransformerFactory;
@@ -85,7 +87,8 @@ public final class ASMTransformerFactory
    *           If {@code adviceClass} does not implement {@code enter} and
    *           {@code exit} static methods.
    */
-  public ASMTransformerFactory(Class<?> adviceClass) throws WeavingException {
+  public ASMTransformerFactory(final Class<?> adviceClass)
+      throws WeavingException {
 
     try {
       final Method enterMethod =
@@ -102,7 +105,7 @@ public final class ASMTransformerFactory
         throw new WeavingException("Exit method is not static");
       }
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       throw new WeavingException(
         adviceClass.getName() + " does not expected enter and exit methods",
         e);
@@ -115,7 +118,7 @@ public final class ASMTransformerFactory
    * {@inheritDoc}
    */
   @Override
-  public ClassFileTransformer create(PointCutRegistry pointCutRegistry) {
+  public ClassFileTransformer create(final PointCutRegistry pointCutRegistry) {
     return new ASMTransformer(pointCutRegistry);
   }
 
@@ -141,18 +144,18 @@ public final class ASMTransformerFactory
      * @param pointCutRegistry
      *          Remembers the methods to advice, and the location strings.
      */
-    public ASMTransformer(PointCutRegistry pointCutRegistry) {
+    public ASMTransformer(final PointCutRegistry pointCutRegistry) {
       m_pointCutRegistry = pointCutRegistry;
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override public byte[] transform(ClassLoader loader,
+    @Override public byte[] transform(final ClassLoader loader,
                                       final String internalClassName,
-                                      Class<?> classBeingRedefined,
-                                      ProtectionDomain protectionDomain,
-                                      byte[] originalBytes)
+                                      final Class<?> classBeingRedefined,
+                                      final ProtectionDomain protectionDomain,
+                                      final byte[] originalBytes)
       throws IllegalClassFormatException {
 
       // The PointCutRegistry provides us the constructors and methods to advise
@@ -182,7 +185,7 @@ public final class ASMTransformerFactory
           new HashMap<Pair<String, String>, List<WeavingDetails>>(size);
 
       if (constructorToWeavingDetails != null) {
-        for (Entry<Constructor<?>, List<WeavingDetails>> entry :
+        for (final Entry<Constructor<?>, List<WeavingDetails>> entry :
              constructorToWeavingDetails.entrySet()) {
 
           final Constructor<?> c = entry.getKey();
@@ -195,7 +198,7 @@ public final class ASMTransformerFactory
       }
 
       if (methodToWeavingDetails != null) {
-        for (Entry<Method, List<WeavingDetails>> entry :
+        for (final Entry<Method, List<WeavingDetails>> entry :
              methodToWeavingDetails.entrySet()) {
 
           final Method m = entry.getKey();
@@ -240,9 +243,9 @@ public final class ASMTransformerFactory
                       List<WeavingDetails>> m_weavingDetails;
 
     private AddAdviceClassAdapter(
-      ClassVisitor classVisitor,
-      Type internalClassType,
-      Map<Pair<String, String>, List<WeavingDetails>> weavingDetails) {
+      final ClassVisitor classVisitor,
+      final Type internalClassType,
+      final Map<Pair<String, String>, List<WeavingDetails>> weavingDetails) {
 
       super(classVisitor);
       m_internalClassType = internalClassType;
@@ -250,12 +253,12 @@ public final class ASMTransformerFactory
     }
 
     @Override
-    public void visit(int originalVersion,
-                      int access,
-                      String name,
-                      String signature,
-                      String superName,
-                      String[] interfaces) {
+    public void visit(final int originalVersion,
+                      final int access,
+                      final String name,
+                      final String signature,
+                      final String superName,
+                      final String[] interfaces) {
 
       cv.visit(Math.max(originalVersion & 0xFFFF, Opcodes.V1_5),
                access,
@@ -292,16 +295,20 @@ public final class ASMTransformerFactory
     }
   }
 
-  private Map<Weaver.TargetSource, TargetExtractor> m_extractors =
+  private final Map<Weaver.TargetSource, TargetExtractor> m_extractors =
     new HashMap<Weaver.TargetSource, TargetExtractor>() { {
-      put(Weaver.TargetSource.CLASS, new ClassTargetExtractor());
-      put(Weaver.TargetSource.FIRST_PARAMETER,
+      put(ClassSource.INSTANCE, new ClassTargetExtractor());
+      put(ParameterSource.FIRST_PARAMETER,
           new LocalVariableTargetExtractor(0));
-      put(Weaver.TargetSource.SECOND_PARAMETER,
+      put(ParameterSource.SECOND_PARAMETER,
           new LocalVariableTargetExtractor(1));
-      put(Weaver.TargetSource.THIRD_PARAMETER,
+      put(ParameterSource.THIRD_PARAMETER,
           new LocalVariableTargetExtractor(2));
     } };
+
+  private TargetExtractor getExtractor(final Weaver.TargetSource source) {
+    return m_extractors.get(source);
+  }
 
   private interface TargetExtractor {
     void extract(ContextMethodVisitor methodVisitor);
@@ -310,17 +317,19 @@ public final class ASMTransformerFactory
   private static class LocalVariableTargetExtractor implements TargetExtractor {
     private final int m_variableNumber;
 
-    public LocalVariableTargetExtractor(int variableNumber) {
+    public LocalVariableTargetExtractor(final int variableNumber) {
       m_variableNumber = variableNumber;
     }
 
-    public void extract(ContextMethodVisitor methodVisitor) {
+    @Override
+    public void extract(final ContextMethodVisitor methodVisitor) {
       methodVisitor.visitVarInsn(Opcodes.ALOAD, m_variableNumber);
     }
   }
 
   private static class ClassTargetExtractor implements TargetExtractor {
-    public void extract(ContextMethodVisitor methodVisitor) {
+    @Override
+    public void extract(final ContextMethodVisitor methodVisitor) {
       methodVisitor.visitLdcInsn(methodVisitor.getInternalClassName());
     }
   }
@@ -373,11 +382,11 @@ public final class ASMTransformerFactory
     private boolean m_tryCatchBlockNeeded = true;
     private boolean m_entryCallNeeded = true;
 
-    private AdviceMethodVisitor(MethodVisitor mv,
-                                Type internalClassType,
-                                int access,
-                                String name,
-                                List<WeavingDetails> weavingDetails) {
+    private AdviceMethodVisitor(final MethodVisitor mv,
+                                final Type internalClassType,
+                                final int access,
+                                final String name,
+                                final List<WeavingDetails> weavingDetails) {
       super(mv);
 
       m_internalClassType = internalClassType;
@@ -395,6 +404,7 @@ public final class ASMTransformerFactory
       }
     }
 
+    @Override
     public Type getInternalClassName() {
       return m_internalClassType;
     }
@@ -405,8 +415,8 @@ public final class ASMTransformerFactory
 
         super.visitLabel(m_entryLabel);
 
-        for (WeavingDetails weavingDetails : m_weavingDetails) {
-          m_extractors.get(weavingDetails.getTargetSource()).extract(this);
+        for (final WeavingDetails weavingDetails : m_weavingDetails) {
+          getExtractor(weavingDetails.getTargetSource()).extract(this);
           super.visitLdcInsn(weavingDetails.getLocation());
 
           super.visitMethodInsn(INVOKESTATIC,
@@ -422,7 +432,7 @@ public final class ASMTransformerFactory
       generateEntryCall();
     }
 
-    private void generateExitCall(boolean success) {
+    private void generateExitCall(final boolean success) {
       // Iterate in reverse.
       final ListIterator<WeavingDetails> i =
         m_weavingDetails.listIterator(m_weavingDetails.size());
@@ -430,7 +440,7 @@ public final class ASMTransformerFactory
       while (i.hasPrevious()) {
         final WeavingDetails weavingDetails = i.previous();
 
-        m_extractors.get(weavingDetails.getTargetSource()).extract(this);
+        getExtractor(weavingDetails.getTargetSource()).extract(this);
         super.visitLdcInsn(weavingDetails.getLocation());
 
         super.visitInsn(success ? ICONST_1 : ICONST_0);
@@ -453,30 +463,31 @@ public final class ASMTransformerFactory
      * Unfortunately, this considerably adds to the complexity of this adapter.
      * </p>
      */
-    @Override public void visitTryCatchBlock(Label start,
-                                             Label end,
-                                             Label handler,
-                                             String type) {
+    @Override public void visitTryCatchBlock(final Label start,
+                                             final Label end,
+                                             final Label handler,
+                                             final String type) {
 
       super.visitTryCatchBlock(start, end, handler, type);
       generateTryCatchBlock();
     }
 
-    @Override public void visitLabel(Label label) {
+    @Override public void visitLabel(final Label label) {
       generateEntryBlocks();
       super.visitLabel(label);
     }
 
-    @Override public void visitFrame(int type,
-                                     int nLocal,
-                                     Object[] local,
-                                     int nStack,
-                                     Object[] stack) {
+    @Override public void visitFrame(final int type,
+                                     final int nLocal,
+                                     final Object[] local,
+                                     final int nStack,
+                                     final Object[] stack) {
       generateEntryBlocks();
       super.visitFrame(type, nLocal, local, nStack, stack);
     }
 
-    public void visitInsn(int opcode) {
+    @Override
+    public void visitInsn(final int opcode) {
       generateEntryBlocks();
 
       switch (opcode) {
@@ -496,73 +507,84 @@ public final class ASMTransformerFactory
       super.visitInsn(opcode);
     }
 
-    public void visitIntInsn(int opcode, int operand) {
+    @Override
+    public void visitIntInsn(final int opcode, final int operand) {
       generateEntryBlocks();
       super.visitIntInsn(opcode, operand);
     }
 
-    public void visitVarInsn(int opcode, int var) {
+    @Override
+    public void visitVarInsn(final int opcode, final int var) {
       generateEntryBlocks();
       super.visitVarInsn(opcode, var);
     }
 
-    public void visitTypeInsn(int opcode, String type) {
+    @Override
+    public void visitTypeInsn(final int opcode, final String type) {
       generateEntryBlocks();
       super.visitTypeInsn(opcode, type);
     }
 
-    public void visitFieldInsn(int opcode,
-                               String owner,
-                               String name,
-                               String desc) {
+    @Override
+    public void visitFieldInsn(final int opcode,
+                               final String owner,
+                               final String name,
+                               final String desc) {
       generateEntryBlocks();
       super.visitFieldInsn(opcode, owner, name, desc);
     }
 
-    public void visitMethodInsn(int opcode,
-                                String owner,
-                                String name,
-                                String desc) {
+    @Override
+    public void visitMethodInsn(final int opcode,
+                                final String owner,
+                                final String name,
+                                final String desc) {
       generateEntryBlocks();
       super.visitMethodInsn(opcode, owner, name, desc);
     }
 
-    public void visitJumpInsn(int opcode, Label label) {
+    @Override
+    public void visitJumpInsn(final int opcode, final Label label) {
       generateEntryBlocks();
       super.visitJumpInsn(opcode, label);
     }
 
-    public void visitLdcInsn(Object cst) {
+    @Override
+    public void visitLdcInsn(final Object cst) {
       generateEntryBlocks();
       super.visitLdcInsn(cst);
     }
 
-    public void visitIincInsn(int var, int increment) {
+    @Override
+    public void visitIincInsn(final int var, final int increment) {
       generateEntryBlocks();
       super.visitIincInsn(var, increment);
     }
 
-    public void visitTableSwitchInsn(int min,
-                                     int max,
-                                     Label dflt,
-                                     Label[] labels) {
+    @Override
+    public void visitTableSwitchInsn(final int min,
+                                     final int max,
+                                     final Label dflt,
+                                     final Label[] labels) {
       generateEntryBlocks();
       super.visitTableSwitchInsn(min, max, dflt, labels);
     }
 
-    public void visitLookupSwitchInsn(Label dflt,
-                                      int[] keys,
-                                      Label[] labels) {
+    @Override
+    public void visitLookupSwitchInsn(final Label dflt,
+                                      final int[] keys,
+                                      final Label[] labels) {
       generateEntryBlocks();
       super.visitLookupSwitchInsn(dflt, keys, labels);
     }
 
-    public void visitMultiANewArrayInsn(String desc, int dims) {
+    @Override
+    public void visitMultiANewArrayInsn(final String desc, final int dims) {
       generateEntryBlocks();
       super.visitMultiANewArrayInsn(desc, dims);
     }
 
-    @Override public void visitMaxs(int maxStack, int maxLocals) {
+    @Override public void visitMaxs(final int maxStack, final int maxLocals) {
       super.visitLabel(m_exceptionExitLabel);
       generateExitCall(false);
       super.visitInsn(ATHROW);       // Re-throw.

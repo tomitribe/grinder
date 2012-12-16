@@ -1,4 +1,4 @@
-// Copyright (C) 2011 Philip Aston
+// Copyright (C) 2011 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -33,7 +33,8 @@ import net.grinder.script.Test.InstrumentationFilter;
 import net.grinder.scriptengine.AbstractDCRInstrumenter;
 import net.grinder.scriptengine.DCRContext;
 import net.grinder.scriptengine.Recorder;
-import net.grinder.util.weave.Weaver.TargetSource;
+import net.grinder.util.weave.ClassSource;
+import net.grinder.util.weave.ParameterSource;
 
 import org.python.core.PyClass;
 import org.python.core.PyFunction;
@@ -57,7 +58,7 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
    *
    * @param context The DCR context.
    */
-  protected AbstractJythonDCRInstrumenter(DCRContext context) {
+  protected AbstractJythonDCRInstrumenter(final DCRContext context) {
     super(context);
   }
 
@@ -74,7 +75,7 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
    */
   @SuppressWarnings("unchecked")
   private <T extends Member> List<T>
-    extractJavaMethods(PyReflectedFunction pyReflectedFunction)
+    extractJavaMethods(final PyReflectedFunction pyReflectedFunction)
     throws NonInstrumentableTypeException {
 
     // ReflectedArgs is package scope in Jython 2.2.1; use reflection
@@ -93,7 +94,7 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
         dataField.setAccessible(true);
         result.add((T)dataField.get(argument));
       }
-      catch (Exception e) {
+      catch (final Exception e) {
         throw new NonInstrumentableTypeException(
           e.getMessage() + " [" + pyReflectedFunction + "]",
           e);
@@ -103,9 +104,9 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
     return result;
   }
 
-  @Override protected boolean instrument(Object target,
-                                         Recorder recorder,
-                                         InstrumentationFilter filter)
+  @Override protected boolean instrument(final Object target,
+                                         final Recorder recorder,
+                                         final InstrumentationFilter filter)
     throws NonInstrumentableTypeException {
 
     if (target instanceof PyObject) {
@@ -176,7 +177,7 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
     return true;
   }
 
-  private void disallowSelectiveFilter(InstrumentationFilter filter)
+  private void disallowSelectiveFilter(final InstrumentationFilter filter)
     throws NonInstrumentableTypeException {
 
     if (filter != ALL_INSTRUMENTATION) {
@@ -200,15 +201,15 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
   protected abstract void transform(Recorder recorder, PyMethod target)
     throws NonInstrumentableTypeException;
 
-  protected final void transform(Recorder recorder,
-                                 PyReflectedFunction target,
-                                 Object instance)
+  protected final void transform(final Recorder recorder,
+                                 final PyReflectedFunction target,
+                                 final Object instance)
     throws NonInstrumentableTypeException {
 
     final List<Method> reflectedArguments = extractJavaMethods(target);
 
     if (instance != null) {
-      for (Method m : reflectedArguments) {
+      for (final Method m : reflectedArguments) {
 
         Class<?> c = instance.getClass();
 
@@ -219,11 +220,11 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
             getContext().add(instance,
                              c.getDeclaredMethod(m.getName(),
                                                  m.getParameterTypes()),
-                             TargetSource.FIRST_PARAMETER,
+                             ParameterSource.FIRST_PARAMETER,
                              recorder);
             break;
           }
-          catch (NoSuchMethodException e) {
+          catch (final NoSuchMethodException e) {
             c = c.getSuperclass();
           }
         }
@@ -231,50 +232,50 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
       }
     }
     else {
-      for (Method m : reflectedArguments) {
+      for (final Method m : reflectedArguments) {
         getContext().add(m.getDeclaringClass(),
                          m,
-                         TargetSource.CLASS, recorder);
+                         ClassSource.INSTANCE, recorder);
       }
     }
   }
 
-  protected final void transform(Recorder recorder,
-                                 PyReflectedConstructor target)
+  protected final void transform(final Recorder recorder,
+                                 final PyReflectedConstructor target)
     throws NonInstrumentableTypeException {
 
     final List<Constructor<?>> reflectedArguments = extractJavaMethods(target);
 
-    for (Constructor<?> c : reflectedArguments) {
+    for (final Constructor<?> c : reflectedArguments) {
       getContext().add(c.getDeclaringClass(), c, recorder);
     }
   }
 
   protected final void instrumentPublicMethodsByName(
-                                               Object target,
-                                               String methodName,
-                                               Recorder recorder,
-                                               boolean includeSuperClassMethods)
+                                       final Object target,
+                                       final String methodName,
+                                       final Recorder recorder,
+                                       final boolean includeSuperClassMethods)
     throws NonInstrumentableTypeException {
     instrumentPublicMethodsByName(target.getClass(),
                                   target,
                                   methodName,
-                                  TargetSource.FIRST_PARAMETER,
+                                  ParameterSource.FIRST_PARAMETER,
                                   recorder,
                                   includeSuperClassMethods);
   }
 
   protected final void instrumentPublicMethodsByName(
-                                               Class<?> targetClass,
-                                               Object target,
-                                               String methodName,
-                                               TargetSource targetSource,
-                                               Recorder recorder,
-                                               boolean includeSuperClassMethods)
+                                       final Class<?> targetClass,
+                                       final Object target,
+                                       final String methodName,
+                                       final ParameterSource targetSource,
+                                       final Recorder recorder,
+                                       final boolean includeSuperClassMethods)
     throws NonInstrumentableTypeException {
 
     // getMethods() includes superclass methods.
-    for (Method method : targetClass.getMethods()) {
+    for (final Method method : targetClass.getMethods()) {
       if (!includeSuperClassMethods &&
           targetClass != method.getDeclaringClass()) {
         continue;

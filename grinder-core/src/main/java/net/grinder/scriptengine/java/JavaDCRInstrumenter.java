@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -30,7 +30,8 @@ import net.grinder.script.Test.InstrumentationFilter;
 import net.grinder.scriptengine.AbstractDCRInstrumenter;
 import net.grinder.scriptengine.DCRContext;
 import net.grinder.scriptengine.Recorder;
-import net.grinder.util.weave.Weaver.TargetSource;
+import net.grinder.util.weave.ClassSource;
+import net.grinder.util.weave.ParameterSource;
 
 
 /**
@@ -45,7 +46,7 @@ final class JavaDCRInstrumenter extends AbstractDCRInstrumenter {
    *
    * @param context The DCR context.
    */
-  public JavaDCRInstrumenter(DCRContext context) {
+  public JavaDCRInstrumenter(final DCRContext context) {
     super(context);
   }
 
@@ -60,9 +61,9 @@ final class JavaDCRInstrumenter extends AbstractDCRInstrumenter {
    * {@inheritDoc}
    */
   @Override
-  protected boolean instrument(Object target,
-                               Recorder recorder,
-                               InstrumentationFilter filter)
+  protected boolean instrument(final Object target,
+                               final Recorder recorder,
+                               final InstrumentationFilter filter)
     throws NonInstrumentableTypeException {
 
     if (target instanceof Class<?>) {
@@ -75,25 +76,29 @@ final class JavaDCRInstrumenter extends AbstractDCRInstrumenter {
     return true;
   }
 
-  private void instrumentClass(Class<?> targetClass,
-                               Recorder recorder,
-                               InstrumentationFilter filter)
+  private void instrumentClass(final Class<?> targetClass,
+                               final Recorder recorder,
+                               final InstrumentationFilter filter)
     throws NonInstrumentableTypeException {
 
     if (targetClass.isArray()) {
       throw new NonInstrumentableTypeException("Can't instrument arrays");
     }
 
-    for (Constructor<?> constructor : targetClass.getDeclaredConstructors()) {
+    for (final Constructor<?> constructor :
+      targetClass.getDeclaredConstructors()) {
        getContext().add(targetClass, constructor, recorder);
     }
 
     // Instrument the static methods declared by the target class. Ignore
     // any parent class.
-    for (Method method : targetClass.getDeclaredMethods()) {
+    for (final Method method : targetClass.getDeclaredMethods()) {
       if (Modifier.isStatic(method.getModifiers()) &&
           filter.matches(method)) {
-        getContext().add(targetClass, method, TargetSource.CLASS, recorder);
+        getContext().add(targetClass,
+                         method,
+                         ClassSource.INSTANCE,
+                         recorder);
       }
     }
 
@@ -111,9 +116,9 @@ final class JavaDCRInstrumenter extends AbstractDCRInstrumenter {
 //    while (isInstrumentable(c));
   }
 
-  private void instrumentInstance(Object target,
-                                  Recorder recorder,
-                                  InstrumentationFilter filter)
+  private void instrumentInstance(final Object target,
+                                  final Recorder recorder,
+                                  final InstrumentationFilter filter)
     throws NonInstrumentableTypeException {
 
     Class<?> c = target.getClass();
@@ -123,12 +128,12 @@ final class JavaDCRInstrumenter extends AbstractDCRInstrumenter {
     }
 
     do {
-      for (Method method : c.getDeclaredMethods()) {
+      for (final Method method : c.getDeclaredMethods()) {
         if (!Modifier.isStatic(method.getModifiers()) &&
             filter.matches(method)) {
           getContext().add(target,
                            method,
-                           TargetSource.FIRST_PARAMETER,
+                           ParameterSource.FIRST_PARAMETER,
                            recorder);
         }
       }

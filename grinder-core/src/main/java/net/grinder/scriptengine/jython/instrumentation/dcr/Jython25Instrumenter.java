@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -28,8 +28,8 @@ import java.util.List;
 import net.grinder.script.NonInstrumentableTypeException;
 import net.grinder.scriptengine.DCRContext;
 import net.grinder.scriptengine.Recorder;
+import net.grinder.util.weave.ParameterSource;
 import net.grinder.util.weave.WeavingException;
-import net.grinder.util.weave.Weaver.TargetSource;
 
 import org.python.core.PyClass;
 import org.python.core.PyFunction;
@@ -67,7 +67,7 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
     try {
       final List<Method> methodsForPyFunction = new ArrayList<Method>();
 
-      for (Method method : PyFunction.class.getDeclaredMethods()) {
+      for (final Method method : PyFunction.class.getDeclaredMethods()) {
         // Roughly identify the fundamental __call__ methods, i.e. those
         // that call the actual func_code.
         if (("__call__".equals(method.getName()) ||
@@ -82,13 +82,15 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
       assertAtLeastOneMethod(methodsForPyFunction);
 
       m_pyFunctionTransformer = new Transformer<PyFunction>() {
-          public void transform(Recorder recorder, PyFunction target)
+          @Override
+          public void transform(final Recorder recorder,
+                                final PyFunction target)
             throws NonInstrumentableTypeException {
 
-            for (Method method : methodsForPyFunction) {
+            for (final Method method : methodsForPyFunction) {
               context.add(target,
                           method,
-                          TargetSource.FIRST_PARAMETER,
+                          ParameterSource.FIRST_PARAMETER,
                           recorder);
             }
           }
@@ -96,7 +98,7 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
 
       final List<Method> methodsForPyInstance = new ArrayList<Method>();
 
-      for (Method method : PyFunction.class.getDeclaredMethods()) {
+      for (final Method method : PyFunction.class.getDeclaredMethods()) {
         // Here we're finding the fundamental __call__ methods that also
         // take an instance argument.
         if ("__call__".equals(method.getName()) &&
@@ -110,13 +112,15 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
       assertAtLeastOneMethod(methodsForPyInstance);
 
       m_pyInstanceTransformer = new Transformer<PyInstance>() {
-          public void transform(Recorder recorder, PyInstance target)
+          @Override
+          public void transform(final Recorder recorder,
+                                final PyInstance target)
             throws NonInstrumentableTypeException {
 
-            for (Method method : methodsForPyInstance) {
+            for (final Method method : methodsForPyInstance) {
               context.add(target,
                           method,
-                          TargetSource.THIRD_PARAMETER,
+                          ParameterSource.THIRD_PARAMETER,
                           recorder);
             }
           }
@@ -124,7 +128,7 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
 
       final List<Method> methodsForPyMethod = new ArrayList<Method>();
 
-      for (Method method : PyMethod.class.getDeclaredMethods()) {
+      for (final Method method : PyMethod.class.getDeclaredMethods()) {
         // Roughly identify the fundamental __call__ methods, i.e. those
         // that call the actual func_code.
         if (("__call__".equals(method.getName()) ||
@@ -154,28 +158,29 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
         PyProxy.class.getDeclaredMethod("_getPyInstance");
 
       m_pyProxyTransformer = new Transformer<PyProxy>() {
-          public void transform(Recorder recorder, PyProxy target)
+          @Override
+          public void transform(final Recorder recorder, final PyProxy target)
             throws NonInstrumentableTypeException {
             final PyObject pyInstance;
 
             try {
               pyInstance = (PyObject) pyProxyPyInstanceMethod.invoke(target);
             }
-            catch (Exception e) {
+            catch (final Exception e) {
               throw new NonInstrumentableTypeException(
                 "Could not call _getPyInstance", e);
             }
 
-            for (Method method : methodsForPyInstance) {
+            for (final Method method : methodsForPyInstance) {
               context.add(pyInstance,
                           method,
-                          TargetSource.THIRD_PARAMETER,
+                          ParameterSource.THIRD_PARAMETER,
                           recorder);
             }
 
             context.add(pyInstance,
                         pyReflectedFunctionCall,
-                        TargetSource.SECOND_PARAMETER,
+                        ParameterSource.SECOND_PARAMETER,
                         recorder);
           }
         };
@@ -186,21 +191,22 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
                                         String[].class);
 
       m_pyClassTransformer = new Transformer<PyClass>() {
-          public void transform(Recorder recorder, PyClass target)
+          @Override
+          public void transform(final Recorder recorder, final PyClass target)
             throws NonInstrumentableTypeException {
             context.add(target,
                         pyClassCall,
-                        TargetSource.FIRST_PARAMETER,
+                        ParameterSource.FIRST_PARAMETER,
                         recorder);
           }
         };
     }
-    catch (NoSuchMethodException e) {
+    catch (final NoSuchMethodException e) {
       throw new WeavingException("Jython 2.5 not found", e);
     }
   }
 
-  private static void assertAtLeastOneMethod(List<Method> methods)
+  private static void assertAtLeastOneMethod(final List<Method> methods)
     throws WeavingException {
     if (methods.size() == 0) {
       throw new WeavingException("Jython 2.5 not found");
@@ -222,7 +228,8 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
   /**
    * {@inheritDoc}
    */
-  @Override protected void transform(Recorder recorder, PyInstance target)
+  @Override protected void transform(final Recorder recorder,
+                                     final PyInstance target)
     throws NonInstrumentableTypeException {
     m_pyInstanceTransformer.transform(recorder, target);
   }
@@ -230,7 +237,8 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
   /**
    * {@inheritDoc}
    */
-  @Override protected void transform(Recorder recorder, PyFunction target)
+  @Override protected void transform(final Recorder recorder,
+                                     final PyFunction target)
     throws NonInstrumentableTypeException {
     m_pyFunctionTransformer.transform(recorder, target);
   }
@@ -238,7 +246,8 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
   /**
    * {@inheritDoc}
    */
-  @Override protected void transform(Recorder recorder, PyClass target)
+  @Override protected void transform(final Recorder recorder,
+                                     final PyClass target)
     throws NonInstrumentableTypeException {
     m_pyClassTransformer.transform(recorder, target);
   }
@@ -246,7 +255,8 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
   /**
    * {@inheritDoc}
    */
-  @Override protected void transform(Recorder recorder, PyProxy target)
+  @Override protected void transform(final Recorder recorder,
+                                     final PyProxy target)
     throws NonInstrumentableTypeException {
     m_pyProxyTransformer.transform(recorder, target);
   }
@@ -254,7 +264,8 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
   /**
    * {@inheritDoc}
    */
-  @Override protected void transform(Recorder recorder, PyMethod target)
+  @Override protected void transform(final Recorder recorder,
+                                     final PyMethod target)
     throws NonInstrumentableTypeException {
 
     // PyMethod is a wrapper around a callable. Sometimes Jython bypasses
@@ -279,7 +290,7 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
       instrumentPublicMethodsByName(target.im_func.getClass(),
                                     target.im_self,
                                     "__call__",
-                                    TargetSource.THIRD_PARAMETER,
+                                    ParameterSource.THIRD_PARAMETER,
                                     recorder,
                                     false);
     }
