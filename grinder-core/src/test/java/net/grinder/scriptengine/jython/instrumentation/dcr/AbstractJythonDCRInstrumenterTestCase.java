@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -42,7 +42,7 @@ import org.python.util.PythonInterpreter;
 public abstract class AbstractJythonDCRInstrumenterTestCase
   extends AbstractJythonInstrumenterTestCase {
 
-  public AbstractJythonDCRInstrumenterTestCase(Instrumenter instrumenter) {
+  public AbstractJythonDCRInstrumenterTestCase(final Instrumenter instrumenter) {
     super(instrumenter);
   }
 
@@ -51,15 +51,15 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
   }
 
   @Override
-  protected void assertTestReference(PyObject pyObject,
-                                     net.grinder.common.Test test) {
+  protected void assertTestReference(final PyObject pyObject,
+                                     final net.grinder.common.Test test) {
     // No-op, AbstractDCRInstrumenter doesn't support __test__.
   }
 
   @Override
-  protected void assertTargetReference(PyObject proxy,
-                                       Object original,
-                                       boolean unwrapTarget) {
+  protected void assertTargetReference(final PyObject proxy,
+                                       final Object original,
+                                       final boolean unwrapTarget) {
     // AbstractDCRInstrumenter doesn't support __target__.
   }
 
@@ -441,6 +441,45 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
     // Other instances are not instrumented.
     m_interpreter.exec("a=MyExtendedClass.create()");
     m_interpreter.exec("a.addOne(1)");
+    m_recorderStubFactory.assertNoMoreCalls();
+  }
+
+  @Test public void testJythonUnboundMethods() throws Exception {
+    m_interpreter.exec("class C:\n" +
+        " def f(self): pass\n" +
+        " def g(self): pass\n" +
+        "c=C()\n" +
+        "m=C.f");
+
+    final PyObject m = m_interpreter.get("m");
+    createInstrumentedProxy(m_test, m_recorder, m);
+
+    m_interpreter.exec("c.f()");
+    m_recorderStubFactory.assertSuccess("start");
+    m_recorderStubFactory.assertSuccess("end", true);
+    m_recorderStubFactory.assertNoMoreCalls();
+
+    m_interpreter.exec("c.g()");
+    m_recorderStubFactory.assertNoMoreCalls();
+  }
+
+  // Bug #228
+  @Test public void testJythonBoundMethods() throws Exception {
+    m_interpreter.exec("class C:\n" +
+        " def f(self): pass\n" +
+        " def g(self): pass\n" +
+        "c=C()\n"+
+        "m=c.f");
+
+    final PyObject m = m_interpreter.get("m");
+    createInstrumentedProxy(m_test, m_recorder, m);
+
+    m_interpreter.exec("c.f()");
+    m_recorderStubFactory.assertSuccess("start");
+    m_recorderStubFactory.assertSuccess("end", true);
+    m_recorderStubFactory.assertNoMoreCalls();
+
+    m_interpreter.exec("c.g()");
     m_recorderStubFactory.assertNoMoreCalls();
   }
 }
