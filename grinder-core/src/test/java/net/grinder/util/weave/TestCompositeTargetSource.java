@@ -46,12 +46,12 @@ public class TestCompositeTargetSource {
 
     final CompositeTargetSource[] applicable = {
       new CompositeTargetSource(),
-      new CompositeTargetSource(ClassSource.INSTANCE),
-      new CompositeTargetSource(ClassSource.INSTANCE,
+      new CompositeTargetSource(ClassSource.CLASS),
+      new CompositeTargetSource(ClassSource.CLASS,
                                 ParameterSource.FIRST_PARAMETER),
       new CompositeTargetSource(ParameterSource.SECOND_PARAMETER,
                                 ParameterSource.FIRST_PARAMETER,
-                                ClassSource.INSTANCE),
+                                ClassSource.CLASS),
     };
 
     for (final TargetSource s : applicable) {
@@ -97,7 +97,7 @@ public class TestCompositeTargetSource {
   @Test
   public void testToString() {
     final TargetSource t1 = ParameterSource.FIRST_PARAMETER;
-    final TargetSource t2 = ClassSource.INSTANCE;
+    final TargetSource t2 = ClassSource.CLASS;
     final TargetSource t3 = new CompositeTargetSource(t1, t2);
 
     assertContains(t3.toString(), t1.toString());

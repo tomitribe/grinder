@@ -171,7 +171,7 @@ public final class DCRWeaver implements Weaver {
 
     public String add(final Constructor<?> constructor) {
       return add(constructor,
-                 ClassSource.INSTANCE,
+                 ClassSource.CLASS,
                  m_internalClassNameToConstructorToLocation);
     }
 

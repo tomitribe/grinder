@@ -97,7 +97,7 @@ final class JavaDCRInstrumenter extends AbstractDCRInstrumenter {
           filter.matches(method)) {
         getContext().add(targetClass,
                          method,
-                         ClassSource.INSTANCE,
+                         ClassSource.CLASS,
                          recorder);
       }
     }

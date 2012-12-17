@@ -752,7 +752,7 @@ public class TestASMTransformerFactory extends TestCase {
 
         if (Modifier.isStatic(member.getModifiers()) ||
             member instanceof Constructor<?>) {
-          source = ClassSource.INSTANCE;
+          source = ClassSource.CLASS;
         }
         else {
           source = ParameterSource.FIRST_PARAMETER;

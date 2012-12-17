@@ -215,7 +215,7 @@ public class TestDCRWeaver {
 
     weaver.weave(method, ParameterSource.FIRST_PARAMETER);
     weaver.applyChanges();
-    weaver.weave(method, ClassSource.INSTANCE);
+    weaver.weave(method, ClassSource.CLASS);
     weaver.applyChanges();
 
     verify(m_instrumentation, times(2))

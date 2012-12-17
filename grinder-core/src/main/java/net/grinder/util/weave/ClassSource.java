@@ -31,18 +31,12 @@ import net.grinder.util.weave.Weaver.TargetSource;
  *
  * @author Philip Aston
  */
-public final class ClassSource implements TargetSource {
+public enum ClassSource implements TargetSource {
 
   /**
-   * Singleton instance. Relies on object equality.
+   * Singleton instance.
    */
-  public static final ClassSource INSTANCE = new ClassSource();
-
-  /**
-   * Private constructor.
-   */
-  private ClassSource() {
-  }
+  CLASS;
 
   /**
    * {@inheritDoc}

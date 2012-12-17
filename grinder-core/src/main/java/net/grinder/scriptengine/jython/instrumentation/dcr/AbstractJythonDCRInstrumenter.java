@@ -236,7 +236,7 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
       for (final Method m : reflectedArguments) {
         getContext().add(m.getDeclaringClass(),
                          m,
-                         ClassSource.INSTANCE, recorder);
+                         ClassSource.CLASS, recorder);
       }
     }
   }

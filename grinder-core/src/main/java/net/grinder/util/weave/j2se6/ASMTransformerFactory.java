@@ -323,7 +323,7 @@ public final class ASMTransformerFactory
 
   private final Map<Weaver.TargetSource, TargetExtractor> m_extractors =
     new HashMap<Weaver.TargetSource, TargetExtractor>() { {
-      put(ClassSource.INSTANCE, new ClassTargetExtractor());
+      put(ClassSource.CLASS, new ClassTargetExtractor());
       put(ParameterSource.FIRST_PARAMETER,
           new LocalVariableTargetExtractor(0));
       put(ParameterSource.SECOND_PARAMETER,
