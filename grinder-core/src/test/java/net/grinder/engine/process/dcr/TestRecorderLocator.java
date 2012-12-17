@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,14 @@
 
 package net.grinder.engine.process.dcr;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -30,113 +38,144 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.TestCase;
 import net.grinder.common.UncheckedGrinderException;
 import net.grinder.engine.common.EngineException;
-import net.grinder.engine.process.dcr.RecorderLocator;
-import net.grinder.engine.process.dcr.RecorderRegistry;
 import net.grinder.scriptengine.Recorder;
-import net.grinder.testutility.RandomStubFactory;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 
 
 /**
  * Unit tests for {@link RecorderLocator}.
  *
  * @author Philip Aston
- * @version $Revision:$
  */
-public class TestRecorderLocator extends TestCase {
+public class TestRecorderLocator {
 
-  private final RandomStubFactory<Recorder> m_recorderStubFactory =
-    RandomStubFactory.create(Recorder.class);
-  private final Recorder m_recorder = m_recorderStubFactory.getStub();
-
-  private final RandomStubFactory<Recorder> m_recorderStubFactory2 =
-      RandomStubFactory.create(Recorder.class);
-  private final Recorder m_recorder2 = m_recorderStubFactory2.getStub();
+  @Mock private Recorder m_recorder;
+  @Mock private Recorder m_recorder2;
 
   private final RecorderRegistry m_recorderRegistry =
     RecorderLocator.getRecorderRegistry();
 
-  @Override protected void tearDown() throws Exception {
-    super.tearDown();
+  @Before public void setUp() {
+    MockitoAnnotations.initMocks(this);
+  }
+
+  @After public void tearDown() throws Exception {
     RecorderLocator.clearRecorders();
   }
 
-  public void testNullBehaviour() throws Exception {
+  @Test public void testNullBehaviour() throws Exception {
     RecorderLocator.enter(this, "foo");
     RecorderLocator.exit(this, "foo", false);
   }
 
-  public void testSingleRegistration() throws Exception {
+  @Test public void testSingleRegistration() throws Exception {
     final Object target = new Object();
 
     m_recorderRegistry.register(target, "location", m_recorder);
-    m_recorderStubFactory.assertNoMoreCalls();
 
     RecorderLocator.enter(target, "location");
-    m_recorderStubFactory.assertSuccess("start");
-    m_recorderStubFactory.assertNoMoreCalls();
+    verify(m_recorder).start();
 
     RecorderLocator.exit(target, "location", true);
-    m_recorderStubFactory.assertSuccess("end", true);
-    m_recorderStubFactory.assertNoMoreCalls();
+    verify(m_recorder).end(true);
 
+    // Wrong target.
     RecorderLocator.enter(this, "location");
     RecorderLocator.exit(this, "location", true);
-    m_recorderStubFactory.assertNoMoreCalls();
 
+    // Wrong location.
     RecorderLocator.enter(target, "location2");
     RecorderLocator.exit(target, "location2", true);
-    m_recorderStubFactory.assertNoMoreCalls();
 
     RecorderLocator.enter(target, "location");
-    m_recorderStubFactory.assertSuccess("start");
-    m_recorderStubFactory.assertNoMoreCalls();
+    verify(m_recorder, times(2)).start();
 
     RecorderLocator.exit(target, "location", false);
-    m_recorderStubFactory.assertSuccess("end", false);
-    m_recorderStubFactory.assertNoMoreCalls();
+    verify(m_recorder).end(false);
 
     // Interned strings shouldn't match.
     RecorderLocator.enter(target, new String("location"));
     RecorderLocator.exit(target, new String("location"), true);
-    m_recorderStubFactory.assertNoMoreCalls();
+
+    verifyNoMoreInteractions(m_recorder);
   }
 
-  public void testBadRegistration() throws Exception {
+  @Test public void testBadRegistration() throws Exception {
     final Object target = new Object();
 
     final EngineException exception = new EngineException("bork");
 
-    m_recorderStubFactory.setThrows("start", exception);
-    m_recorderStubFactory.setThrows("end", exception);
+    Mockito.doThrow(exception).when(m_recorder).start();
+    Mockito.doThrow(exception).when(m_recorder).end(false);
 
     m_recorderRegistry.register(target, "location", m_recorder);
-    m_recorderStubFactory.assertNoMoreCalls();
 
     try {
       RecorderLocator.enter(target, "location");
       fail("Expected UncheckedGrinderException");
     }
-    catch (UncheckedGrinderException e) {
+    catch (final UncheckedGrinderException e) {
       assertSame(exception, e.getCause());
     }
-    m_recorderStubFactory.assertException("start", exception);
-    m_recorderStubFactory.assertNoMoreCalls();
+
+    verify(m_recorder).start();
 
     try {
       RecorderLocator.exit(target, "location", false);
       fail("Expected UncheckedGrinderException");
     }
-    catch (UncheckedGrinderException e) {
+    catch (final UncheckedGrinderException e) {
       assertSame(exception, e.getCause());
     }
-    m_recorderStubFactory.assertException("end", exception, false);
-    m_recorderStubFactory.assertNoMoreCalls();
+
+    verify(m_recorder).end(false);
+
+    verifyNoMoreInteractions(m_recorder);
   }
 
-  public void testMultipleRegistrations() throws Exception {
+  @Test public void testBadRegistrationTwoTargets() throws Exception {
+    final Object target = new Object();
+    final Object target2 = new Object();
+
+    final EngineException exception = new EngineException("bork");
+
+    Mockito.doThrow(exception).when(m_recorder).start();
+    Mockito.doThrow(exception).when(m_recorder).end(false);
+
+    m_recorderRegistry.register(target, target2, "location", m_recorder);
+
+    try {
+      RecorderLocator.enter(target, target2, "location");
+      fail("Expected UncheckedGrinderException");
+    }
+    catch (final UncheckedGrinderException e) {
+      assertSame(exception, e.getCause());
+    }
+
+    verify(m_recorder).start();
+
+    try {
+      RecorderLocator.exit(target, target2, "location", false);
+      fail("Expected UncheckedGrinderException");
+    }
+    catch (final UncheckedGrinderException e) {
+      assertSame(exception, e.getCause());
+    }
+
+    verify(m_recorder).end(false);
+
+    verifyNoMoreInteractions(m_recorder);
+  }
+
+  @Test public void testMultipleRegistrations() throws Exception {
     final Object target = new Object();
     final Object target2 = new Object();
 
@@ -144,46 +183,38 @@ public class TestRecorderLocator extends TestCase {
 
     RecorderLocator.enter(target2, "location");
     RecorderLocator.exit(target2, "location", false);
-    m_recorderStubFactory.assertNoMoreCalls();
 
     RecorderLocator.enter(target, "location");
-    m_recorderStubFactory.assertSuccess("start");
-    m_recorderStubFactory.assertNoMoreCalls();
+    verify(m_recorder).start();
 
     RecorderLocator.exit(target, "location", true);
-    m_recorderStubFactory.assertSuccess("end", true);
-    m_recorderStubFactory.assertNoMoreCalls();
+    verify(m_recorder).end(true);
 
     m_recorderRegistry.register(target2, "location", m_recorder2);
     m_recorderRegistry.register(target2, "location2", m_recorder);
 
     RecorderLocator.enter(target, "location");
-    m_recorderStubFactory.assertSuccess("start");
-    m_recorderStubFactory.assertNoMoreCalls();
+    verify(m_recorder, times(2)).start();
 
     RecorderLocator.enter(target2, "location");
-    m_recorderStubFactory2.assertSuccess("start");
-    m_recorderStubFactory2.assertNoMoreCalls();
+    verify(m_recorder2).start();
 
     RecorderLocator.exit(target, "location", true);
-    m_recorderStubFactory.assertSuccess("end", true);
-    m_recorderStubFactory.assertNoMoreCalls();
+    verify(m_recorder, times(2)).end(true);
 
     RecorderLocator.exit(target2, "location", false);
-    m_recorderStubFactory2.assertSuccess("end", false);
-    m_recorderStubFactory2.assertNoMoreCalls();
-    m_recorderStubFactory.assertNoMoreCalls();
+    verify(m_recorder2).end(false);
 
     RecorderLocator.enter(target2, "location2");
-    m_recorderStubFactory.assertSuccess("start");
-    m_recorderStubFactory.assertNoMoreCalls();
+    verify(m_recorder, times(3)).start();
 
     RecorderLocator.exit(target2, "location2", true);
-    m_recorderStubFactory.assertSuccess("end", true);
-    m_recorderStubFactory.assertNoMoreCalls();
+    verify(m_recorder, times(3)).end(true);
+
+    verifyNoMoreInteractions(m_recorder, m_recorder2);
   }
 
-  public void testNestedRegistrations() throws Exception {
+  @Test public void testNestedRegistrations() throws Exception {
     final Object target = new Object();
 
     m_recorderRegistry.register(target, "location", m_recorder);
@@ -194,43 +225,81 @@ public class TestRecorderLocator extends TestCase {
     m_recorderRegistry.register(target, "location", m_recorder2);
 
     RecorderLocator.enter(target, "location");
-    m_recorderStubFactory.assertSuccess("start");
-    m_recorderStubFactory2.assertSuccess("start");
-    m_recorderStubFactory.assertNoMoreCalls();
-    m_recorderStubFactory2.assertNoMoreCalls();
+    verify(m_recorder).start();
+    verify(m_recorder2).start();
 
     RecorderLocator.exit(target, "location", false);
-    m_recorderStubFactory2.assertSuccess("end", false);
-    m_recorderStubFactory.assertSuccess("end", false);
-    m_recorderStubFactory.assertNoMoreCalls();
-    m_recorderStubFactory2.assertNoMoreCalls();
+    verify(m_recorder2).end(false);
+    verify(m_recorder).end(false);
+
+    verifyNoMoreInteractions(m_recorder, m_recorder2);
   }
 
-  public void testWithNull() throws Exception {
+  @Test public void testNestedRegistrationsTwoTargets() throws Exception {
+    final Object target = new Object();
+    final Object target2 = new Object();
+
+    m_recorderRegistry.register(target, target2, "location", m_recorder);
+
+    // Same target, location, recorder => noop.
+    m_recorderRegistry.register(target, target2, "location", m_recorder);
+
+    m_recorderRegistry.register(target, target2, "location", m_recorder2);
+
+    RecorderLocator.enter(target, target2, "location");
+    verify(m_recorder).start();
+    verify(m_recorder2).start();
+
+    RecorderLocator.exit(target, target2, "location", false);
+    verify(m_recorder2).end(false);
+    verify(m_recorder).end(false);
+
+    verifyNoMoreInteractions(m_recorder, m_recorder2);
+  }
+
+  @Test public void testWithNull() throws Exception {
     final Object target = new Object();
 
     m_recorderRegistry.register(target, "location", m_recorder);
-    m_recorderStubFactory.assertNoMoreCalls();
 
     RecorderLocator.enter(null, "location");
-    m_recorderStubFactory.assertNoMoreCalls();
 
     RecorderLocator.exit(null, "location", true);
-    m_recorderStubFactory.assertNoMoreCalls();
+
+    verifyNoMoreInteractions(m_recorder);
   }
 
-  public void testConcurrency() throws Exception {
+  @Test public void testWithNullTwoTargets() throws Exception {
+    final Object target = new Object();
+    final Object target2 = new Object();
+
+    m_recorderRegistry.register(target, target2, "location", m_recorder);
+
+    RecorderLocator.enter(null, "foo", "location");
+
+    RecorderLocator.enter("foo", null, "location");
+
+    RecorderLocator.exit(null, "foo", "location", true);
+
+    RecorderLocator.exit("foo", null, "location", true);
+
+    verifyNoMoreInteractions(m_recorder);
+  }
+
+  @Test public void testConcurrency() throws Exception {
     final ExecutorService executor = Executors.newCachedThreadPool();
 
     final AtomicInteger runs = new AtomicInteger(0);
     final AtomicInteger n = new AtomicInteger(0);
 
     final Recorder instrumentation = new Recorder() {
+      @Override
       public void start() throws EngineException {
         n.incrementAndGet();
       }
 
-      public void end(boolean success) throws EngineException {
+      @Override
+      public void end(final boolean success) throws EngineException {
         n.decrementAndGet();
       }
     };
@@ -240,6 +309,7 @@ public class TestRecorderLocator extends TestCase {
     final String[] locations = { "L1", "L2", "L3" };
 
     class RegisterInstrumentation implements Runnable {
+      @Override
       public void run() {
         runs.incrementAndGet();
 
@@ -255,7 +325,7 @@ public class TestRecorderLocator extends TestCase {
         try {
           executor.execute(this);
         }
-        catch (RejectedExecutionException e) {
+        catch (final RejectedExecutionException e) {
         }
       }}
 
@@ -265,7 +335,7 @@ public class TestRecorderLocator extends TestCase {
       runnables.add(new RegisterInstrumentation());
     }
 
-    for (Runnable r : runnables) {
+    for (final Runnable r : runnables) {
       executor.execute(r);
     }
 

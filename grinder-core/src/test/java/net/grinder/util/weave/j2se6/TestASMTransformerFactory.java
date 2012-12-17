@@ -653,9 +653,18 @@ public class TestASMTransformerFactory extends TestCase {
   }
 
   public static final class BadAdvice3 {
-    public void enter(final Object reference, final String location) { }
+    public static void enter(final Object reference, final String location) { }
+
+    public void enter(final Object reference,
+                      final Object reference2,
+                      final String location) { }
 
     public static void exit(final Object reference,
+                            final String location,
+                            final boolean success) { }
+
+    public static void exit(final Object reference,
+                            final Object reference2,
                             final String location,
                             final boolean success) { }
   }
