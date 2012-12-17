@@ -1,3 +1,10 @@
+The Grinder 3.12 (not yet released)
+-----------------------------------
+
+  Fix bug #228 - Instrumentation fails for Jython bound method
+  calls. Thanks to Travis Bear for the report.
+
+
 The Grinder 3.11
 ----------------
 
