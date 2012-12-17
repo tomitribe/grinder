@@ -21,12 +21,16 @@
 
 package net.grinder.util.weave.j2se6;
 
+import static java.util.Collections.nCopies;
+
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
@@ -35,8 +39,10 @@ import java.util.Map.Entry;
 
 import net.grinder.util.Pair;
 import net.grinder.util.weave.ClassSource;
+import net.grinder.util.weave.CompositeTargetSource;
 import net.grinder.util.weave.ParameterSource;
 import net.grinder.util.weave.Weaver;
+import net.grinder.util.weave.Weaver.TargetSource;
 import net.grinder.util.weave.WeavingException;
 import net.grinder.util.weave.j2se6.DCRWeaver.ClassFileTransformerFactory;
 
@@ -68,7 +74,7 @@ public final class ASMTransformerFactory
    * <p>
    * We can't add fields to the class due to DCR limitations, so we have to wire
    * in the advice class using static methods.{@code adviceClass} should
-   * implement two methods with the following names and signatures.
+   * implement methods with the following names and signatures.
    * </p>
    *
    * <pre>
@@ -78,8 +84,16 @@ public final class ASMTransformerFactory
    * public static void exit(Object reference,
    *                         String location,
    *                         boolean success);
-   * </pre>
    *
+   * public static void enter(Object reference,
+   *                          Object reference2,
+   *                          String location);
+   *
+   * public static void exit(Object reference,
+   *                         Object reference2,
+   *                         String location,
+   *                         boolean success);
+   * </pre>
    *
    * @param adviceClass
    *          Class that provides the advice.
@@ -91,23 +105,35 @@ public final class ASMTransformerFactory
       throws WeavingException {
 
     try {
-      final Method enterMethod =
-        adviceClass.getMethod("enter", Object.class, String.class);
+      final Method[] methods = {
+        adviceClass.getMethod("enter",
+                              Object.class,
+                              String.class),
+        adviceClass.getMethod("exit",
+                              Object.class,
+                              String.class,
+                              Boolean.TYPE),
+        adviceClass.getMethod("enter",
+                              Object.class,
+                              Object.class,
+                              String.class),
+        adviceClass.getMethod("exit",
+                              Object.class,
+                              Object.class,
+                              String.class,
+                              Boolean.TYPE),
+      };
 
-      if (!Modifier.isStatic(enterMethod.getModifiers())) {
-        throw new WeavingException("Enter method is not static");
-      }
-
-      final Method exitMethod =
-        adviceClass.getMethod("exit", Object.class, String.class, Boolean.TYPE);
-
-      if (!Modifier.isStatic(exitMethod.getModifiers())) {
-        throw new WeavingException("Exit method is not static");
+      for (final Method m : methods) {
+        if (!Modifier.isStatic(m.getModifiers())) {
+          throw new WeavingException(m + " is not static");
+        }
       }
     }
     catch (final Exception e) {
       throw new WeavingException(
-        adviceClass.getName() + " does not expected enter and exit methods",
+        adviceClass.getName() +
+        " does not have expected enter and exit methods",
         e);
     }
 
@@ -307,6 +333,17 @@ public final class ASMTransformerFactory
     } };
 
   private TargetExtractor getExtractor(final Weaver.TargetSource source) {
+    if (source instanceof CompositeTargetSource) {
+      final CompositeTargetExtractor e = new CompositeTargetExtractor();
+
+      for (final TargetSource s :
+        ((CompositeTargetSource)source).getSources()) {
+        e.add(getExtractor(s));
+      }
+
+      return e;
+    }
+
     return m_extractors.get(source);
   }
 
@@ -331,6 +368,22 @@ public final class ASMTransformerFactory
     @Override
     public void extract(final ContextMethodVisitor methodVisitor) {
       methodVisitor.visitLdcInsn(methodVisitor.getInternalClassName());
+    }
+  }
+
+  private static class CompositeTargetExtractor implements TargetExtractor {
+    private final Collection<TargetExtractor> m_extractors =
+        new ArrayList<TargetExtractor>();
+
+    public void add(final TargetExtractor t) {
+      m_extractors.add(t);
+    }
+
+    @Override
+    public void extract(final ContextMethodVisitor methodVisitor) {
+      for (final TargetExtractor e : m_extractors) {
+        e.extract(methodVisitor);
+      }
     }
   }
 
@@ -416,13 +469,16 @@ public final class ASMTransformerFactory
         super.visitLabel(m_entryLabel);
 
         for (final WeavingDetails weavingDetails : m_weavingDetails) {
-          getExtractor(weavingDetails.getTargetSource()).extract(this);
+          final TargetSource targetSource = weavingDetails.getTargetSource();
+
+          getExtractor(targetSource).extract(this);
+
           super.visitLdcInsn(weavingDetails.getLocation());
 
           super.visitMethodInsn(INVOKESTATIC,
                                 m_adviceClass,
                                 "enter",
-                                "(Ljava/lang/Object;Ljava/lang/String;)V");
+                                entryMethodDescriptor(targetSource));
         }
       }
     }
@@ -439,8 +495,10 @@ public final class ASMTransformerFactory
 
       while (i.hasPrevious()) {
         final WeavingDetails weavingDetails = i.previous();
+        final TargetSource targetSource = weavingDetails.getTargetSource();
 
-        getExtractor(weavingDetails.getTargetSource()).extract(this);
+        getExtractor(targetSource).extract(this);
+
         super.visitLdcInsn(weavingDetails.getLocation());
 
         super.visitInsn(success ? ICONST_1 : ICONST_0);
@@ -448,7 +506,7 @@ public final class ASMTransformerFactory
         super.visitMethodInsn(INVOKESTATIC,
                               m_adviceClass,
                               "exit",
-                              "(Ljava/lang/Object;Ljava/lang/String;Z)V");
+                              exitMethodDescriptor(targetSource));
       }
     }
 
@@ -590,5 +648,33 @@ public final class ASMTransformerFactory
       super.visitInsn(ATHROW);       // Re-throw.
       super.visitMaxs(maxStack, maxLocals);
     }
+  }
+
+  private static final Type STRING_TYPE =
+      Type.getObjectType(Type.getInternalName(String.class));
+  private static final Type OBJECT_TYPE =
+      Type.getObjectType(Type.getInternalName(Object.class));
+
+  private static List<Type> parameterSignature(final TargetSource source) {
+    return new ArrayList<Type>(nCopies(source.targetCount(), OBJECT_TYPE));
+  }
+
+  private static String entryMethodDescriptor(final TargetSource source) {
+    final List<Type> parameters = parameterSignature(source);
+    parameters.add(STRING_TYPE);
+
+    return Type.getMethodDescriptor(Type.VOID_TYPE,
+                                    parameters.toArray(
+                                      new Type[parameters.size()]));
+  }
+
+  private static String exitMethodDescriptor(final TargetSource source) {
+    final List<Type> parameters = parameterSignature(source);
+    parameters.add(STRING_TYPE);
+    parameters.add(Type.BOOLEAN_TYPE);
+
+    return Type.getMethodDescriptor(Type.VOID_TYPE,
+                                    parameters.toArray(
+                                      new Type[parameters.size()]));
   }
 }

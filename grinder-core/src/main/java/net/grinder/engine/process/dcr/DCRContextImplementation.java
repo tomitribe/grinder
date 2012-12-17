@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -25,17 +25,17 @@ import java.lang.instrument.Instrumentation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-import org.slf4j.Logger;
-
 import net.grinder.script.NonInstrumentableTypeException;
 import net.grinder.scriptengine.DCRContext;
 import net.grinder.scriptengine.Recorder;
 import net.grinder.util.weave.Weaver;
-import net.grinder.util.weave.WeavingException;
 import net.grinder.util.weave.Weaver.TargetSource;
+import net.grinder.util.weave.WeavingException;
 import net.grinder.util.weave.agent.ExposeInstrumentation;
 import net.grinder.util.weave.j2se6.ASMTransformerFactory;
 import net.grinder.util.weave.j2se6.DCRWeaver;
+
+import org.slf4j.Logger;
 
 /**
  * Wrap up the DCR context for use by
@@ -64,7 +64,7 @@ public final class DCRContextImplementation implements DCRContext {
    * @param logger A logger to complain to if problems are found.
    * @return The context, or {@code null} if one could not be created.
    */
-  public static DCRContextImplementation create(Logger logger) {
+  public static DCRContextImplementation create(final Logger logger) {
     final Instrumentation instrumentation =
       ExposeInstrumentation.getInstrumentation();
 
@@ -79,7 +79,7 @@ public final class DCRContextImplementation implements DCRContext {
         return null;
       }
     }
-    catch (Exception e1) {
+    catch (final Exception e1) {
       // Also catches case where instrumentation == null.
       logger.info("Java VM does not support instrumentation, DCR unavailable");
 
@@ -96,16 +96,16 @@ public final class DCRContextImplementation implements DCRContext {
    *
    * <p>Package scope for unit tests.</p>
    */
-  DCRContextImplementation(Instrumentation instrumentation,
-                           Class<?> recorderLocatorClass,
-                           RecorderRegistry recorderRegistry) {
+  DCRContextImplementation(final Instrumentation instrumentation,
+                           final Class<?> recorderLocatorClass,
+                           final RecorderRegistry recorderRegistry) {
 
     final ASMTransformerFactory transformerFactory;
 
     try {
       transformerFactory = new ASMTransformerFactory(recorderLocatorClass);
     }
-    catch (WeavingException e) {
+    catch (final WeavingException e) {
       throw new AssertionError(e);
     }
 
@@ -117,9 +117,9 @@ public final class DCRContextImplementation implements DCRContext {
   /**
    * {@inheritDoc}
    */
-  @Override public void add(Object target,
-                            Constructor<?> constructor,
-                            Recorder recorder)
+  @Override public void add(final Object target,
+                            final Constructor<?> constructor,
+                            final Recorder recorder)
    throws NonInstrumentableTypeException {
 
     checkWrappable(constructor.getDeclaringClass());
@@ -137,20 +137,25 @@ public final class DCRContextImplementation implements DCRContext {
   /**
    * {@inheritDoc}
    */
-  @Override public void add(Object target,
-                            Method method,
-                            TargetSource targetSource,
-                            Recorder recorder)
+  @Override public void add(final Object target,
+                            final Method method,
+                            final TargetSource targetSource,
+                            final Recorder recorder)
     throws NonInstrumentableTypeException {
 
     checkWrappable(method.getDeclaringClass());
+
+    if (targetSource.targetCount() != 1) {
+      throw new IllegalArgumentException(
+        "One target object supplied, but target source is " + targetSource);
+    }
 
     try {
       final String location = m_weaver.weave(method, targetSource);
 
       m_recorderRegistry.register(target, location, recorder);
     }
-    catch (WeavingException e) {
+    catch (final WeavingException e) {
       throw new NonInstrumentableTypeException("Weaving failed", e);
     }
 
@@ -159,10 +164,41 @@ public final class DCRContextImplementation implements DCRContext {
 //                      target,
 //                      method);
 
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override public void add(final Object target,
+                            final Object target2,
+                            final Method method,
+                            final TargetSource targetSource,
+                            final Recorder recorder)
+    throws NonInstrumentableTypeException {
+
+    checkWrappable(method.getDeclaringClass());
+
+    if (targetSource.targetCount() != 2) {
+      throw new IllegalArgumentException(
+        "Two target objects supplied, but target source is " + targetSource);
+    }
+    try {
+      final String location = m_weaver.weave(method, targetSource);
+
+      m_recorderRegistry.register(target, target2, location, recorder);
+    }
+    catch (final WeavingException e) {
+      throw new NonInstrumentableTypeException("Weaving failed", e);
+    }
+
+//    System.out.printf("add(%s, %s, %s, %s)%n",
+//                      target.hashCode(), location,
+//                      target,
+//                      method);
 
   }
 
-  private void checkWrappable(Class<?> theClass)
+  private void checkWrappable(final Class<?> theClass)
     throws NonInstrumentableTypeException {
 
     final String whyNot = whyCantIInstrument(theClass);
@@ -173,7 +209,7 @@ public final class DCRContextImplementation implements DCRContext {
     }
   }
 
-  private String whyCantIInstrument(Class<?> targetClass) {
+  private String whyCantIInstrument(final Class<?> targetClass) {
 
     // We disallow instrumentation of these classes to avoid the need for
     // complex protection against recursion in the engine itself.
@@ -195,7 +231,7 @@ public final class DCRContextImplementation implements DCRContext {
     if (thePackage != null) {
       final String packageName = thePackage.getName();
 
-      for (String prefix : NON_INSTRUMENTABLE_PACKAGES) {
+      for (final String prefix : NON_INSTRUMENTABLE_PACKAGES) {
         if (packageName.startsWith(prefix)) {
           return "it belongs to the " + prefix + " package";
         }
@@ -208,7 +244,7 @@ public final class DCRContextImplementation implements DCRContext {
   /**
    * {@inheritDoc}
    */
-  @Override public boolean isInstrumentable(Class<?> targetClass) {
+  @Override public boolean isInstrumentable(final Class<?> targetClass) {
     return whyCantIInstrument(targetClass) == null;
   }
 

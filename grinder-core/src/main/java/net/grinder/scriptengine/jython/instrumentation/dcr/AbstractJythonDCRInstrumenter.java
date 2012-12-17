@@ -34,6 +34,7 @@ import net.grinder.scriptengine.AbstractDCRInstrumenter;
 import net.grinder.scriptengine.DCRContext;
 import net.grinder.scriptengine.Recorder;
 import net.grinder.util.weave.ClassSource;
+import net.grinder.util.weave.CompositeTargetSource;
 import net.grinder.util.weave.ParameterSource;
 
 import org.python.core.PyClass;
@@ -258,8 +259,8 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
                                        final boolean includeSuperClassMethods)
     throws NonInstrumentableTypeException {
     instrumentPublicMethodsByName(target.getClass(),
-                                  target,
                                   methodName,
+                                  target,
                                   ParameterSource.FIRST_PARAMETER,
                                   recorder,
                                   includeSuperClassMethods);
@@ -267,8 +268,8 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
 
   protected final void instrumentPublicMethodsByName(
                                        final Class<?> targetClass,
-                                       final Object target,
                                        final String methodName,
+                                       final Object target,
                                        final ParameterSource targetSource,
                                        final Recorder recorder,
                                        final boolean includeSuperClassMethods)
@@ -290,6 +291,43 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
       }
 
       getContext().add(target, method, targetSource, recorder);
+    }
+  }
+
+  protected final void instrumentPublicMethodsByName(
+                                       final Class<?> targetClass,
+                                       final String methodName,
+                                       final Object target,
+                                       final ParameterSource targetSource,
+                                       final Object target2,
+                                       final ParameterSource target2Source,
+                                       final Recorder recorder,
+                                       final boolean includeSuperClassMethods)
+    throws NonInstrumentableTypeException {
+
+    final CompositeTargetSource compositeTargetSource =
+        new CompositeTargetSource(targetSource, target2Source);
+
+    // getMethods() includes superclass methods.
+    for (final Method method : targetClass.getMethods()) {
+      if (!includeSuperClassMethods &&
+          targetClass != method.getDeclaringClass()) {
+        continue;
+      }
+
+      if (!method.getName().equals(methodName)) {
+        continue;
+      }
+
+      if (!compositeTargetSource.canApply(method)) {
+        continue;
+      }
+
+      getContext().add(target,
+                       target2,
+                       method,
+                       compositeTargetSource,
+                       recorder);
     }
   }
 }

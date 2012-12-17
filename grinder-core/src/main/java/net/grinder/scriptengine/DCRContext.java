@@ -25,8 +25,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import net.grinder.script.NonInstrumentableTypeException;
-import net.grinder.util.weave.WeavingException;
 import net.grinder.util.weave.Weaver.TargetSource;
+import net.grinder.util.weave.WeavingException;
 
 
 /**
@@ -66,6 +66,28 @@ public interface DCRContext {
    *           If the method belongs to a non-instrumentable type.
    */
   void add(Object target,
+           Method method,
+           TargetSource targetSource,
+           Recorder recorder) throws NonInstrumentableTypeException;
+
+  /**
+   * Register a method for instrumentation.
+   *
+   * @param target
+   *          Target object.
+   * @param target2
+   *          Second target object.
+   * @param method
+   *          The method.
+   * @param targetSource
+   *          The method parameter that identifies the target object..
+   * @param recorder
+   *          The recorder to use.
+   * @throws NonInstrumentableTypeException
+   *           If the method belongs to a non-instrumentable type.
+   */
+  void add(Object target,
+           Object target2,
            Method method,
            TargetSource targetSource,
            Recorder recorder) throws NonInstrumentableTypeException;

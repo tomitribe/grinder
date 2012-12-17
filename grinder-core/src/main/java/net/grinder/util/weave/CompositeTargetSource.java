@@ -23,10 +23,12 @@ package net.grinder.util.weave;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import net.grinder.util.weave.Weaver.TargetSource;
+
 
 /**
  * Composite {@link TargetSource}.
@@ -35,7 +37,7 @@ import net.grinder.util.weave.Weaver.TargetSource;
  */
 public final class CompositeTargetSource implements TargetSource {
 
-  private final Set<TargetSource> m_sources;
+  private final List<TargetSource> m_sources;
 
   /**
    * Constructor.
@@ -43,7 +45,7 @@ public final class CompositeTargetSource implements TargetSource {
    * @param sources The included target sources.
    */
   public CompositeTargetSource(final TargetSource... sources) {
-    m_sources = new HashSet<TargetSource>(Arrays.asList(sources));
+    m_sources = Collections.unmodifiableList(Arrays.asList(sources));
   }
 
   /**
@@ -104,5 +106,9 @@ public final class CompositeTargetSource implements TargetSource {
   @Override
   public String toString() {
     return m_sources.toString();
+  }
+
+  public Collection<TargetSource> getSources() {
+    return m_sources;
   }
 }

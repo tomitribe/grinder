@@ -35,11 +35,29 @@ interface RecorderRegistry {
    * Registration method.
    *
    * @param target
-   *          The target reference, or {@code null} for static methods.
+   *          The target reference.
    * @param location
    *          String that uniquely identifies the instrumentation location.
    * @param recorder
    *          The recorder to register.
    */
   void register(Object target, String location, Recorder recorder);
+
+
+  /**
+   * Registration method for invocations that have two target references.
+   *
+   * @param target
+   *          The target reference.
+   * @param target
+   *          The second target reference.
+   * @param location
+   *          String that uniquely identifies the instrumentation location.
+   * @param recorder
+   *          The recorder to register.
+   */
+  void register(Object target,
+                Object target2,
+                String location,
+                Recorder recorder);
 }

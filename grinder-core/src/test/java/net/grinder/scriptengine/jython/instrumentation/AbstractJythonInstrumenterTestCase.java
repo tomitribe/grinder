@@ -79,9 +79,10 @@ public abstract class AbstractJythonInstrumenterTestCase {
       RandomStubFactory.create(Recorder.class);
   protected final Recorder m_recorder = m_recorderStubFactory.getStub();
 
-  public AbstractJythonInstrumenterTestCase(Instrumenter instrumenter) {
-    super();
+  public AbstractJythonInstrumenterTestCase(final Instrumenter instrumenter) {
+      super();
       m_instrumenter = instrumenter;
+      m_recorderStubFactory.setIgnoreObjectMethods();
   }
 
   protected abstract void assertTestReference(PyObject proxy,
@@ -91,7 +92,7 @@ public abstract class AbstractJythonInstrumenterTestCase {
                                                 Object original,
                                                 boolean unwrapTarget);
 
-  protected void assertTargetReference(PyObject proxy, Object original) {
+  protected void assertTargetReference(final PyObject proxy, final Object original) {
     assertTargetReference(proxy, original, false);
   }
 
@@ -104,12 +105,12 @@ public abstract class AbstractJythonInstrumenterTestCase {
                            getVersionPart(pyTuple, 2), };
   }
 
-  private static Integer getVersionPart(PyTuple versionTuple, int part) {
+  private static Integer getVersionPart(final PyTuple versionTuple, final int part) {
     // PyTuple.get()/toArray() do not exist in Jython 2.1.
     return (Integer)versionTuple.__finditem__(part).__tojava__(Integer.class);
   }
 
-  public static void assertVersion(String expected) throws Exception {
+  public static void assertVersion(final String expected) throws Exception {
     AssertUtilities.assertContainsPattern(
       PySystemState.class.getField("version").get(null).toString(),
       expected);
@@ -119,23 +120,23 @@ public abstract class AbstractJythonInstrumenterTestCase {
     return m_interpreter;
   }
 
-  protected final void assertNotWrappable(Object o) throws Exception {
+  protected final void assertNotWrappable(final Object o) throws Exception {
     try {
       m_instrumenter.createInstrumentedProxy(null, null, o);
       fail("Expected NotWrappableTypeException");
     }
-    catch (NotWrappableTypeException e) {
+    catch (final NotWrappableTypeException e) {
     }
   }
 
-  protected final void assertNotWrappableByThisInstrumenter(Object o)
+  protected final void assertNotWrappableByThisInstrumenter(final Object o)
     throws Exception {
     assertNull(m_instrumenter.createInstrumentedProxy(null, null, o));
   }
 
-  protected final Object createInstrumentedProxy(net.grinder.common.Test test,
-                                                 Recorder recorder,
-                                                 PyObject pyTarget)
+  protected final Object createInstrumentedProxy(final net.grinder.common.Test test,
+                                                 final Recorder recorder,
+                                                 final PyObject pyTarget)
     throws NotWrappableTypeException {
 
     // In the real world, the Java conversion happens implicitly because
@@ -145,7 +146,7 @@ public abstract class AbstractJythonInstrumenterTestCase {
     return m_instrumenter.createInstrumentedProxy(test, recorder, javaTarget);
   }
 
-  protected final Class<?> getClassForInstance(PyInstance target)
+  protected final Class<?> getClassForInstance(final PyInstance target)
     throws IllegalArgumentException, IllegalAccessException {
 
     Field f;
@@ -154,12 +155,12 @@ public abstract class AbstractJythonInstrumenterTestCase {
       // Jython 2.1
       f = PyObject.class.getField("__class__");
     }
-    catch (NoSuchFieldException e) {
+    catch (final NoSuchFieldException e) {
       // Jython 2.2a1+
       try {
         f = PyInstance.class.getField("instclass");
       }
-      catch (NoSuchFieldException e2) {
+      catch (final NoSuchFieldException e2) {
         throw new AssertionError("Incompatible Jython release in classpath");
       }
     }
@@ -392,7 +393,7 @@ public abstract class AbstractJythonInstrumenterTestCase {
     m_recorderStubFactory.assertNoMoreCalls();
   }
 
-  private PyObject getPyInstance(PyProxy pyProxy) throws Exception {
+  private PyObject getPyInstance(final PyProxy pyProxy) throws Exception {
     // Dynamic invocation because return type has changed in 2.5.
     return (PyObject) PyProxy.class.getMethod("_getPyInstance").invoke(pyProxy);
   }
@@ -480,7 +481,7 @@ public abstract class AbstractJythonInstrumenterTestCase {
       pyFunctionProxy.invoke("__call__");
       fail("Expected PyException");
     }
-    catch (PyException e) {
+    catch (final PyException e) {
       AssertUtilities.assertContains(e.toString(), "a problem");
     }
 
@@ -495,10 +496,10 @@ public abstract class AbstractJythonInstrumenterTestCase {
       pyFunctionProxy.invoke("__call__");
       fail("Expected UncheckedGrinderException");
     }
-    catch (UncheckedGrinderException e2) {
+    catch (final UncheckedGrinderException e2) {
       assertSame(e, e2);
     }
-    catch (PyException e3) {
+    catch (final PyException e3) {
       assertSame(e, e3.value.__tojava__(Exception.class));
     }
   }
@@ -515,7 +516,8 @@ public abstract class AbstractJythonInstrumenterTestCase {
     final PyObject pyInstance = m_interpreter.get("x");
 
     final InstrumentationFilter filter = new InstrumentationFilter() {
-        public boolean matches(Object item) {
+        @Override
+        public boolean matches(final Object item) {
           return true;
         }
       };
@@ -524,7 +526,7 @@ public abstract class AbstractJythonInstrumenterTestCase {
       m_instrumenter.instrument(m_test, m_recorder, pyInstance, filter);
       fail("Expected NonInstrumentableTypeException");
     }
-    catch (NonInstrumentableTypeException e) {
+    catch (final NonInstrumentableTypeException e) {
     }
   }
 }

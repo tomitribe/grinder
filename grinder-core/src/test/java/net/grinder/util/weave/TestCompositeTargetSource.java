@@ -88,8 +88,8 @@ public class TestCompositeTargetSource {
     assertNotEquals(t2, t1);
 
     final TargetSource t3 =
-        new CompositeTargetSource(ParameterSource.SECOND_PARAMETER,
-                                  ParameterSource.FIRST_PARAMETER);
+        new CompositeTargetSource(ParameterSource.FIRST_PARAMETER,
+                                  ParameterSource.SECOND_PARAMETER);
     assertEquals(t2, t3);
     assertEquals(t2.hashCode(), t3.hashCode());
   }

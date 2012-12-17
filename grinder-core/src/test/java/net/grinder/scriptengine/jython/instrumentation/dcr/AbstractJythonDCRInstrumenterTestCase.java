@@ -42,7 +42,8 @@ import org.python.util.PythonInterpreter;
 public abstract class AbstractJythonDCRInstrumenterTestCase
   extends AbstractJythonInstrumenterTestCase {
 
-  public AbstractJythonDCRInstrumenterTestCase(final Instrumenter instrumenter) {
+  public AbstractJythonDCRInstrumenterTestCase(
+    final Instrumenter instrumenter) {
     super(instrumenter);
   }
 
@@ -180,7 +181,8 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
     m_recorderStubFactory.assertNoMoreCalls();
   }
 
-  @Test public void testInstrumentationWithReflectedConstructor() throws Exception {
+  @Test public void testInstrumentationWithReflectedConstructor()
+      throws Exception {
     m_interpreter.exec("from grinder.test import MyClass\n" +
                        "x=MyClass.__init__");
 
@@ -382,7 +384,8 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
   @Test public void testJavaBoundMethodSuperClassImplementation()
     throws Exception {
 
-    m_interpreter.exec("from grinder.test import MyExtendedClass\nx=MyExtendedClass()");
+    m_interpreter.exec(
+     "from grinder.test import MyExtendedClass\nx=MyExtendedClass()");
 
     m_interpreter.exec("y=x.getA");
     final PyObject pyJavaMethod = m_interpreter.get("y");
@@ -472,6 +475,7 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
         "m=c.f");
 
     final PyObject m = m_interpreter.get("m");
+
     createInstrumentedProxy(m_test, m_recorder, m);
 
     m_interpreter.exec("c.f()");

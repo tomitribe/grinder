@@ -148,8 +148,8 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
     }
     else {
       instrumentPublicMethodsByName(target.im_func.getClass(),
-                                    target.im_self,
                                     "__call__",
+                                    target.im_self,
                                     ParameterSource.SECOND_PARAMETER,
                                     recorder,
                                     false);

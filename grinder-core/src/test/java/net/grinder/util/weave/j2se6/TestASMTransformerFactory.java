@@ -607,6 +607,16 @@ public class TestASMTransformerFactory extends TestCase {
                                          location));
     }
 
+    public static void enter(final Object reference,
+                             final Object reference2,
+                             final String location) {
+      s_callRecorder.record(new CallData(ENTER_METHOD,
+                                         null,
+                                         reference,
+                                         reference2,
+                                         location));
+    }
+
     public static void exit(final Object reference,
                             final String location,
                             final boolean success) {
@@ -614,6 +624,19 @@ public class TestASMTransformerFactory extends TestCase {
       s_callRecorder.record(new CallData(EXIT_METHOD,
                                          null,
                                          reference,
+                                         location,
+                                         success));
+    }
+
+    public static void exit(final Object reference,
+                            final Object reference2,
+                            final String location,
+                            final boolean success) {
+
+      s_callRecorder.record(new CallData(EXIT_METHOD,
+                                         null,
+                                         reference,
+                                         reference2,
                                          location,
                                          success));
     }
