@@ -64,12 +64,4 @@ public enum ParameterSource implements TargetSource {
   public boolean canApply(final Method method) {
     return method.getParameterTypes().length >= m_minimumParameters;
   }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public int targetCount() {
-    return 1;
-  }
 }

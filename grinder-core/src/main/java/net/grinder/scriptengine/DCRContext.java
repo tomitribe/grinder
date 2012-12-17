@@ -54,42 +54,45 @@ public interface DCRContext {
   /**
    * Register a method for instrumentation.
    *
+   * @param targetSource
+   *          The method parameter that identifies the target object.
    * @param target
    *          Target object.
    * @param method
    *          The method.
-   * @param targetSource
-   *          The method parameter that identifies the target object..
    * @param recorder
    *          The recorder to use.
    * @throws NonInstrumentableTypeException
    *           If the method belongs to a non-instrumentable type.
    */
-  void add(Object target,
+  void add(TargetSource targetSource,
+           Object target,
            Method method,
-           TargetSource targetSource,
            Recorder recorder) throws NonInstrumentableTypeException;
 
   /**
    * Register a method for instrumentation.
    *
+   * @param targetSource
+   *          The method parameter that identifies the target object.
    * @param target
    *          Target object.
+   * @param target2Source
+   *          The method parameter that identifies the second target object.
    * @param target2
    *          Second target object.
    * @param method
    *          The method.
-   * @param targetSource
-   *          The method parameter that identifies the target object..
    * @param recorder
    *          The recorder to use.
    * @throws NonInstrumentableTypeException
    *           If the method belongs to a non-instrumentable type.
    */
-  void add(Object target,
+  void add(TargetSource targetSource,
+           Object target,
+           TargetSource target2Source,
            Object target2,
            Method method,
-           TargetSource targetSource,
            Recorder recorder) throws NonInstrumentableTypeException;
 
   /**

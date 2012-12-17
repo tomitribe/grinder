@@ -45,12 +45,4 @@ public enum ClassSource implements TargetSource {
   public boolean canApply(final Method method) {
     return true;
   }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public int targetCount() {
-    return 1;
-  }
 }

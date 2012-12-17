@@ -69,14 +69,14 @@ public interface Weaver {
    *
    * @param method
    *          The method.
-   * @param targetSource
-   *          Which object should be passed as the target to the advice.
+   * @param targetSources
+   *          Which objects should be passed as the target to the advice.
    * @return String that uniquely identifies the pointcut.
    * @throws WeavingException
    *           If the {@code targetSource} is incompatible with the
    *           {@code method}.
    */
-  String weave(Method method, TargetSource targetSource)
+  String weave(Method method, TargetSource... targetSources)
     throws WeavingException;
 
   /**
@@ -97,12 +97,5 @@ public interface Weaver {
      * @return {@code true} if the source can be used.
      */
     boolean canApply(Method method);
-
-    /**
-     * The number of target objects specified by this source.
-     *
-     * @return How many target objects.
-     */
-    int targetCount();
   }
 }

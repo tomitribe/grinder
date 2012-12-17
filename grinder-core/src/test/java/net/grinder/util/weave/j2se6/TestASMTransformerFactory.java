@@ -34,6 +34,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -759,7 +760,9 @@ public class TestASMTransformerFactory extends TestCase {
         }
       }
 
-      getList(forClass, member).add(new WeavingDetails(location, source));
+      getList(forClass, member).add(
+        new WeavingDetails(location,
+                           Collections.<TargetSource>singletonList(source)));
     }
   }
 

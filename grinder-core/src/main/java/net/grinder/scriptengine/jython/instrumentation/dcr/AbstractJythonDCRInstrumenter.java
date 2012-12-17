@@ -34,7 +34,6 @@ import net.grinder.scriptengine.AbstractDCRInstrumenter;
 import net.grinder.scriptengine.DCRContext;
 import net.grinder.scriptengine.Recorder;
 import net.grinder.util.weave.ClassSource;
-import net.grinder.util.weave.CompositeTargetSource;
 import net.grinder.util.weave.ParameterSource;
 
 import org.python.core.PyClass;
@@ -218,10 +217,10 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
         // superclass method used by the call site.
         do {
           try {
-            getContext().add(instance,
+            getContext().add(ParameterSource.FIRST_PARAMETER,
+                             instance,
                              c.getDeclaredMethod(m.getName(),
                                                  m.getParameterTypes()),
-                             ParameterSource.FIRST_PARAMETER,
                              recorder);
             break;
           }
@@ -234,9 +233,10 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
     }
     else {
       for (final Method m : reflectedArguments) {
-        getContext().add(m.getDeclaringClass(),
+        getContext().add(ClassSource.CLASS,
+                         m.getDeclaringClass(),
                          m,
-                         ClassSource.CLASS, recorder);
+                         recorder);
       }
     }
   }
@@ -260,8 +260,8 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
     throws NonInstrumentableTypeException {
     instrumentPublicMethodsByName(target.getClass(),
                                   methodName,
-                                  target,
                                   ParameterSource.FIRST_PARAMETER,
+                                  target,
                                   recorder,
                                   includeSuperClassMethods);
   }
@@ -269,8 +269,8 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
   protected final void instrumentPublicMethodsByName(
                                        final Class<?> targetClass,
                                        final String methodName,
-                                       final Object target,
                                        final ParameterSource targetSource,
+                                       final Object target,
                                        final Recorder recorder,
                                        final boolean includeSuperClassMethods)
     throws NonInstrumentableTypeException {
@@ -290,23 +290,20 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
         continue;
       }
 
-      getContext().add(target, method, targetSource, recorder);
+      getContext().add(targetSource, target, method, recorder);
     }
   }
 
   protected final void instrumentPublicMethodsByName(
                                        final Class<?> targetClass,
                                        final String methodName,
-                                       final Object target,
                                        final ParameterSource targetSource,
-                                       final Object target2,
+                                       final Object target,
                                        final ParameterSource target2Source,
+                                       final Object target2,
                                        final Recorder recorder,
                                        final boolean includeSuperClassMethods)
     throws NonInstrumentableTypeException {
-
-    final CompositeTargetSource compositeTargetSource =
-        new CompositeTargetSource(targetSource, target2Source);
 
     // getMethods() includes superclass methods.
     for (final Method method : targetClass.getMethods()) {
@@ -319,14 +316,19 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
         continue;
       }
 
-      if (!compositeTargetSource.canApply(method)) {
+      if (!targetSource.canApply(method)) {
         continue;
       }
 
-      getContext().add(target,
+      if (!target2Source.canApply(method)) {
+        continue;
+      }
+
+      getContext().add(targetSource,
+                       target,
+                       target2Source,
                        target2,
                        method,
-                       compositeTargetSource,
                        recorder);
     }
   }

@@ -21,6 +21,8 @@
 
 package net.grinder.util.weave.j2se6;
 
+import static java.util.Arrays.asList;
+
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
@@ -84,14 +86,17 @@ public final class DCRWeaver implements Weaver {
    * {@inheritDoc}
    */
   @Override public String weave(final Method method,
-                                final TargetSource targetSource)
+                                final TargetSource... targetSources)
     throws WeavingException {
-    if (!targetSource.canApply(method)) {
-      throw new WeavingException("Insufficient parameters for " +
-                                 targetSource + ": " + method.toString());
+
+    for (final TargetSource targetSource : targetSources) {
+      if (!targetSource.canApply(method)) {
+        throw new WeavingException("Insufficient parameters for " +
+                                   targetSource + ": " + method.toString());
+      }
     }
 
-    return m_pointCutRegistry.add(method, targetSource);
+    return m_pointCutRegistry.add(method, targetSources);
   }
 
   /**
@@ -140,8 +145,9 @@ public final class DCRWeaver implements Weaver {
   private final class PointCutRegistryImplementation
     implements PointCutRegistry {
     // Guarded by this.
-    private final Map<Pair<Member, TargetSource>, String> m_wovenMembers =
-      new HashMap<Pair<Member, TargetSource>, String>();
+    private final Map<Pair<Member, List<TargetSource>>, String>
+      m_wovenMembers =
+        new HashMap<Pair<Member, List<TargetSource>>, String>();
 
     // Pre-calculated mapping of internal class name -> constructor -> weaving
     // details, for efficiency.
@@ -170,23 +176,28 @@ public final class DCRWeaver implements Weaver {
     }
 
     public String add(final Constructor<?> constructor) {
-      return add(constructor,
-                 ClassSource.CLASS,
-                 m_internalClassNameToConstructorToLocation);
+      return add(m_internalClassNameToConstructorToLocation,
+                 constructor,
+                 ClassSource.CLASS);
     }
 
-    public String add(final Method method, final TargetSource targetSource) {
-      return add(method, targetSource, m_internalClassNameToMethodToLocation);
+    public String add(final Method method,
+                      final TargetSource... targetSources) {
+      return add(m_internalClassNameToMethodToLocation,
+                 method,
+                 targetSources);
     }
 
     private <T extends Member> String add(
-      final T member,
-      final TargetSource targetSource,
       final Map<String, Map<T, List<WeavingDetails>>>
-        classNameToMemberToLocation) {
+        internalClassNameToMethodToLocation,
+      final T method,
+      final TargetSource... targetSourceArray) {
 
-      final Pair<Member, TargetSource> locationKey =
-          Pair.of((Member) member, targetSource);
+      final List<TargetSource> targetSources = asList(targetSourceArray);
+
+      final Pair<Member, List<TargetSource>> locationKey =
+          Pair.of((Member) method, targetSources);
 
       synchronized (this) {
         final String alreadyWoven = m_wovenMembers.get(locationKey);
@@ -196,7 +207,7 @@ public final class DCRWeaver implements Weaver {
         }
       }
 
-      final String className = member.getDeclaringClass().getName();
+      final String className = method.getDeclaringClass().getName();
       final String internalClassName = className.replace('.', '/');
       final String location = generateLocationString();
 
@@ -204,14 +215,14 @@ public final class DCRWeaver implements Weaver {
         final Map<T, List<WeavingDetails>> memberToWeavingDetails;
 
         final Map<T, List<WeavingDetails>> existingMap =
-          classNameToMemberToLocation.get(internalClassName);
+          internalClassNameToMethodToLocation.get(internalClassName);
 
         if (existingMap != null) {
           memberToWeavingDetails = existingMap;
         }
         else {
           memberToWeavingDetails = new HashMap<T, List<WeavingDetails>>();
-          classNameToMemberToLocation.put(internalClassName,
+          internalClassNameToMethodToLocation.put(internalClassName,
                                           memberToWeavingDetails);
         }
 
@@ -220,21 +231,21 @@ public final class DCRWeaver implements Weaver {
         final List<WeavingDetails> weavingDetailsList;
 
         final List<WeavingDetails> existingList =
-          memberToWeavingDetails.get(member);
+          memberToWeavingDetails.get(method);
 
         if (existingList != null) {
           weavingDetailsList = existingList;
         }
         else {
           weavingDetailsList = new ArrayList<WeavingDetails>();
-          memberToWeavingDetails.put(member, weavingDetailsList);
+          memberToWeavingDetails.put(method, weavingDetailsList);
         }
 
-        weavingDetailsList.add(new WeavingDetails(location, targetSource));
+        weavingDetailsList.add(new WeavingDetails(location, targetSources));
       }
 
       synchronized (DCRWeaver.this) {
-        m_pendingClasses.add(member.getDeclaringClass());
+        m_pendingClasses.add(method.getDeclaringClass());
       }
 
       return location;

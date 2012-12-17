@@ -38,12 +38,14 @@ import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import net.grinder.util.weave.ClassSource;
 import net.grinder.util.weave.ParameterSource;
 import net.grinder.util.weave.Weaver;
+import net.grinder.util.weave.Weaver.TargetSource;
 import net.grinder.util.weave.WeavingException;
 import net.grinder.util.weave.j2se6.DCRWeaver.ClassFileTransformerFactory;
 
@@ -133,7 +135,8 @@ public class TestDCRWeaver {
     assertEquals(1, locations2.size());
 
     assertEquals(new WeavingDetails(location1,
-                                    ParameterSource.FIRST_PARAMETER),
+                                    Collections.<TargetSource>singletonList(
+                                      ParameterSource.FIRST_PARAMETER)),
                  locations2.get(0));
     assertNotNull(pointCuts2.get(method2));
 

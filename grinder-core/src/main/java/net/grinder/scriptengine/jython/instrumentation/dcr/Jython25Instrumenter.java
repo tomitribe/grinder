@@ -88,9 +88,9 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
             throws NonInstrumentableTypeException {
 
             for (final Method method : methodsForPyFunction) {
-              context.add(target,
+              context.add(ParameterSource.FIRST_PARAMETER,
+                          target,
                           method,
-                          ParameterSource.FIRST_PARAMETER,
                           recorder);
             }
           }
@@ -118,9 +118,9 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
             throws NonInstrumentableTypeException {
 
             for (final Method method : methodsForPyInstance) {
-              context.add(target,
+              context.add(ParameterSource.THIRD_PARAMETER,
+                          target,
                           method,
-                          ParameterSource.THIRD_PARAMETER,
                           recorder);
             }
           }
@@ -172,15 +172,15 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
             }
 
             for (final Method method : methodsForPyInstance) {
-              context.add(pyInstance,
+              context.add(ParameterSource.THIRD_PARAMETER,
+                          pyInstance,
                           method,
-                          ParameterSource.THIRD_PARAMETER,
                           recorder);
             }
 
-            context.add(pyInstance,
+            context.add(ParameterSource.SECOND_PARAMETER,
+                        pyInstance,
                         pyReflectedFunctionCall,
-                        ParameterSource.SECOND_PARAMETER,
                         recorder);
           }
         };
@@ -194,9 +194,9 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
           @Override
           public void transform(final Recorder recorder, final PyClass target)
             throws NonInstrumentableTypeException {
-            context.add(target,
+            context.add(ParameterSource.FIRST_PARAMETER,
+                        target,
                         pyClassCall,
-                        ParameterSource.FIRST_PARAMETER,
                         recorder);
           }
         };
@@ -289,10 +289,10 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
     else {
       instrumentPublicMethodsByName(target.im_func.getClass(),
                                     "__call__",
-                                    target.im_func,
                                     ParameterSource.FIRST_PARAMETER,
-                                    target.im_self,
+                                    target.im_func,
                                     ParameterSource.THIRD_PARAMETER,
+                                    target.im_self,
                                     recorder,
                                     false);
     }

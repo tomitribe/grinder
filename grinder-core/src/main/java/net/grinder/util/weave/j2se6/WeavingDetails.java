@@ -21,6 +21,8 @@
 
 package net.grinder.util.weave.j2se6;
 
+import java.util.List;
+
 import net.grinder.util.Pair;
 import net.grinder.util.weave.Weaver.TargetSource;
 
@@ -30,16 +32,17 @@ import net.grinder.util.weave.Weaver.TargetSource;
  *
  * @author Philip Aston
  */
-final class WeavingDetails extends Pair<String, TargetSource> {
-  WeavingDetails(String location, TargetSource targetSource) {
-    super(location, targetSource);
+final class WeavingDetails extends Pair<String, List<TargetSource>> {
+  WeavingDetails(final String location,
+                 final List<TargetSource> targetSources) {
+    super(location, targetSources);
   }
 
   public String getLocation() {
     return getFirst();
   }
 
-  public TargetSource getTargetSource() {
+  public List<TargetSource> getTargetSources() {
     return getSecond();
   }
 }

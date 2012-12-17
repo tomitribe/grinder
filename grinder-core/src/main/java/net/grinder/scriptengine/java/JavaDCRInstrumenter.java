@@ -95,9 +95,9 @@ final class JavaDCRInstrumenter extends AbstractDCRInstrumenter {
     for (final Method method : targetClass.getDeclaredMethods()) {
       if (Modifier.isStatic(method.getModifiers()) &&
           filter.matches(method)) {
-        getContext().add(targetClass,
+        getContext().add(ClassSource.CLASS,
+                         targetClass,
                          method,
-                         ClassSource.CLASS,
                          recorder);
       }
     }
@@ -131,9 +131,9 @@ final class JavaDCRInstrumenter extends AbstractDCRInstrumenter {
       for (final Method method : c.getDeclaredMethods()) {
         if (!Modifier.isStatic(method.getModifiers()) &&
             filter.matches(method)) {
-          getContext().add(target,
+          getContext().add(ParameterSource.FIRST_PARAMETER,
+                           target,
                            method,
-                           ParameterSource.FIRST_PARAMETER,
                            recorder);
         }
       }

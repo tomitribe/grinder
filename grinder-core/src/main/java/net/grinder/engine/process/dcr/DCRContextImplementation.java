@@ -137,18 +137,13 @@ public final class DCRContextImplementation implements DCRContext {
   /**
    * {@inheritDoc}
    */
-  @Override public void add(final Object target,
+  @Override public void add(final TargetSource targetSource,
+                            final Object target,
                             final Method method,
-                            final TargetSource targetSource,
                             final Recorder recorder)
     throws NonInstrumentableTypeException {
 
     checkWrappable(method.getDeclaringClass());
-
-    if (targetSource.targetCount() != 1) {
-      throw new IllegalArgumentException(
-        "One target object supplied, but target source is " + targetSource);
-    }
 
     try {
       final String location = m_weaver.weave(method, targetSource);
@@ -169,21 +164,20 @@ public final class DCRContextImplementation implements DCRContext {
   /**
    * {@inheritDoc}
    */
-  @Override public void add(final Object target,
+  @Override public void add(final TargetSource targetSource,
+                            final Object target,
+                            final TargetSource target2Source,
                             final Object target2,
                             final Method method,
-                            final TargetSource targetSource,
                             final Recorder recorder)
     throws NonInstrumentableTypeException {
 
     checkWrappable(method.getDeclaringClass());
 
-    if (targetSource.targetCount() != 2) {
-      throw new IllegalArgumentException(
-        "Two target objects supplied, but target source is " + targetSource);
-    }
     try {
-      final String location = m_weaver.weave(method, targetSource);
+      final String location = m_weaver.weave(method,
+                                             targetSource,
+                                             target2Source);
 
       m_recorderRegistry.register(target, target2, location, recorder);
     }
