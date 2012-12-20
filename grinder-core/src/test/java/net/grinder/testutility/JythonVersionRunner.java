@@ -1,4 +1,4 @@
-// Copyright (C) 2011 Philip Aston
+// Copyright (C) 2011 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -22,7 +22,9 @@
 package net.grinder.testutility;
 
 import static java.util.Arrays.asList;
+import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -51,10 +53,10 @@ import org.junit.runners.model.InitializationError;
  */
 public abstract class JythonVersionRunner extends Suite {
 
-  protected static List<String> getHomes(String... homesProperties) {
+  protected static List<String> getHomes(final String... homesProperties) {
     final List<String> homes = new ArrayList<String>();
 
-    for (String property : homesProperties) {
+    for (final String property : homesProperties) {
       final String pythonHome = System.getProperty(property);
 
       if (pythonHome == null) {
@@ -62,6 +64,14 @@ public abstract class JythonVersionRunner extends Suite {
                            " not set, skipping tests for Jython version.");
       }
       else {
+        final File f = new File(pythonHome);
+
+        final String description = property +
+            " property is set, but value [" + f + "]";
+
+        assertTrue(description + " is not a directory", f.isDirectory());
+        assertTrue(description + " is not readable", f.canRead());
+
         homes.add(pythonHome);
       }
     }
@@ -78,20 +88,20 @@ public abstract class JythonVersionRunner extends Suite {
   private static final Set<String> SHARED_CLASSES =
     new HashSet<String>(asList("net.grinder.util.weave.agent.*"));
 
-  public JythonVersionRunner(Class<?> testClass,
-                             List<String> pythonHomes)
+  public JythonVersionRunner(final Class<?> testClass,
+                             final List<String> pythonHomes)
     throws ClassNotFoundException, InitializationError, MalformedURLException{
 
     super(testClass, createRunners(testClass, pythonHomes));
   }
 
-  private static List<Runner> createRunners(Class<?> testClass,
-                                            List<String> pythonHomes)
+  private static List<Runner> createRunners(final Class<?> testClass,
+                                            final List<String> pythonHomes)
    throws ClassNotFoundException, InitializationError, MalformedURLException {
 
     final List<Runner> runners = new ArrayList<Runner>();
 
-    for (String pythonHome : pythonHomes) {
+    for (final String pythonHome : pythonHomes) {
       final URL jythonJarURL =
         new URL("file://" + pythonHome + "/jython.jar");
 
@@ -118,7 +128,7 @@ public abstract class JythonVersionRunner extends Suite {
 
     private final String m_pythonHome;
 
-    public PythonHomeRunner(Class<?> klass, String pythonHome)
+    public PythonHomeRunner(final Class<?> klass, final String pythonHome)
       throws InitializationError {
       super(klass);
 
@@ -133,19 +143,19 @@ public abstract class JythonVersionRunner extends Suite {
           javaClass.getSimpleName() + " [" + m_pythonHome + "]",
           javaClass.getAnnotations());
 
-      for (Description child : super.getDescription().getChildren()) {
+      for (final Description child : super.getDescription().getChildren()) {
         result.addChild(child);
       }
 
       return result;
     }
 
-    @Override protected String testName(FrameworkMethod method) {
+    @Override protected String testName(final FrameworkMethod method) {
       return super.testName(method) + " [" + m_pythonHome + "]";
     }
 
-    @Override protected void runChild(FrameworkMethod method,
-                                      RunNotifier notifier) {
+    @Override protected void runChild(final FrameworkMethod method,
+                                      final RunNotifier notifier) {
       final String oldPythonHome = System.getProperty("python.home");
 
       System.setProperty("python.home", m_pythonHome);

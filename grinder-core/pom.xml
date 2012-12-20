@@ -144,6 +144,10 @@
             <jython2_5_1.dir>/opt/jython/jython2.5.1</jython2_5_1.dir>
             <jython2_5_2.dir>/opt/jython/jython2.5.2</jython2_5_2.dir>
             <jython2_5_3.dir>/opt/jython/jython2.5.3</jython2_5_3.dir>
+
+            <!-- I considered managing the Jython installations with the
+                 maven dependency plugin, but the various versions are not
+                 all available on maven central. -->
           </systemPropertyVariables>
         </configuration>
       </plugin>
