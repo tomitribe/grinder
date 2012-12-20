@@ -65,8 +65,8 @@ public class TestConnector {
 
     localSocket.getOutputStream().write(text);
 
-    for (int i=0; i<text.length; ++i) {
-      assertEquals(text[i], inputStream.read());
+    for (final byte element : text) {
+      assertEquals(element, inputStream.read());
     }
 
     socketAcceptor.close();
@@ -75,7 +75,7 @@ public class TestConnector {
       connector.connect();
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
 
     //For some reason, this connection is sometimes established.
@@ -86,7 +86,7 @@ public class TestConnector {
       badConnector.connect();
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
   }
 
@@ -102,7 +102,7 @@ public class TestConnector {
       Connector.read(in);
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
 
     final ObjectOutputStream objectStream = new ObjectOutputStream(out);
@@ -114,7 +114,7 @@ public class TestConnector {
       Connector.read(in);
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
 
     while (in.available() > 0) {
@@ -128,7 +128,7 @@ public class TestConnector {
       Connector.read(in);
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
   }
 
@@ -151,21 +151,25 @@ public class TestConnector {
       new Connector("a", 1234, ConnectionType.AGENT),
     };
 
-    for (int i = 0; i < equal.length; ++i) {
-      assertEquals(connector.hashCode(), equal[i].hashCode());
-      assertEquals(connector, equal[i]);
+    for (final Connector element : equal) {
+      assertEquals(connector.hashCode(), element.hashCode());
+      assertEquals(connector, element);
     }
 
-    for (int i = 0; i < notEqual.length; ++i) {
-      assertNotEquals(connector, notEqual[i]);
+    for (final Connector element : notEqual) {
+      assertNotEquals(connector, element);
     }
   }
 
-  @Test public void testGetEndpointAsString() throws Exception {
-    assertEquals(
-      "a:1234",
-      new Connector("a", 1234, ConnectionType.WORKER).getEndpointAsString());
+  @Test public void testGetEndpointAsStringUnknownHost() throws Exception {
+    final String description =
+      new Connector("a b", 1234, ConnectionType.WORKER).getEndpointAsString();
 
+    assertContains(description, "a b");
+    assertContains(description, "1234");
+  }
+
+  @Test public void testGetEndpointAsStringLocalHost() throws Exception {
     final String description =
       new Connector("", 1234, ConnectionType.WORKER).getEndpointAsString();
 
