@@ -21,8 +21,6 @@
 
 package net.grinder.engine.communication;
 
-import org.slf4j.Logger;
-
 import net.grinder.communication.Message;
 import net.grinder.communication.MessageDispatchRegistry;
 import net.grinder.communication.MessageDispatchRegistry.Handler;
@@ -30,6 +28,8 @@ import net.grinder.messages.agent.ResetGrinderMessage;
 import net.grinder.messages.agent.StartGrinderMessage;
 import net.grinder.messages.agent.StopGrinderMessage;
 import net.grinder.util.thread.Condition;
+
+import org.slf4j.Logger;
 
 
 /**
@@ -79,11 +79,11 @@ public final class ConsoleListener {
    * Constructor.
    *
    * @param notifyOnMessage
-   *          An <code>Object</code> to notify when a message arrives.
+   *          An {@code  Object} to notify when a message arrives.
    * @param logger
-   *          A @ code Logger} to which received event messages are loggged.
+   *          A {@code Logger} to which received event messages are logged.
    */
-  public ConsoleListener(Condition notifyOnMessage, Logger logger) {
+  public ConsoleListener(final Condition notifyOnMessage, final Logger logger) {
     m_notifyOnMessage = notifyOnMessage;
     m_logger = logger;
   }
@@ -117,12 +117,12 @@ public final class ConsoleListener {
    * determined using {@link #received}.</p>
    *
    * @param mask The messages to check for.
-   * @return <code>true</code> if at least one message matches the
-   * <code>mask</code> parameter has been received since the last time
+   * @return {@code true} if at least one message matches the
+   * {@code mask} parameter has been received since the last time
    * the message was checked for, or if communications have been
-   * shutdown. <code>false</code> otherwise.
+   * shutdown. {@code false} otherwise.
    */
-  public boolean checkForMessage(int mask) {
+  public boolean checkForMessage(final int mask) {
     synchronized (this) {
       final int intersection = m_messagesReceived & mask;
 
@@ -142,7 +142,7 @@ public final class ConsoleListener {
    *
    * @param mask The messages to discard.
    */
-  public void discardMessages(int mask) {
+  public void discardMessages(final int mask) {
     synchronized (this) {
       m_lastMessagesReceived &= ~mask;
       m_messagesReceived &= ~mask;
@@ -154,14 +154,14 @@ public final class ConsoleListener {
    * {@link #waitForMessage} call.
    *
    * @param mask The messages to check for.
-   * @return <code>true</code> if one or more of the received
-   * messages matches <code>mask</code>.
+   * @return {@code true} if one or more of the received
+   * messages matches {@code mask}.
    */
-  public synchronized boolean received(int mask) {
+  public synchronized boolean received(final int mask) {
     return (m_lastMessagesReceived & mask) != 0;
   }
 
-  private void setReceived(int message) {
+  private void setReceived(final int message) {
     synchronized (this) {
       m_messagesReceived |= message;
     }
@@ -178,12 +178,13 @@ public final class ConsoleListener {
    */
 
   public void registerMessageHandlers(
-    MessageDispatchRegistry messageDispatcher) {
+    final MessageDispatchRegistry messageDispatcher) {
 
     messageDispatcher.set(
       StartGrinderMessage.class,
       new AbstractMessageHandler<StartGrinderMessage>() {
-        public void handle(StartGrinderMessage message) {
+        @Override
+        public void handle(final StartGrinderMessage message) {
           m_logger.info("received a start message");
           m_lastStartGrinderMessage = message;
           setReceived(START);
@@ -193,7 +194,8 @@ public final class ConsoleListener {
     messageDispatcher.set(
       StopGrinderMessage.class,
       new AbstractMessageHandler<StopGrinderMessage>() {
-        public void handle(StopGrinderMessage message) {
+        @Override
+        public void handle(final StopGrinderMessage message) {
           m_logger.info("received a stop message");
           setReceived(STOP);
         }
@@ -202,7 +204,8 @@ public final class ConsoleListener {
     messageDispatcher.set(
       ResetGrinderMessage.class,
       new AbstractMessageHandler<ResetGrinderMessage>() {
-        public void handle(ResetGrinderMessage message) {
+        @Override
+        public void handle(final ResetGrinderMessage message) {
           m_logger.info("received a reset message");
           setReceived(RESET);
         }
@@ -221,6 +224,7 @@ public final class ConsoleListener {
   private abstract class AbstractMessageHandler<T extends Message>
     implements Handler<T> {
 
+    @Override
     public void shutdown() {
       final boolean shutdown;
 
