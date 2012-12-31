@@ -4,6 +4,8 @@ The Grinder 3.12 (not yet released)
   Fix bug #228 - Instrumentation fails for Jython bound method
   calls. Thanks to Travis Bear for the report.
 
+  Fix bug #206 - Removed extra166y-1.7.0.jar from lib.
+
 
 The Grinder 3.11
 ----------------

@@ -66,6 +66,8 @@
       <scope>runtime</scope>
       <excludes>
         <exclude>net.sf.grinder:grinder</exclude>
+        <!-- Not required because its shaded into grinder.jar. -->
+        <exclude>org.codehaus.jsr166-mirror:extra166y</exclude>
       </excludes>
     </dependencySet>
   </dependencySets>
