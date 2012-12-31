@@ -96,9 +96,9 @@ public final class AgentImplementation implements Agent {
    * connection could not be made.
    * @throws GrinderException If an error occurs.
    */
-  public AgentImplementation(Logger logger,
-                             File alternateFile,
-                             boolean proceedWithoutConsole)
+  public AgentImplementation(final Logger logger,
+                             final File alternateFile,
+                             final boolean proceedWithoutConsole)
     throws GrinderException {
 
     m_logger = logger;
@@ -365,7 +365,7 @@ public final class AgentImplementation implements Agent {
   }
 
   private GrinderProperties createAndMergeProperties(
-      GrinderProperties startMessageProperties)
+      final GrinderProperties startMessageProperties)
     throws PersistenceException {
 
     final GrinderProperties properties =
@@ -392,7 +392,7 @@ public final class AgentImplementation implements Agent {
   }
 
   private void shutdownConsoleCommunication(
-    ConsoleCommunication consoleCommunication) {
+    final ConsoleCommunication consoleCommunication) {
 
     if (consoleCommunication != null) {
       consoleCommunication.shutdown();
@@ -422,13 +422,13 @@ public final class AgentImplementation implements Agent {
     }
   }
 
-  private static class RampUpTimerTask extends TimerTask {
+  private class RampUpTimerTask extends TimerTask {
 
     private final WorkerLauncher m_processLauncher;
     private final int m_processIncrement;
 
-    public RampUpTimerTask(WorkerLauncher processLauncher,
-                           int processIncrement) {
+    public RampUpTimerTask(final WorkerLauncher processLauncher,
+                           final int processIncrement) {
       m_processLauncher = processLauncher;
       m_processIncrement = processIncrement;
     }
@@ -444,9 +444,8 @@ public final class AgentImplementation implements Agent {
         }
       }
       catch (final EngineException e) {
-        // Really an assertion. Can't use logger because its not thread-safe.
-        System.err.println("Failed to start processes");
-        e.printStackTrace();
+        // Really an assertion.
+        m_logger.error("Failed to start processes", e);
       }
     }
   }
@@ -457,7 +456,7 @@ public final class AgentImplementation implements Agent {
     private final TimerTask m_reportRunningTask;
     private final MessagePump m_messagePump;
 
-    public ConsoleCommunication(Connector connector)
+    public ConsoleCommunication(final Connector connector)
         throws CommunicationException, FileStore.FileStoreException {
 
       final ClientReceiver receiver =
@@ -505,7 +504,7 @@ public final class AgentImplementation implements Agent {
           }
           catch (final CommunicationException e) {
             cancel();
-            e.printStackTrace();
+            m_logger.error(e.getLocalizedMessage(), e);
           }
         }
       };

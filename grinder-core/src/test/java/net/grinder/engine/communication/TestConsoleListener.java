@@ -214,6 +214,7 @@ public class TestConsoleListener {
     listener.registerMessageHandlers(messageDispatcher);
 
     final Thread t = new Thread() {
+        @Override
         public void run() {
           // We synchronise to ensure main thread is blocked in
           // waitForMessage();
@@ -222,7 +223,7 @@ public class TestConsoleListener {
               messageDispatcher.send(
                 new StartGrinderMessage(new GrinderProperties(), -1));
             }
-            catch (CommunicationException e) {
+            catch (final CommunicationException e) {
               e.printStackTrace();
             }
           }
@@ -253,15 +254,15 @@ public class TestConsoleListener {
 
     assertTrue(notified.wasNotified());
 
-    verify(m_logger).info("communication shut down");
+    verify(m_logger).info("console connection shut down");
     verifyNoMoreInteractions(m_logger);
 
     assertFalse(listener.checkForMessage(ConsoleListener.ANY ^
                                           ConsoleListener.SHUTDOWN));
     assertTrue(listener.checkForMessage(ConsoleListener.SHUTDOWN));
     assertTrue(listener.received(ConsoleListener.SHUTDOWN));
-    assertFalse(listener.checkForMessage(ConsoleListener.SHUTDOWN));
-    assertFalse(listener.received(ConsoleListener.SHUTDOWN));
+    assertTrue(listener.checkForMessage(ConsoleListener.SHUTDOWN));
+    assertTrue(listener.received(ConsoleListener.SHUTDOWN));
   }
 
   @Test public void testShutdown() throws Exception {
@@ -281,8 +282,8 @@ public class TestConsoleListener {
                                           ConsoleListener.SHUTDOWN));
     assertTrue(listener.checkForMessage(ConsoleListener.SHUTDOWN));
     assertTrue(listener.received(ConsoleListener.SHUTDOWN));
-    assertFalse(listener.checkForMessage(ConsoleListener.SHUTDOWN));
-    assertFalse(listener.received(ConsoleListener.SHUTDOWN));
+    assertTrue(listener.checkForMessage(ConsoleListener.SHUTDOWN));
+    assertTrue(listener.received(ConsoleListener.SHUTDOWN));
   }
 
 
@@ -292,7 +293,7 @@ public class TestConsoleListener {
     private boolean m_started = false;
     private boolean m_notified = false;
 
-    public WaitForNotification(Object condition) throws InterruptedException {
+    public WaitForNotification(final Object condition) throws InterruptedException {
       m_condition = condition;
 
       m_thread = new Thread(this);
@@ -311,6 +312,7 @@ public class TestConsoleListener {
       return m_notified;
     }
 
+    @Override
     public final void run() {
       synchronized(m_condition) {
         final long startTime = System.currentTimeMillis();
@@ -325,7 +327,7 @@ public class TestConsoleListener {
             m_notified = true;
           }
         }
-        catch (InterruptedException e) {
+        catch (final InterruptedException e) {
         }
       }
     }

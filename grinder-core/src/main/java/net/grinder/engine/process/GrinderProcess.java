@@ -139,8 +139,8 @@ final class GrinderProcess {
   // Guarded by m_eventSynchronisation.
   private ThreadStarter m_threadStarter = m_invalidThreadStarter;
 
-  private boolean m_shutdownTriggered;
-  private boolean m_communicationShutdown;
+  // Guarded by m_eventSynchronisation.
+  private String m_shutdownReason;
 
   /**
    * Creates a new <code>GrinderProcess</code> instance.
@@ -191,10 +191,11 @@ final class GrinderProcess {
 
     if (m_initialisationMessage.getReportToConsole()) {
       m_consoleSender =
-        new QueuedSenderDecorator(
-          ClientSender.connect(
-            new ConnectorFactory(ConnectionType.WORKER).create(properties),
-            new WorkerAddress(workerIdentity)));
+        new FirstHurdleSender(
+          new QueuedSenderDecorator(
+            ClientSender.connect(
+              new ConnectorFactory(ConnectionType.WORKER).create(properties),
+              new WorkerAddress(workerIdentity))));
 
       barrierGroups =
         new ClientBarrierGroups(m_consoleSender,
@@ -478,16 +479,18 @@ final class GrinderProcess {
 
         // Wait for a termination event.
         synchronized (m_eventSynchronisation) {
-          while (!threadSynchronisation.isFinished()) {
+          while (true) {
+            if (threadSynchronisation.isFinished()) {
+              break;
+            }
 
             if (m_consoleListener.checkForMessage(ConsoleListener.ANY ^
                                                   ConsoleListener.START)) {
               break;
             }
 
-            if (m_shutdownTriggered) {
-              m_terminalLogger.info(
-                "specified duration exceeded, shutting down");
+            if (m_shutdownReason != null) {
+              m_terminalLogger.info("{}, shutting down", m_shutdownReason);
               break;
             }
 
@@ -531,11 +534,9 @@ final class GrinderProcess {
       // Final report to the console.
       reportTimerTask.run();
 
-      if (!m_communicationShutdown) {
-        sendStatusMessage(ProcessReport.State.FINISHED,
-                          (short)0,
-                          (short)0);
-      }
+      sendStatusMessage(ProcessReport.State.FINISHED,
+                        (short)0,
+                        (short)0);
 
       m_consoleSender.shutdown();
 
@@ -589,38 +590,36 @@ final class GrinderProcess {
 
     @Override
     public void run() {
-      if (!m_communicationShutdown) {
-        try {
-          final TestStatisticsMap sample =
-            m_testRegistryImplementation.getTestStatisticsMap().reset();
-          m_accumulatedStatistics.add(sample);
+      final TestStatisticsMap sample =
+        m_testRegistryImplementation.getTestStatisticsMap().reset();
+      m_accumulatedStatistics.add(sample);
 
-          // We look up the new tests after we've taken the sample to
-          // avoid a race condition when new tests are being added.
-          final Collection<Test> newTests =
-            m_testRegistryImplementation.getNewTests();
+      // We look up the new tests after we've taken the sample to
+      // avoid a race condition when new tests are being added.
+      final Collection<Test> newTests =
+        m_testRegistryImplementation.getNewTests();
 
-          if (newTests != null) {
-            m_consoleSender.send(new RegisterTestsMessage(newTests));
+      try {
+        if (newTests != null) {
+          m_consoleSender.send(new RegisterTestsMessage(newTests));
+        }
+
+        if (sample.size() > 0) {
+          if (!m_reportTimesToConsole) {
+            m_testStatisticsHelper.removeTestTimeFromSample(sample);
           }
 
-          if (sample.size() > 0) {
-            if (!m_reportTimesToConsole) {
-              m_testStatisticsHelper.removeTestTimeFromSample(sample);
-            }
-
-            m_consoleSender.send(new ReportStatisticsMessage(sample));
-          }
-
-          sendStatusMessage(ProcessReport.State.RUNNING,
-                            m_threads.getNumberOfRunningThreads(),
-                            m_threads.getTotalNumberOfThreads());
+          m_consoleSender.send(new ReportStatisticsMessage(sample));
         }
-        catch (final CommunicationException e) {
-          m_terminalLogger.info("Report to console failed", e);
 
-          m_communicationShutdown = true;
-        }
+        sendStatusMessage(ProcessReport.State.RUNNING,
+                          m_threads.getNumberOfRunningThreads(),
+                          m_threads.getTotalNumberOfThreads());
+      }
+      catch (final CommunicationException e) {
+        m_terminalLogger.error("Report to console failed", e);
+        cancel();
+        shutdown("report to console failed");
       }
     }
   }
@@ -638,13 +637,19 @@ final class GrinderProcess {
     m_consoleSender.flush();
   }
 
+  private void shutdown(final String reason) {
+    synchronized (m_eventSynchronisation) {
+      if (m_shutdownReason == null) {
+        m_shutdownReason = reason;
+        m_eventSynchronisation.notifyAll();
+      }
+    }
+  }
+
   private class ShutdownTimerTask extends TimerTask {
     @Override
     public void run() {
-      synchronized (m_eventSynchronisation) {
-        m_shutdownTriggered = true;
-        m_eventSynchronisation.notifyAll();
-      }
+      shutdown("specified duration exceeded");
     }
   }
 
@@ -989,5 +994,60 @@ final class GrinderProcess {
 
     @Override
     public void shutdown() { }
+  }
+
+  /**
+   * A {@link QueuedSender} that becomes a null object after throwing its
+   * first {@link CommunicationException}.
+   *
+   * <p>Package scope for unit tests.</p>
+   */
+  static final class FirstHurdleSender implements QueuedSender {
+
+    // Guarded by this.
+    private QueuedSender m_delegate;
+
+    FirstHurdleSender(final QueuedSender delegate) {
+      m_delegate = delegate;
+    }
+
+    @Override
+    public void send(final Message message) throws CommunicationException {
+      synchronized (this) {
+        if (m_delegate != null) {
+          try {
+            m_delegate.send(message);
+          }
+          catch (final CommunicationException e) {
+            m_delegate = null;
+            throw e;
+          }
+        }
+      }
+    }
+
+    @Override
+    public void flush() throws CommunicationException {
+      synchronized (this) {
+        if (m_delegate != null) {
+          try {
+            m_delegate.flush();
+          }
+          catch (final CommunicationException e) {
+            m_delegate = null;
+            throw e;
+          }
+        }
+      }
+    }
+
+    @Override
+    public void shutdown() {
+      synchronized (this) {
+        if (m_delegate != null) {
+          m_delegate.shutdown();
+        }
+      }
+    }
   }
 }

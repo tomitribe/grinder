@@ -73,6 +73,7 @@ public class TestAgentImplementation extends AbstractJUnit4FileTestCase {
     MockitoAnnotations.initMocks(this);
   }
 
+  @Override
   @After public void tearDown() throws Exception {
     super.tearDown();
     DebugThreadWorkerFactory.setIsolatedRunnerClass(null);
@@ -232,6 +233,7 @@ public class TestAgentImplementation extends AbstractJUnit4FileTestCase {
 
   @Test public void testWithConsole() throws Exception {
     final ConsoleStub console = new ConsoleStub() {
+      @Override
       public void onConnect() throws Exception {
         // After we accept an agent connection...
         verify(m_logger).info(contains("The Grinder"));
@@ -304,7 +306,7 @@ public class TestAgentImplementation extends AbstractJUnit4FileTestCase {
 
     verify(m_logger).info("received a stop message");
 
-    verify(m_logger, timeout(5000)).info("communication shut down");
+    verify(m_logger, timeout(5000)).info("console connection shut down");
 
     agent.shutdown();
 
@@ -315,6 +317,7 @@ public class TestAgentImplementation extends AbstractJUnit4FileTestCase {
 
   @Test public void testRampUp() throws Exception {
     final ConsoleStub console = new ConsoleStub() {
+      @Override
       public void onConnect() throws Exception {
         // After we accept an agent connection...
         verify(m_logger).info(contains("The Grinder"));
@@ -396,6 +399,7 @@ public class TestAgentImplementation extends AbstractJUnit4FileTestCase {
     final GrinderProperties startProperties = new GrinderProperties();
 
     final ConsoleStub console2 = new ConsoleStub() {
+      @Override
       public void onConnect() throws Exception {
 
         startProperties.setFile("grinder.script", new File("not there"));
@@ -412,6 +416,7 @@ public class TestAgentImplementation extends AbstractJUnit4FileTestCase {
     };
 
     final ConsoleStub console1 = new ConsoleStub() {
+      @Override
       public void onConnect() throws Exception {
         startProperties.setInt("grinder.consolePort", console2.getPort());
 
@@ -458,18 +463,20 @@ public class TestAgentImplementation extends AbstractJUnit4FileTestCase {
       m_sender = new FanOutServerSender(m_acceptor, ConnectionType.AGENT, 3);
 
       m_acceptor.addListener(ConnectionType.AGENT, new Acceptor.Listener() {
-        public void connectionAccepted(ConnectionType connectionType,
-                                       ConnectionIdentity connection) {
+        @Override
+        public void connectionAccepted(final ConnectionType connectionType,
+                                       final ConnectionIdentity connection) {
           try {
             onConnect();
           }
-          catch (Throwable e) {
+          catch (final Throwable e) {
             e.printStackTrace();
           }
         }
 
-        public void connectionClosed(ConnectionType connectionType,
-                                     ConnectionIdentity connection) { }
+        @Override
+        public void connectionClosed(final ConnectionType connectionType,
+                                     final ConnectionIdentity connection) { }
       });
     }
 
@@ -492,7 +499,8 @@ public class TestAgentImplementation extends AbstractJUnit4FileTestCase {
 
   public static class TestRunner implements IsolateGrinderProcessRunner {
 
-    public int run(InputStream in) {
+    @Override
+    public int run(final InputStream in) {
       try {
         final StreamReceiver receiver = new StreamReceiver(in);
         while (true) {
@@ -504,7 +512,7 @@ public class TestAgentImplementation extends AbstractJUnit4FileTestCase {
           }
         }
       }
-      catch (Exception e) {
+      catch (final Exception e) {
         e.printStackTrace();
         return -1;
       }

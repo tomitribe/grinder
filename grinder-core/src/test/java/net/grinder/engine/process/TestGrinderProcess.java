@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2011 Philip Aston
+// Copyright (C) 2008 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -29,9 +29,11 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.util.concurrent.Callable;
@@ -40,7 +42,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import net.grinder.common.ThreadLifeCycleListener;
+import net.grinder.communication.CommunicationException;
+import net.grinder.communication.Message;
 import net.grinder.communication.QueuedSender;
+import net.grinder.communication.SimpleMessage;
 import net.grinder.engine.process.GrinderProcess.ThreadContexts;
 import net.grinder.engine.process.GrinderProcess.ThreadSynchronisation;
 import net.grinder.engine.process.GrinderProcess.Times;
@@ -96,8 +101,8 @@ public class TestGrinderProcess {
     assertFalse(ts.isReadyToStart());
     assertFalse(ts.isFinished());
 
-    for (int i = 0; i < threads.length; ++i) {
-      threads[i].start();
+    for (final Thread thread : threads) {
+      thread.start();
     }
 
     ts.startThreads();
@@ -117,12 +122,13 @@ public class TestGrinderProcess {
     private final ThreadSynchronisation m_ts;
     private final boolean m_failBeforeStart;
 
-    public MyRunnable(ThreadSynchronisation ts, boolean failBeforeStart) {
+    public MyRunnable(final ThreadSynchronisation ts, final boolean failBeforeStart) {
       m_ts = ts;
       m_failBeforeStart = failBeforeStart;
       ts.threadCreated();
     }
 
+    @Override
     public void run() {
       shortSleep();
 
@@ -142,7 +148,7 @@ public class TestGrinderProcess {
       try {
         Thread.sleep(10);
       }
-      catch (InterruptedException e) {
+      catch (final InterruptedException e) {
       }
     }
   }
@@ -178,6 +184,7 @@ public class TestGrinderProcess {
     final Future<ThreadContext> future =
       s_executor.submit(new Callable<ThreadContext>() {
 
+      @Override
       public ThreadContext call() throws Exception {
         return threadContexts.get();
       }});
@@ -253,7 +260,7 @@ public class TestGrinderProcess {
       starter.startThread(null);
       fail("Expected InvalidContextException");
     }
-    catch (InvalidContextException e) {
+    catch (final InvalidContextException e) {
     }
   }
 
@@ -269,5 +276,83 @@ public class TestGrinderProcess {
     sender.send(null);
     sender.flush();
     sender.shutdown();
+  }
+
+  @Test
+  public void testFirstHurdleSenderGood() throws Exception {
+    final QueuedSender s = mock(QueuedSender.class);
+    final QueuedSender fhs = new GrinderProcess.FirstHurdleSender(s);
+
+    final Message m = new SimpleMessage();
+
+    fhs.send(m);
+    verify(s).send(m);
+
+    fhs.flush();
+    verify(s).flush();
+
+    fhs.shutdown();
+    verify(s).shutdown();
+
+    verifyNoMoreInteractions(s);
+  }
+
+  @Test
+  public void testFirstHurdleSendFaultsOnce() throws Exception {
+    final QueuedSender s = mock(QueuedSender.class);
+    final QueuedSender fhs = new GrinderProcess.FirstHurdleSender(s);
+
+    final Message m = new SimpleMessage();
+
+    fhs.send(m);
+
+    final CommunicationException e = new CommunicationException("");
+
+    doThrow(e).when(s).send(m);
+
+    try {
+      fhs.send(m);
+      fail();
+    }
+    catch (final CommunicationException e1) {
+      assertSame(e, e1);
+    }
+
+    verify(s, times(2)).send(m);
+
+    fhs.send(m);
+    fhs.flush();
+    fhs.shutdown();
+
+    verifyNoMoreInteractions(s);
+  }
+
+
+  @Test
+  public void testFirstHurdleFlushFaultsOnce() throws Exception {
+    final QueuedSender s = mock(QueuedSender.class);
+    final QueuedSender fhs = new GrinderProcess.FirstHurdleSender(s);
+
+    fhs.flush();
+
+    final CommunicationException e = new CommunicationException("");
+
+    doThrow(e).when(s).flush();
+
+    try {
+      fhs.flush();
+      fail();
+    }
+    catch (final CommunicationException e1) {
+      assertSame(e, e1);
+    }
+
+    verify(s, times(2)).flush();
+
+    fhs.send(new SimpleMessage());
+    fhs.flush();
+    fhs.shutdown();
+
+    verifyNoMoreInteractions(s);
   }
 }

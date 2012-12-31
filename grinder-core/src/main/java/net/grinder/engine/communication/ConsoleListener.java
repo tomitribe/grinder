@@ -130,7 +130,8 @@ public final class ConsoleListener {
         m_lastMessagesReceived = intersection;
       }
       finally {
-        m_messagesReceived ^= intersection;
+        // Clear all messages except shutdown.
+        m_messagesReceived &= ~intersection | SHUTDOWN;
       }
     }
 
@@ -233,7 +234,7 @@ public final class ConsoleListener {
       }
 
       if (shutdown) {
-        m_logger.info("communication shut down");
+        m_logger.info("console connection shut down");
         setReceived(SHUTDOWN);
       }
     }
