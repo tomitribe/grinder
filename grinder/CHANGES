@@ -9,6 +9,9 @@ The Grinder 3.12 (not yet released)
   Added ScriptContext.stopProcess() which allows a script to cleanly
   terminate its worker process.
 
+  The process log file now include all messages a worker process logs to
+  the terminal (stdout/stderr).
+
 
 The Grinder 3.11
 ----------------
