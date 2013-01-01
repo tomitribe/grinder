@@ -6,6 +6,9 @@ The Grinder 3.12 (not yet released)
 
   Fix bug #206 - Removed extra166y-1.7.0.jar from lib.
 
+  Added ScriptContext.stopProcess() which allows a script to cleanly
+  terminate its worker process.
+
 
 The Grinder 3.11
 ----------------

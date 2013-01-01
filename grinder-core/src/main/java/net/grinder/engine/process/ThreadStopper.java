@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Philip Aston
+// Copyright (C) 2008 - 2012 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -29,4 +29,6 @@ package net.grinder.engine.process;
  */
 interface ThreadStopper {
   boolean stopThread(int threadNumber);
+
+  void stopProcess();
 }

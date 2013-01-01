@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2011 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -28,7 +28,7 @@ import org.slf4j.Logger;
 
 
 /**
- * Name space for <code>grinder</code> script context object.
+ * Name space for {@code grinder} script context object.
  *
  * @author Philip Aston
  */
@@ -41,7 +41,7 @@ public class Grinder {
 
   /**
    * Scripts can get contextual information and access services
-   * through a global <code>net.grinder.script.Grinder.grinder</code>
+   * through a global {@code net.grinder.script.Grinder.grinder}
    * object that supports this interface.
    *
    * @author Philip Aston
@@ -55,11 +55,11 @@ public class Grinder {
      * <p>
      * The lowest possible number is allocated. When an agent disconnects, its
      * number will be reused. Script authors can assume that the agent number
-     * lies between <code>0</code> and the number of currently connected
+     * lies between {@code 0} and the number of currently connected
      * agents.
      * </p>
      *
-     * @return The agent number, or <code>-1</code> if not launched from the
+     * @return The agent number, or {@code 1} if not launched from the
      *         console.
      * @see #getProcessNumber()
      * @see #getThreadNumber()
@@ -101,7 +101,7 @@ public class Grinder {
     int getFirstProcessNumber();
 
     /**
-     * Return the thread number, or <code>-1</code> if not called from a
+     * Return the thread number, or {@code -1} if not called from a
      * worker thread.
      *
      * @return The thread number.
@@ -111,10 +111,10 @@ public class Grinder {
     int getThreadNumber();
 
     /**
-     * Return the current run number, or <code>-1</code> if not called from a
+     * Return the current run number, or {@code -1} if not called from a
      * worker thread.
      *
-     * @return An <code>int</code> value.
+     * @return An {@code int} value.
      */
     int getRunNumber();
 
@@ -147,13 +147,13 @@ public class Grinder {
     void sleep(long meanTime, long sigma) throws GrinderException;
 
     /**
-     * Start a new worker thread. The script's <code>TestRunner</code> class
+     * Start a new worker thread. The script's {@code TestRunner} class
      * will be used to create new test runner instance for the worker thread.
      *
      * @return The thread number of the new worker thread.
      * @throws InvalidContextException If the main thread has not yet
      *  initialised the script engine, or all other threads have shut down.
-     *  Typically, you should only call <code>startWorkerThread()</code> from
+     *  Typically, you should only call {@code startWorkerThread()} from
      *  another worker thread.
      * @throws GrinderException If the new worker thread could not be started.
      */
@@ -170,7 +170,7 @@ public class Grinder {
      * @return The thread number of the new worker thread.
      * @throws InvalidContextException If the main thread has not yet
      *  initialised the script engine, or all other threads have shut down.
-     *  Typically, you should only call <code>startWorkerThread()</code> from
+     *  Typically, you should only call {@code startWorkerThread()} from
      *  another worker thread.
      * @throws GrinderException If the new worker thread could not be started.
      */
@@ -192,11 +192,35 @@ public class Grinder {
      * will shut down be the next time it enters code instrumented by a
      * {@link Test}.
      *
+     * <p>This method can be called from non-worker threads.</p>
+     *
      * @param threadNumber The thread number of the worker thread to stop.
-     * @return <code>true</code> if a thread existed with the given
-     * <code>threadNumber</code>, otherwise <code>false</code>.
+     * @return {@code true} if a thread existed with the given
+     * {@code threadNumber}, otherwise {@code false}.
      */
     boolean stopWorkerThread(int threadNumber);
+
+    /**
+     * Stop this worker process cleanly.
+     *
+     * <p>All worker threads are requested to exit cleanly. Worker threads
+     * will handle the request if they they call {{@link #sleep}; are
+     * currently sleeping; or try to start new tests. If all threads fail to
+     * do so in a timely manner ("timely" is currently hard coded to be 10
+     * seconds), the process will exit anyway.</p>
+     *
+     * <p>This method can be called from non-worker threads. This allows it
+     * to be scheduled in a timer thread, for example.</p>
+     *
+     * <p>If this method is called from a worker thread, the thread will
+     * attempt to shut itself down as documented for
+     * {@link #stopThisWorkerThread()}.</p>
+     *
+     * <p>Has no effect on other worker processes that may be running.</p>
+     *
+     * @since 3.12
+     */
+    void stopProcess();
 
     /**
      * Get the global properties for this agent/worker process set.

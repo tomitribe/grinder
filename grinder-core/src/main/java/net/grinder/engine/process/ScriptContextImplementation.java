@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2011 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -61,19 +61,19 @@ final class ScriptContextImplementation implements InternalScriptContext {
   private final BarrierIdentity.Factory m_barrierIdentityFactory;
 
   public ScriptContextImplementation(
-     WorkerIdentity workerIdentity,
-     WorkerIdentity firstWorkerIdentity,
-     ThreadContextLocator threadContextLocator,
-     GrinderProperties properties,
-     Logger logger,
-     Sleeper sleeper,
-     SSLControl sslControl,
-     Statistics scriptStatistics,
-     TestRegistry testRegistry,
-     ThreadStarter threadStarter,
-     ThreadStopper threadStopper,
-     BarrierGroups barrierGroups,
-     BarrierIdentity.Factory barrierIdentityFactory) {
+     final WorkerIdentity workerIdentity,
+     final WorkerIdentity firstWorkerIdentity,
+     final ThreadContextLocator threadContextLocator,
+     final GrinderProperties properties,
+     final Logger logger,
+     final Sleeper sleeper,
+     final SSLControl sslControl,
+     final Statistics scriptStatistics,
+     final TestRegistry testRegistry,
+     final ThreadStarter threadStarter,
+     final ThreadStopper threadStopper,
+     final BarrierGroups barrierGroups,
+     final BarrierIdentity.Factory barrierIdentityFactory) {
 
     m_workerIdentity = workerIdentity;
     m_firstWorkerIdentity = firstWorkerIdentity;
@@ -90,22 +90,27 @@ final class ScriptContextImplementation implements InternalScriptContext {
     m_barrierIdentityFactory = barrierIdentityFactory;
   }
 
+  @Override
   public int getAgentNumber() {
     return m_workerIdentity.getAgentIdentity().getNumber();
   }
 
+  @Override
   public String getProcessName() {
     return m_workerIdentity.getName();
   }
 
+  @Override
   public int getProcessNumber() {
     return m_workerIdentity.getNumber();
   }
 
+  @Override
   public int getFirstProcessNumber() {
     return m_firstWorkerIdentity.getNumber();
   }
 
+  @Override
   public int getThreadNumber() {
     final ThreadContext threadContext = m_threadContextLocator.get();
 
@@ -116,6 +121,7 @@ final class ScriptContextImplementation implements InternalScriptContext {
     return -1;
   }
 
+  @Override
   public int getRunNumber() {
     final ThreadContext threadContext = m_threadContextLocator.get();
 
@@ -126,26 +132,34 @@ final class ScriptContextImplementation implements InternalScriptContext {
     return -1;
   }
 
+  @Override
   public Logger getLogger() {
     return m_logger;
   }
 
-  public void sleep(long meanTime) throws GrinderException {
+  @Override
+  public void sleep(final long meanTime) throws GrinderException {
     m_sleeper.sleepNormal(meanTime);
   }
 
-  public void sleep(long meanTime, long sigma) throws GrinderException {
+  @Override
+  public void sleep(final long meanTime, final long sigma)
+      throws GrinderException {
     m_sleeper.sleepNormal(meanTime, sigma);
   }
 
+  @Override
   public int startWorkerThread() throws GrinderException {
     return m_threadStarter.startThread(null);
   }
 
-  public int startWorkerThread(Object testRunner) throws GrinderException {
+  @Override
+  public int startWorkerThread(final Object testRunner)
+      throws GrinderException {
     return m_threadStarter.startThread(testRunner);
   }
 
+  @Override
   public void stopThisWorkerThread() throws InvalidContextException {
 
     if (m_threadContextLocator.get() != null) {
@@ -157,27 +171,42 @@ final class ScriptContextImplementation implements InternalScriptContext {
     }
   }
 
-  public boolean stopWorkerThread(int threadNumber) {
+  @Override
+  public boolean stopWorkerThread(final int threadNumber) {
     return m_threadStopper.stopThread(threadNumber);
   }
 
+  @Override
+  public void stopProcess() {
+    m_threadStopper.stopProcess();
+
+    if (m_threadContextLocator.get() != null) {
+      throw new ShutdownException("Thread has been shut down");
+    }
+  }
+
+  @Override
   public GrinderProperties getProperties() {
     return m_properties;
   }
 
+  @Override
   public Statistics getStatistics() {
     return m_scriptStatistics;
   }
 
+  @Override
   public SSLControl getSSLControl() {
     return m_sslControl;
   }
 
+  @Override
   public TestRegistry getTestRegistry() {
     return m_testRegistry;
   }
 
-  public Barrier barrier(String name) throws CommunicationException {
+  @Override
+  public Barrier barrier(final String name) throws CommunicationException {
     return new BarrierImplementation(m_barrierGroups.getGroup(name),
                                      m_barrierIdentityFactory);
   }

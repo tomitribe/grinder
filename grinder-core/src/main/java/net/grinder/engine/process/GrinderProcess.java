@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // Copyright (C) 2003 Kalyanaraman Venkatasubramaniy
 // Copyright (C) 2004 Slavik Gnatenko
 // All rights reserved.
@@ -143,7 +143,7 @@ final class GrinderProcess {
   private String m_shutdownReason;
 
   /**
-   * Creates a new <code>GrinderProcess</code> instance.
+   * Creates a new {@code GrinderProcess} instance.
    *
    * @param agentReceiver
    *          Receiver used to listen to the agent.
@@ -258,6 +258,11 @@ final class GrinderProcess {
       public boolean stopThread(final int threadNumber) {
         return m_threadContexts.shutdown(threadNumber);
       }
+
+      @Override
+      public void stopProcess() {
+        shutdown("stopProcess()");
+      }
     };
 
     final InternalScriptContext scriptContext =
@@ -309,7 +314,6 @@ final class GrinderProcess {
     throws EngineException {
 
     final ILoggerFactory iLoggerFactory = LoggerFactory.getILoggerFactory();
-
 
     if (iLoggerFactory instanceof Context) {
       final Context context = (Context) iLoggerFactory;

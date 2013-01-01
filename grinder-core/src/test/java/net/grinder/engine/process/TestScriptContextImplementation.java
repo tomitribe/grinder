@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -24,7 +24,6 @@ package net.grinder.engine.process;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -33,6 +32,7 @@ import net.grinder.common.GrinderProperties;
 import net.grinder.common.processidentity.WorkerIdentity;
 import net.grinder.engine.agent.StubAgentIdentity;
 import net.grinder.script.Barrier;
+import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.InvalidContextException;
 import net.grinder.script.SSLControl;
 import net.grinder.script.Statistics;
@@ -69,13 +69,22 @@ public class TestScriptContextImplementation {
   @Mock private BarrierGroups m_barrierGroups;
   @Mock private BarrierGroup m_barrierGroup;
   @Mock private BarrierIdentity.Factory m_identityGenerator;
+  @Mock private ThreadContextLocator m_threadContextLocator;
+
+  private ScriptContext m_scriptContext;
 
   @Before public void setUp() {
     MockitoAnnotations.initMocks(this);
 
+    when(m_threadContextLocator.get()).thenReturn(m_threadContext);
+
     when(m_barrierGroup.getName()).thenReturn("MyBarrierGroup");
     when(m_barrierGroups.getGroup("MyBarrierGroup"))
       .thenReturn(m_barrierGroup);
+
+    m_scriptContext = new ScriptContextImplementation(
+      null, null, m_threadContextLocator, null, null, null, null, null, null,
+      null, m_threadStopper, m_barrierGroups, m_identityGenerator);
   }
 
   @Test public void testConstructorAndGetters() throws Exception {
@@ -84,9 +93,6 @@ public class TestScriptContextImplementation {
 
     final int threadNumber = 99;
     final int runNumber = 3;
-    final StubThreadContextLocator threadContextLocator =
-      new StubThreadContextLocator();
-    threadContextLocator.set(m_threadContext);
 
     when(m_threadContext.getThreadNumber()).thenReturn(threadNumber);
     when(m_threadContext.getRunNumber()).thenReturn(runNumber);
@@ -103,7 +109,7 @@ public class TestScriptContextImplementation {
       new ScriptContextImplementation(
         workerIdentity,
         firstWorkerIdentity,
-        threadContextLocator,
+        m_threadContextLocator,
         properties,
         m_logger,
         sleeper,
@@ -128,7 +134,8 @@ public class TestScriptContextImplementation {
     assertSame(m_sslControl, scriptContext.getSSLControl());
     assertSame(m_testRegistry, scriptContext.getTestRegistry());
 
-    threadContextLocator.set(null);
+    when(m_threadContextLocator.get()).thenReturn(null);
+
     assertEquals(-1, scriptContext.getThreadNumber());
     assertEquals(-1, scriptContext.getRunNumber());
     assertEquals(m_statistics, scriptContext.getStatistics());
@@ -170,50 +177,47 @@ public class TestScriptContextImplementation {
 
     assertTrue(
       new Time(50, 70) {
+        @Override
         public void doIt() throws Exception  { scriptContext.sleep(50); }
       }.run());
 
     assertTrue(
       new Time(40, 70) {
+        @Override
         public void doIt() throws Exception  { scriptContext.sleep(50, 5); }
       }.run());
   }
 
-  @Test public void testStopThisWorkerThread() throws Exception {
-    final StubThreadContextLocator threadContextLocator =
-      new StubThreadContextLocator();
+  @Test(expected=InvalidContextException.class)
+  public void testStopThisWorkerThreadOtherThread() throws Exception {
 
-    final ScriptContextImplementation scriptContext =
-      new ScriptContextImplementation(
-        null, null, threadContextLocator, null, null, null, null, null, null,
-        null, null, null, null);
+    when(m_threadContextLocator.get()).thenReturn(null);
+    m_scriptContext.stopThisWorkerThread();
+  }
 
-    try {
-      scriptContext.stopThisWorkerThread();
-      fail("Expected InvalidContextException");
-    }
-    catch (InvalidContextException e) {
-    }
+  @Test(expected=ShutdownException.class)
+  public void testStopThisWorkerThread() throws Exception {
 
-    threadContextLocator.set(m_threadContext);
-
-    try {
-      scriptContext.stopThisWorkerThread();
-      fail("Expected ShutdownException");
-    }
-    catch (ShutdownException e) {
-    }
+    m_scriptContext.stopThisWorkerThread();
   }
 
   @Test public void testBarrier() throws Exception {
-    final ScriptContextImplementation scriptContext =
-      new ScriptContextImplementation(
-        null, null, null, null, null, null, null, null, null,
-        null, null, m_barrierGroups, m_identityGenerator);
 
-    final Barrier globalBarrier = scriptContext.barrier("MyBarrierGroup");
+    final Barrier globalBarrier = m_scriptContext.barrier("MyBarrierGroup");
     assertEquals("MyBarrierGroup", globalBarrier.getName());
 
     verify(m_identityGenerator).next();
+  }
+
+  @Test public void testStopProcessOtherThread() {
+    when(m_threadContextLocator.get()).thenReturn(null);
+    m_scriptContext.stopProcess();
+    verify(m_threadStopper).stopProcess();
+  }
+
+  @Test(expected=ShutdownException.class)
+  public void testStopProcessWorkerThread() {
+    m_scriptContext.stopProcess();
+    verify(m_threadStopper).stopProcess();
   }
 }
