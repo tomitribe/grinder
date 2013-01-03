@@ -12,6 +12,9 @@ The Grinder 3.12 (not yet released)
   The process log file now include all messages a worker process logs to
   the terminal (stdout/stderr).
 
+  Fix bug #231 - Spelling in sample grinder.properties. Reported and
+  fixed by Yoni Yalovitsky.
+
 
 The Grinder 3.11
 ----------------
