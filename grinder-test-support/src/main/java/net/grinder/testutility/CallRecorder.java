@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2012 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -53,32 +53,6 @@ public class CallRecorder extends Assert implements CallAssertions {
     synchronized (m_callDataList) {
       m_callDataList.clear();
       m_callDataList.notifyAll();
-    }
-  }
-
-  /**
-   * Wait until we're called. Fail if we take more than <code>timeout</code>
-   * milliseconds.
-   *
-   * @param timeout
-   *          Maximum time in milliseconds to wait for.
-   */
-  public void waitUntilCalled(int timeout) {
-    final long expires = System.currentTimeMillis() + timeout;
-
-    synchronized (m_callDataList) {
-      while (m_callDataList.size() == 0) {
-        try {
-          m_callDataList.wait(timeout);
-        }
-        catch (InterruptedException e) {
-          throw new RuntimeException(e);
-        }
-
-        if (System.currentTimeMillis() > expires) {
-          fail("Timed out waiting to be called after " + timeout + " ms");
-        }
-      }
     }
   }
 

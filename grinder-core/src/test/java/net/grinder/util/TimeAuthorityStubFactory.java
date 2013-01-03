@@ -1,4 +1,4 @@
-// Copyright (C) 2006 - 2009 Philip Aston
+// Copyright (C) 2006 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -24,6 +24,7 @@ package net.grinder.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.grinder.common.TimeAuthority;
 import net.grinder.testutility.RandomStubFactory;
 
 
@@ -34,13 +35,13 @@ public class TimeAuthorityStubFactory extends RandomStubFactory<TimeAuthority> {
   }
 
   private long m_lastTime;
-  private List<Long> m_nextTimes = new ArrayList<Long>();
+  private final List<Long> m_nextTimes = new ArrayList<Long>();
 
-  public void nextTime(long time) {
+  public void nextTime(final long time) {
     m_nextTimes.add(new Long(time));
   }
 
-  public long override_getTimeInMilliseconds(Object proxy) {
+  public long override_getTimeInMilliseconds(final Object proxy) {
 
     if (m_nextTimes.size() != 0) {
       m_lastTime = m_nextTimes.remove(0).longValue();

@@ -1,4 +1,4 @@
-// Copyright (C) 2003 - 2012 Philip Aston
+// Copyright (C) 2003 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -31,9 +31,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 
+import net.grinder.common.TimeAuthority;
 import net.grinder.common.UncheckedInterruptedException;
 import net.grinder.util.ListenerSupport;
-import net.grinder.util.TimeAuthority;
 import net.grinder.util.thread.ExecutorFactory;
 import net.grinder.util.thread.InterruptibleRunnable;
 import net.grinder.util.thread.InterruptibleRunnableAdapter;
@@ -80,10 +80,10 @@ public final class Acceptor {
    * @throws CommunicationException If server socket could not be
    * bound.
    */
-  public Acceptor(String addressString,
-                  int port,
-                  int numberOfThreads,
-                  TimeAuthority timeAuthority)
+  public Acceptor(final String addressString,
+                  final int port,
+                  final int numberOfThreads,
+                  final TimeAuthority timeAuthority)
     throws CommunicationException {
 
     m_timeAuthority = timeAuthority;
@@ -93,7 +93,7 @@ public final class Acceptor {
         m_serverSocket =
           new ServerSocket(port, 50, InetAddress.getByName(addressString));
       }
-      catch (IOException e) {
+      catch (final IOException e) {
         UncheckedInterruptedException.ioException(e);
         throw new CommunicationException(
           "Could not bind to address '" + addressString + ':' + port + '\'', e);
@@ -103,7 +103,7 @@ public final class Acceptor {
       try {
         m_serverSocket = new ServerSocket(port, 50);
       }
-      catch (IOException e) {
+      catch (final IOException e) {
         UncheckedInterruptedException.ioException(e);
         throw new CommunicationException(
           "Could not bind to port '" + port + "' on local interfaces", e);
@@ -138,7 +138,7 @@ public final class Acceptor {
     try {
       m_serverSocket.close();
     }
-    catch (IOException e) {
+    catch (final IOException e) {
       UncheckedInterruptedException.ioException(e);
       throw new CommunicationException("Error closing socket", e);
     }
@@ -151,8 +151,8 @@ public final class Acceptor {
       // events triggered by closing resources.
       final ResourcePool[] socketSets = cloneListOfSocketSets();
 
-      for (int i = 0; i < socketSets.length; ++i) {
-        socketSets[i].closeCurrentResources();
+      for (final ResourcePool socketSet : socketSets) {
+        socketSet.closeCurrentResources();
       }
 
       m_exceptionQueue.clear();
@@ -193,7 +193,7 @@ public final class Acceptor {
     try {
       return m_exceptionQueue.take();
     }
-    catch (InterruptedException e) {
+    catch (final InterruptedException e) {
       throw new UncheckedInterruptedException(e);
     }
   }
@@ -217,8 +217,8 @@ public final class Acceptor {
 
     int result = 0;
 
-    for (int i = 0; i < socketSets.length; ++i) {
-      result += socketSets[i].countActive();
+    for (final ResourcePool socketSet : socketSets) {
+      result += socketSet.countActive();
     }
 
     return result;
@@ -253,7 +253,8 @@ public final class Acceptor {
    * @param connectionType The connection type.
    * @param listener The listener.
    */
-  public void addListener(ConnectionType connectionType, Listener listener) {
+  public void addListener(final ConnectionType connectionType,
+                          final Listener listener) {
     getListeners(connectionType).add(listener);
   }
 
@@ -285,25 +286,29 @@ public final class Acceptor {
 
         newSocketSet.addListener(
           new ResourcePool.Listener() {
-            public void resourceAdded(ResourcePool.Resource resource) {
+            @Override
+            public void resourceAdded(final ResourcePool.Resource resource) {
               final ConnectionIdentity connection =
                 ((SocketWrapper)resource).getConnectionIdentity();
 
               getListeners(connectionType).apply(
                 new ListenerSupport.Informer<Listener>() {
-                  public void inform(Listener l) {
+                  @Override
+                  public void inform(final Listener l) {
                     l.connectionAccepted(connectionType, connection);
                   }
                 });
             }
 
-            public void resourceClosed(ResourcePool.Resource resource) {
+            @Override
+            public void resourceClosed(final ResourcePool.Resource resource) {
               final ConnectionIdentity connection =
                 ((SocketWrapper)resource).getConnectionIdentity();
 
               getListeners(connectionType).apply(
                 new ListenerSupport.Informer<Listener>() {
-                  public void inform(Listener l) {
+                  @Override
+                  public void inform(final Listener l) {
                     l.connectionClosed(connectionType, connection);
                   }
                 });
@@ -320,7 +325,7 @@ public final class Acceptor {
    * Get the listener list for a particular connection type.
    */
   private ListenerSupport<Listener> getListeners(
-    ConnectionType connectionType) {
+    final ConnectionType connectionType) {
 
     synchronized (m_listenerMap) {
       final ListenerSupport<Listener> original =
@@ -339,7 +344,7 @@ public final class Acceptor {
     }
   }
 
-  private void discriminateConnection(Socket localSocket)
+  private void discriminateConnection(final Socket localSocket)
     throws IOException, ShutdownException {
 
     boolean closeSocket = true;
@@ -359,6 +364,7 @@ public final class Acceptor {
       // .. and the time a listener is registered. Will pick up such a zombie
       // the next time we try to use the resource.
       socketWrapper.addClosedListener(new SocketWrapper.ClosedListener() {
+          @Override
           public void socketClosed() {
             closeable.close();
           }
@@ -367,11 +373,11 @@ public final class Acceptor {
       // We did good.
       closeSocket = false;
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
       try {
         m_exceptionQueue.put(e);
       }
-      catch (InterruptedException ie) {
+      catch (final InterruptedException ie) {
         throw new UncheckedInterruptedException(ie);
       }
     }
@@ -380,7 +386,7 @@ public final class Acceptor {
         try {
           localSocket.close();
         }
-        catch (IOException ioException) {
+        catch (final IOException ioException) {
           UncheckedInterruptedException.ioException(ioException);
           // Ignore.
         }
@@ -389,6 +395,7 @@ public final class Acceptor {
   }
 
   private class AcceptorRunnable implements InterruptibleRunnable {
+    @Override
     public void interruptibleRun() {
       try {
         while (true) {
@@ -396,11 +403,11 @@ public final class Acceptor {
           discriminateConnection(localSocket);
         }
       }
-      catch (IOException e) {
+      catch (final IOException e) {
         // Treat accept socket errors as fatal - we've probably been
         // shutdown. This includes InterruptedIOExceptions.
       }
-      catch (ShutdownException e) {
+      catch (final ShutdownException e) {
         // Acceptor has been shutdown, exit.
       }
       finally {
@@ -408,7 +415,7 @@ public final class Acceptor {
         try {
           shutdown();
         }
-        catch (CommunicationException e) {
+        catch (final CommunicationException e) {
           // Ignore.
         }
       }
@@ -419,7 +426,7 @@ public final class Acceptor {
    * Indicates the Acceptor has been shut down.
    */
   public static final class ShutdownException extends CommunicationException {
-    private ShutdownException(String s) {
+    private ShutdownException(final String s) {
       super(s);
     }
   }

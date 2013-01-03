@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2012 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -84,7 +84,8 @@ public class TestHTTPPlugin {
         setInstance(this);
       }
 
-      public void register(GrinderPlugin plugin) throws GrinderException {
+      @Override
+      public void register(final GrinderPlugin plugin) throws GrinderException {
         plugin.initialize(m_pluginProcessContext);
       }
     };
@@ -93,7 +94,7 @@ public class TestHTTPPlugin {
       Class.forName(pluginName, true, blockingLoader);
       fail("Expected PluginException");
     }
-    catch (ExceptionInInitializerError e) {
+    catch (final ExceptionInInitializerError e) {
       // EIIE ->  PluginException -> ClassNotFoundException
       assertTrue(e.getCause().getCause() instanceof ClassNotFoundException);
     }
@@ -112,7 +113,7 @@ public class TestHTTPPlugin {
       plugin.initialize(m_pluginProcessContext);
       fail("Expected PluginException");
     }
-    catch (PluginException e) {
+    catch (final PluginException e) {
       assertSame(grinderException, e.getCause());
     }
   }

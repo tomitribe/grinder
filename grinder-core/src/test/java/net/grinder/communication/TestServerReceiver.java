@@ -1,4 +1,4 @@
-// Copyright (C) 2003 - 2012 Philip Aston
+// Copyright (C) 2003 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -31,10 +31,10 @@ import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
+import net.grinder.common.TimeAuthority;
 import net.grinder.common.UncheckedInterruptedException;
 import net.grinder.testutility.IsolatedObjectFactory;
 import net.grinder.util.StandardTimeAuthority;
-import net.grinder.util.TimeAuthority;
 
 import org.junit.Test;
 
@@ -117,6 +117,7 @@ public class TestServerReceiver {
     assertEquals(
       UncheckedInterruptedException.class,
       new BlockingActionThread() {
+        @Override
         protected void blockingAction() throws CommunicationException {
           serverReceiver.waitForMessage();
         }
@@ -179,7 +180,7 @@ public class TestServerReceiver {
       serverReceiver.waitForMessage();
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
 
     serverReceiver.shutdown();
@@ -226,7 +227,7 @@ public class TestServerReceiver {
         acceptor, new ConnectionType[] { ConnectionType.AGENT }, 3, 10, 100);
       fail("Expected a CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
 
     assertNull(serverReceiver.waitForMessage());
@@ -279,6 +280,7 @@ public class TestServerReceiver {
     assertEquals(
       UncheckedInterruptedException.class,
       new BlockingActionThread() {
+        @Override
         protected void blockingAction() throws CommunicationException {
           serverReceiver.waitForMessage();
         }

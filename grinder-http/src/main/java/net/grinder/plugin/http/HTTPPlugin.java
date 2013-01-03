@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // Copyright (C) 2004 Bertrand Ave
 // Copyright (C) 2004 John Stanford White
 // Copyright (C) 2004 Calum Fitzgerald
@@ -25,12 +25,7 @@
 
 package net.grinder.plugin.http;
 
-import HTTPClient.CookieModule;
-import HTTPClient.DefaultAuthHandler;
-import HTTPClient.HTTPConnection;
-
 import net.grinder.common.GrinderException;
-import net.grinder.common.SSLContextFactory;
 import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginException;
 import net.grinder.plugininterface.PluginProcessContext;
@@ -42,6 +37,9 @@ import net.grinder.script.Statistics;
 import net.grinder.statistics.StatisticsIndexMap;
 import net.grinder.util.Sleeper;
 import net.grinder.util.SleeperImplementation;
+import HTTPClient.CookieModule;
+import HTTPClient.DefaultAuthHandler;
+import HTTPClient.HTTPConnection;
 
 
 /**
@@ -59,7 +57,7 @@ public class HTTPPlugin implements GrinderPlugin {
     try {
       PluginRegistry.getInstance().register(s_singleton);
     }
-    catch (GrinderException e) {
+    catch (final GrinderException e) {
       throw new ExceptionInInitializerError(e);
     }
   }
@@ -75,7 +73,6 @@ public class HTTPPlugin implements GrinderPlugin {
   }
 
   private PluginProcessContext m_pluginProcessContext;
-  private SSLContextFactory m_sslContextFactory;
   private Sleeper m_slowClientSleeper;
 
   final PluginProcessContext getPluginProcessContext() {
@@ -88,19 +85,18 @@ public class HTTPPlugin implements GrinderPlugin {
    * @param processContext The plug-in process context.
    * @exception PluginException if an error occurs.
    */
-  public void initialize(PluginProcessContext processContext)
+  @Override
+  public void initialize(final PluginProcessContext processContext)
     throws PluginException {
 
     m_pluginProcessContext = processContext;
 
     final Grinder.ScriptContext scriptContext =
-      processContext.getScriptContext();
-
-    m_sslContextFactory = scriptContext.getSSLControl();
+        processContext.getScriptContext();
 
     m_slowClientSleeper =
       new SleeperImplementation(
-        m_pluginProcessContext.getTimeAuthority(), null, 1, 0);
+        scriptContext.getTimeAuthority(), null, 1, 0);
 
     // Remove standard HTTPClient modules which we don't want. We load
     // HTTPClient modules dynamically as we don't have public access.
@@ -109,7 +105,7 @@ public class HTTPPlugin implements GrinderPlugin {
       HTTPConnection.removeDefaultModule(
         Class.forName("HTTPClient.RetryModule"));
     }
-    catch (ClassNotFoundException e) {
+    catch (final ClassNotFoundException e) {
       throw new PluginException("Could not load HTTPClient modules", e);
     }
 
@@ -181,7 +177,7 @@ public class HTTPPlugin implements GrinderPlugin {
         "(/ " + StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY +
         " (+ (count timedTests) untimedTests))");
     }
-    catch (GrinderException e) {
+    catch (final GrinderException e) {
       throw new PluginException("Could not register custom statistics", e);
     }
   }
@@ -193,12 +189,16 @@ public class HTTPPlugin implements GrinderPlugin {
    * @return The new plug-in thread listener.
    * @exception PluginException if an error occurs.
    */
+  @Override
   public PluginThreadListener createThreadListener(
-    PluginThreadContext threadContext) throws PluginException {
+    final PluginThreadContext threadContext) throws PluginException {
+
+    final Grinder.ScriptContext scriptContext =
+        m_pluginProcessContext.getScriptContext();
 
     return new HTTPPluginThreadState(threadContext,
-                                     m_sslContextFactory,
+                                     scriptContext.getSSLControl(),
                                      m_slowClientSleeper,
-                                     m_pluginProcessContext.getTimeAuthority());
+                                     scriptContext.getTimeAuthority());
   }
 }

@@ -23,6 +23,7 @@ package net.grinder.script;
 
 import net.grinder.common.GrinderException;
 import net.grinder.common.GrinderProperties;
+import net.grinder.common.TimeAuthority;
 
 import org.slf4j.Logger;
 
@@ -282,5 +283,13 @@ public class Grinder {
      * @since 3.6
      */
     Barrier barrier(String name) throws GrinderException;
+
+    /**
+     * Something that knows the time.
+     *
+     * @return The time authority.
+     * @since 3.12
+     */
+    TimeAuthority getTimeAuthority();
   }
 }

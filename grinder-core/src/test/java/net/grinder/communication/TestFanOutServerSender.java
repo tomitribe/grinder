@@ -1,4 +1,4 @@
-// Copyright (C) 2003 - 2012 Philip Aston
+// Copyright (C) 2003 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -32,8 +32,8 @@ import java.io.StreamCorruptedException;
 import java.net.InetAddress;
 import java.net.Socket;
 
+import net.grinder.common.TimeAuthority;
 import net.grinder.util.StandardTimeAuthority;
-import net.grinder.util.TimeAuthority;
 
 import org.junit.Test;
 
@@ -87,8 +87,8 @@ public class TestFanOutServerSender {
     serverSender.send(message1);
     serverSender.send(message2);
 
-    for (int i=0; i<socket.length; ++i) {
-      final InputStream socketInput = socket[i].getInputStream();
+    for (final Socket element : socket) {
+      final InputStream socketInput = element.getInputStream();
 
       final Message m1 = readMessage(socketInput);
       final Message m2 = readMessage(socketInput);
@@ -98,7 +98,7 @@ public class TestFanOutServerSender {
 
       assertEquals(0, socketInput.available());
 
-      socket[i].close();
+      element.close();
     }
 
     serverSender.shutdown();
@@ -171,12 +171,13 @@ public class TestFanOutServerSender {
 
     try {
       serverSender.send(new Address() {
-        public boolean includes(Address address) { return false; }
+        @Override
+        public boolean includes(final Address address) { return false; }
         },
         message1);
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
 
     acceptor.shutdown();
@@ -217,7 +218,7 @@ public class TestFanOutServerSender {
       serverSender.send(message);
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
 
     try {
@@ -225,7 +226,7 @@ public class TestFanOutServerSender {
 
       assertTrue(o2 instanceof CloseCommunicationMessage);
     }
-    catch (StreamCorruptedException e) {
+    catch (final StreamCorruptedException e) {
       // Occasionally this occurs because the connection is shutdown.
       // Whatever.
     }

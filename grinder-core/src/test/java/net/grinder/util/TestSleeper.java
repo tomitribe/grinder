@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2011 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -28,6 +28,7 @@ import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import net.grinder.common.TimeAuthority;
 import net.grinder.testutility.Time;
 
 import org.junit.Test;
@@ -48,14 +49,14 @@ public class TestSleeper {
       new SleeperImplementation(m_timeAuthority, null, -1, 1);
       fail("IllegalArgumentException expected");
     }
-    catch (IllegalArgumentException e) {
+    catch (final IllegalArgumentException e) {
     }
 
     try {
       new SleeperImplementation(m_timeAuthority, null, 1, -1);
       fail("IllegalArgumentException expected");
     }
-    catch (IllegalArgumentException e) {
+    catch (final IllegalArgumentException e) {
     }
 
     new SleeperImplementation(m_timeAuthority, null, 1, 1);
@@ -68,7 +69,8 @@ public class TestSleeper {
 
     final long t1 = sleep0.getTimeInMilliseconds();
 
-    Time time0 = new Time(0, 1000) {
+    final Time time0 = new Time(0, 1000) {
+        @Override
         public void doIt() throws Exception { sleep0.sleepNormal(10); }
       };
 
@@ -80,11 +82,13 @@ public class TestSleeper {
 
     assertTrue(
       new Time(50, 70) {
+        @Override
         public void doIt() throws Exception  { sleep1.sleepNormal(50); }
       }.run());
 
     assertTrue(
       new Time(0, 10) {
+        @Override
         public void doIt() throws Exception  { sleep1.sleepNormal(0); }
       }.run());
 
@@ -93,6 +97,7 @@ public class TestSleeper {
 
     assertTrue(
       new Time(100, 120) {
+        @Override
         public void doIt() throws Exception  { sleep2.sleepNormal(50); }
       }.run());
 
@@ -100,6 +105,7 @@ public class TestSleeper {
       new SleeperImplementation(m_timeAuthority, null, 1, 0.1);
 
     final Time time = new Time(40, 60) {
+        @Override
         public void doIt() throws Exception { sleep3.sleepNormal(50);}
       };
 
@@ -117,6 +123,7 @@ public class TestSleeper {
 
     assertTrue(
       new Time(0, 10) {
+        @Override
         public void doIt() throws Exception  { sleep4.sleepNormal(50); }
       }.run());
 
@@ -128,7 +135,8 @@ public class TestSleeper {
     final Sleeper sleep0 =
       new SleeperImplementation(m_timeAuthority, null, 1, 0);
 
-    Time time0 = new Time(0, 1000) {
+    final Time time0 = new Time(0, 1000) {
+        @Override
         public void doIt() throws Exception { sleep0.sleepFlat(10); }
       };
 
@@ -140,11 +148,13 @@ public class TestSleeper {
 
     assertTrue(
       new Time(0, 70) {
+        @Override
         public void doIt() throws Exception  { sleep1.sleepFlat(50); }
       }.run());
 
     assertTrue(
       new Time(0, 10) {
+        @Override
         public void doIt() throws Exception  { sleep1.sleepFlat(0); }
       }.run());
 
@@ -153,6 +163,7 @@ public class TestSleeper {
 
     assertTrue(
       new Time(0, 120) {
+        @Override
         public void doIt() throws Exception  { sleep2.sleepFlat(50); }
       }.run());
 
@@ -171,6 +182,7 @@ public class TestSleeper {
 
     assertTrue(
       new Time(500, 1000) {
+        @Override
         public void doIt() throws Exception {
           t1.start();
           Thread.sleep(500);
@@ -183,7 +195,7 @@ public class TestSleeper {
       t1.getSleeper().sleepFlat(10);
       fail("Expected ShutdownException");
     }
-    catch (SleeperImplementation.ShutdownException e) {
+    catch (final SleeperImplementation.ShutdownException e) {
     }
   }
 
@@ -193,6 +205,7 @@ public class TestSleeper {
 
     assertTrue(
       new Time(500, 1000) {
+        @Override
         public void doIt() throws Exception {
           t1.start();
           t2.start();
@@ -214,11 +227,12 @@ public class TestSleeper {
       m_sleeper = new SleeperImplementation(m_timeAuthority, null, 1, 0);
     }
 
+    @Override
     public final void run() {
       try {
         m_sleeper.sleepNormal(50000);
       }
-      catch (SleeperImplementation.ShutdownException e) {
+      catch (final SleeperImplementation.ShutdownException e) {
       }
     }
 

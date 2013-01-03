@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2012 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -44,6 +44,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import net.grinder.common.GrinderProperties;
+import net.grinder.common.TimeAuthority;
 import net.grinder.common.UncheckedInterruptedException;
 import net.grinder.common.processidentity.AgentIdentity;
 import net.grinder.common.processidentity.ProcessReport;
@@ -79,7 +80,6 @@ import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.StubTimer;
 import net.grinder.util.FileContents;
 import net.grinder.util.StandardTimeAuthority;
-import net.grinder.util.TimeAuthority;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -194,14 +194,15 @@ public class TestConsoleCommunicationImplementation
     waitForNumberOfConnections(0);
   }
 
-  private Message readMessage(Socket socket) throws Exception {
+  private Message readMessage(final Socket socket) throws Exception {
     final ObjectInputStream objectStream =
       new ObjectInputStream(socket.getInputStream());
 
     return (Message)objectStream.readObject();
   }
 
-  private void sendMessage(Socket socket, Message message) throws Exception {
+  private void sendMessage(final Socket socket, final Message message)
+      throws Exception {
     final ObjectOutputStream objectStream =
       new ObjectOutputStream(socket.getOutputStream());
 
@@ -258,7 +259,7 @@ public class TestConsoleCommunicationImplementation
 
     doAnswer(new Answer<Void>() {
         @Override
-        public Void answer(InvocationOnMock invocation) {
+        public Void answer(final InvocationOnMock invocation) {
           listenerCalledLatch.countDown();
           return null;
         }
@@ -395,7 +396,8 @@ public class TestConsoleCommunicationImplementation
    * @param n - Wait until there are this number of accepted connections.
    * @throws InterruptedException
    */
-  private void waitForNumberOfConnections(int n) throws InterruptedException {
+  private void waitForNumberOfConnections(final int n)
+      throws InterruptedException {
     for (int retry = 0;
          m_consoleCommunication.getNumberOfConnections() != n && retry < 200;
          ++retry) {

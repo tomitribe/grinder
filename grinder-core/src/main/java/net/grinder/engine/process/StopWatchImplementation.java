@@ -1,4 +1,4 @@
-// Copyright (C) 2005, 2006 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,7 +21,7 @@
 
 package net.grinder.engine.process;
 
-import net.grinder.util.TimeAuthority;
+import net.grinder.common.TimeAuthority;
 
 
 /**
@@ -36,10 +36,11 @@ final class StopWatchImplementation implements StopWatch {
   private long m_time;
   private long m_startTime = -1;
 
-  public StopWatchImplementation(TimeAuthority timeAuthority) {
+  public StopWatchImplementation(final TimeAuthority timeAuthority) {
     m_timeAuthority = timeAuthority;
   }
 
+  @Override
   public void start() {
     if (isRunning()) {
       throw new StopWatchRunningException("Already running");
@@ -48,6 +49,7 @@ final class StopWatchImplementation implements StopWatch {
     m_startTime = m_timeAuthority.getTimeInMilliseconds();
   }
 
+  @Override
   public void stop() {
     if (!isRunning()) {
       throw new StopWatchNotRunningException("Not running");
@@ -57,6 +59,7 @@ final class StopWatchImplementation implements StopWatch {
     m_startTime = -1;
   }
 
+  @Override
   public void reset() throws StopWatchRunningException {
     if (isRunning()) {
       throw new StopWatchRunningException("Still running");
@@ -65,6 +68,7 @@ final class StopWatchImplementation implements StopWatch {
     m_time = 0;
   }
 
+  @Override
   public long getTime() {
     if (isRunning()) {
       throw new StopWatchRunningException("Still running");
@@ -73,11 +77,13 @@ final class StopWatchImplementation implements StopWatch {
     return m_time;
   }
 
+  @Override
   public boolean isRunning() {
     return m_startTime != -1;
   }
 
-  public void add(StopWatch watch) {
+  @Override
+  public void add(final StopWatch watch) {
     m_time += watch.getTime();
   }
 }

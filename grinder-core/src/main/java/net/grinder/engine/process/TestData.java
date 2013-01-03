@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -23,6 +23,7 @@
 package net.grinder.engine.process;
 
 import net.grinder.common.Test;
+import net.grinder.common.TimeAuthority;
 import net.grinder.common.UncheckedGrinderException;
 import net.grinder.engine.common.EngineException;
 import net.grinder.engine.process.DispatchContext.DispatchStateException;
@@ -35,7 +36,6 @@ import net.grinder.scriptengine.Instrumenter;
 import net.grinder.scriptengine.Recorder;
 import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.StatisticsSetFactory;
-import net.grinder.util.TimeAuthority;
 
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
@@ -68,12 +68,12 @@ final class TestData implements RegisteredTest, Recorder {
   private final RecorderHolderThreadLocal m_recorderHolderTL =
     new RecorderHolderThreadLocal();
 
-  TestData(ThreadContextLocator threadContextLocator,
-           StatisticsSetFactory statisticsSetFactory,
-           TestStatisticsHelper testStatisticsHelper,
-           TimeAuthority timeAuthority,
-           Instrumenter instrumenter,
-           Test testDefinition) {
+  TestData(final ThreadContextLocator threadContextLocator,
+           final StatisticsSetFactory statisticsSetFactory,
+           final TestStatisticsHelper testStatisticsHelper,
+           final TimeAuthority timeAuthority,
+           final Instrumenter instrumenter,
+           final Test testDefinition) {
     m_statisticsSetFactory = statisticsSetFactory;
     m_testStatisticsHelper = testStatisticsHelper;
     m_timeAuthority = timeAuthority;
@@ -100,7 +100,7 @@ final class TestData implements RegisteredTest, Recorder {
   /**
    * {@inheritDoc}
    */
-  @Override public Object createProxy(Object o)
+  @Override public Object createProxy(final Object o)
     throws NotWrappableTypeException {
     return m_instrumenter.createInstrumentedProxy(getTest(), this, o);
   }
@@ -108,7 +108,7 @@ final class TestData implements RegisteredTest, Recorder {
   /**
    * {@inheritDoc}
    */
-  @Override public void instrument(Object target)
+  @Override public void instrument(final Object target)
     throws NonInstrumentableTypeException {
     m_instrumenter.instrument(getTest(), this, target);
   }
@@ -116,17 +116,19 @@ final class TestData implements RegisteredTest, Recorder {
   /**
    * {@inheritDoc}
    */
-  @Override public void instrument(Object target,
-                                   InstrumentationFilter filter)
+  @Override public void instrument(final Object target,
+                                   final InstrumentationFilter filter)
     throws NonInstrumentableTypeException {
     m_instrumenter.instrument(getTest(), this, target, filter);
   }
 
+  @Override
   public void start() throws EngineException {
     m_recorderHolderTL.getHolder().start();
   }
 
-  public void end(boolean success) throws EngineException {
+  @Override
+  public void end(final boolean success) throws EngineException {
     m_recorderHolderTL.getHolder().end(success);
   }
 
@@ -138,6 +140,7 @@ final class TestData implements RegisteredTest, Recorder {
     private final ThreadLocal<RecorderHolder> m_threadLocal =
       new ThreadLocal<RecorderHolder>() {
 
+      @Override
       public RecorderHolder initialValue() {
         final ThreadContext threadContext = m_threadContextLocator.get();
 
@@ -157,7 +160,7 @@ final class TestData implements RegisteredTest, Recorder {
       try {
         return m_threadLocal.get();
       }
-      catch (UncheckedException e) {
+      catch (final UncheckedException e) {
         throw new EngineException(e.getMessage());
       }
     }
@@ -185,11 +188,13 @@ final class TestData implements RegisteredTest, Recorder {
     private final TestRecorder m_recorder;
     private int m_nestingDepth = 0;
 
-    public RecorderHolder(ThreadContext threadContext, TestRecorder recorder) {
+    public RecorderHolder(final ThreadContext threadContext,
+                          final TestRecorder recorder) {
       m_threadContext = threadContext;
       m_recorder = recorder;
     }
 
+    @Override
     public void start() throws DispatchStateException {
       if (m_nestingDepth++ == 0) {
         // Entering outer frame.
@@ -198,7 +203,8 @@ final class TestData implements RegisteredTest, Recorder {
       }
     }
 
-    public void end(boolean success)  {
+    @Override
+    public void end(final boolean success)  {
       if (--m_nestingDepth == 0) {
         // Leaving outer frame.
         m_recorder.end(success);
@@ -232,13 +238,14 @@ final class TestData implements RegisteredTest, Recorder {
     private long m_dispatchTime = -1;
     private StatisticsForTestImplementation m_statisticsForTest;
 
-    public TestRecorder(DispatchResultReporter resultReporter,
-                           StopWatch pauseTimer) {
+    public TestRecorder(final DispatchResultReporter resultReporter,
+                           final StopWatch pauseTimer) {
 
       m_resultReporter = resultReporter;
       m_pauseTimer = pauseTimer;
     }
 
+    @Override
     public void start() throws DispatchStateException {
       if (m_startTime != -1 || m_dispatchTime != -1) {
         throw new DispatchStateException("Last statistics were not reported");
@@ -257,7 +264,8 @@ final class TestData implements RegisteredTest, Recorder {
       m_startTime = m_timeAuthority.getTimeInMilliseconds();
     }
 
-    public void end(boolean success) {
+    @Override
+    public void end(final boolean success) {
       m_dispatchTime =
         Math.max(m_timeAuthority.getTimeInMilliseconds() - m_startTime, 0);
 
@@ -277,6 +285,7 @@ final class TestData implements RegisteredTest, Recorder {
       }
     }
 
+    @Override
     public void report() throws DispatchStateException {
       if (m_dispatchTime < 0) {
         throw new DispatchStateException("No statistics to report");
@@ -305,6 +314,7 @@ final class TestData implements RegisteredTest, Recorder {
       m_dispatchTime = -1;
     }
 
+    @Override
     public Test getTest() {
       return TestData.this.getTest();
     }
@@ -313,10 +323,12 @@ final class TestData implements RegisteredTest, Recorder {
       return TestData.this.getLogMarker();
     }
 
+    @Override
     public StopWatch getPauseTimer() {
       return m_pauseTimer;
     }
 
+    @Override
     public long getElapsedTime() {
       if (m_startTime == -1) {
         return -1;
@@ -334,10 +346,12 @@ final class TestData implements RegisteredTest, Recorder {
       return Math.max(unadjustedTime - m_pauseTimer.getTime(), 0);
     }
 
+    @Override
     public StatisticsForTest getStatisticsForTest() {
       return m_statisticsForTest;
     }
 
+    @Override
     public void setHasNestedContexts() {
       m_testStatistics.setIsComposite();
     }
@@ -345,7 +359,7 @@ final class TestData implements RegisteredTest, Recorder {
 
   private static final class UncheckedException
     extends UncheckedGrinderException {
-    public UncheckedException(String message) {
+    public UncheckedException(final String message) {
       super(message);
     }
   }

@@ -1,4 +1,4 @@
-// Copyright (C) 2002 - 2011 Philip Aston
+// Copyright (C) 2002 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -24,8 +24,6 @@ package net.grinder.engine.process;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-
 import net.grinder.common.SkeletonThreadLifeCycleListener;
 import net.grinder.engine.common.EngineException;
 import net.grinder.plugininterface.GrinderPlugin;
@@ -33,7 +31,8 @@ import net.grinder.plugininterface.PluginException;
 import net.grinder.plugininterface.PluginRegistry;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.statistics.StatisticsServices;
-import net.grinder.util.TimeAuthority;
+
+import org.slf4j.Logger;
 
 
 /**
@@ -49,7 +48,6 @@ final class PluginRegistryImplementation
   private final ScriptContext m_scriptContext;
   private final ThreadContextLocator m_threadContextLocator;
   private final StatisticsServices m_statisticsServices;
-  private final TimeAuthority m_timeAuthority;
 
   private final Map<GrinderPlugin, RegisteredPlugin> m_plugins =
     new HashMap<GrinderPlugin, RegisteredPlugin>();
@@ -57,15 +55,14 @@ final class PluginRegistryImplementation
   /**
    * Constructor.
    */
-  PluginRegistryImplementation(Logger logger, ScriptContext scriptContext,
-                               ThreadContextLocator threadContextLocator,
-                               StatisticsServices statisticsServices,
-                               TimeAuthority timeAuthority) {
+  PluginRegistryImplementation(final Logger logger,
+                               final ScriptContext scriptContext,
+                               final ThreadContextLocator threadContextLocator,
+                               final StatisticsServices statisticsServices) {
     m_logger = logger;
     m_scriptContext = scriptContext;
     m_threadContextLocator = threadContextLocator;
     m_statisticsServices = statisticsServices;
-    m_timeAuthority = timeAuthority;
 
     setInstance(this);
   }
@@ -76,18 +73,19 @@ final class PluginRegistryImplementation
    * @param plugin The plugin instance.
    * @exception EngineException if an error occurs
    */
-  public void register(GrinderPlugin plugin) throws EngineException {
+  @Override
+  public void register(final GrinderPlugin plugin) throws EngineException {
     synchronized (m_plugins) {
       if (!m_plugins.containsKey(plugin)) {
 
         final RegisteredPlugin registeredPlugin =
           new RegisteredPlugin(plugin, m_scriptContext, m_threadContextLocator,
-                               m_statisticsServices, m_timeAuthority, m_logger);
+                               m_statisticsServices, m_logger);
 
         try {
           plugin.initialize(registeredPlugin);
         }
-        catch (PluginException e) {
+        catch (final PluginException e) {
           throw new EngineException("An instance of the plug-in class '" +
                                     plugin.getClass().getName() +
                                     "' could not be initialised.", e);
@@ -99,6 +97,7 @@ final class PluginRegistryImplementation
     }
   }
 
+  @Override
   public void threadCreated(final ThreadContext threadContext) {
     // A new thread has been created. Create a thread listener for each plugin.
     // We use a ThreadLifeCycleListener so the thread listener is created in the
@@ -106,6 +105,7 @@ final class PluginRegistryImplementation
 
     threadContext.registerThreadLifeCycleListener(
       new SkeletonThreadLifeCycleListener() {
+        @Override
         public void beginThread() {
           final RegisteredPlugin[] registeredPlugins;
 
@@ -114,11 +114,11 @@ final class PluginRegistryImplementation
                                   new RegisteredPlugin[m_plugins.size()]);
           }
 
-          for (int i = 0; i < registeredPlugins.length; ++i) {
+          for (final RegisteredPlugin registeredPlugin : registeredPlugins) {
             try {
-              registeredPlugins[i].createPluginThreadListener(threadContext);
+              registeredPlugin.createPluginThreadListener(threadContext);
             }
-            catch (EngineException e) {
+            catch (final EngineException e) {
               // Swallow plug-in failures. We don't need a result from
               // createPluginThreadListener(), and it will have produced
               // adequate logging.
@@ -128,6 +128,7 @@ final class PluginRegistryImplementation
       });
   }
 
-  public void threadStarted(ThreadContext threadContext) {
+  @Override
+  public void threadStarted(final ThreadContext threadContext) {
   }
 }

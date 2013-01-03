@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2011 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -27,11 +27,11 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import net.grinder.common.Test;
+import net.grinder.common.TimeAuthority;
 import net.grinder.script.TestRegistry;
 import net.grinder.scriptengine.Instrumenter;
 import net.grinder.statistics.StatisticsSetFactory;
 import net.grinder.statistics.TestStatisticsMap;
-import net.grinder.util.TimeAuthority;
 
 
 /**
@@ -69,10 +69,10 @@ final class TestRegistryImplementation implements TestRegistry {
   /**
    * Constructor.
    */
-  TestRegistryImplementation(ThreadContextLocator threadContextLocator,
-                             StatisticsSetFactory statisticsSetFactory,
-                             TestStatisticsHelper testStatisticsHelper,
-                             TimeAuthority timeAuthority) {
+  TestRegistryImplementation(final ThreadContextLocator threadContextLocator,
+                             final StatisticsSetFactory statisticsSetFactory,
+                             final TestStatisticsHelper testStatisticsHelper,
+                             final TimeAuthority timeAuthority) {
     m_threadContextLocator = threadContextLocator;
     m_statisticsSetFactory = statisticsSetFactory;
     m_testStatisticsHelper = testStatisticsHelper;
@@ -88,7 +88,8 @@ final class TestRegistryImplementation implements TestRegistry {
    * @return A ProxyFactory that can be used to create proxies instrumented for
    *         the test.
    */
-  public RegisteredTest register(Test test) {
+  @Override
+  public RegisteredTest register(final Test test) {
 
     if (m_instrumenter == null) {
       throw new AssertionError("Instrumenter not set");
@@ -126,7 +127,7 @@ final class TestRegistryImplementation implements TestRegistry {
     return newTestData;
   }
 
-  void setInstrumenter(Instrumenter instrumenter) {
+  void setInstrumenter(final Instrumenter instrumenter) {
     m_instrumenter = instrumenter;
   }
 

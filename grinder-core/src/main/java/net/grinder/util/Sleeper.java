@@ -1,4 +1,4 @@
-// Copyright (C) 2006 - 2010 Philip Aston
+// Copyright (C) 2006 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -22,6 +22,7 @@
 package net.grinder.util;
 
 import net.grinder.common.GrinderException;
+import net.grinder.common.TimeAuthority;
 
 
 /**
@@ -83,7 +84,7 @@ public interface Sleeper extends TimeAuthority {
      *
      * @param message Why we were shut down.
      */
-    public ShutdownException(String message) {
+    public ShutdownException(final String message) {
       super(message);
     }
   }

@@ -1,4 +1,4 @@
-// Copyright (C) 2005, 2006 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,11 +21,11 @@
 
 package net.grinder.engine.process;
 
+import junit.framework.TestCase;
+import net.grinder.common.TimeAuthority;
 import net.grinder.engine.process.StopWatch.StopWatchNotRunningException;
 import net.grinder.engine.process.StopWatch.StopWatchRunningException;
-import net.grinder.util.TimeAuthority;
 import net.grinder.util.TimeAuthorityStubFactory;
-import junit.framework.TestCase;
 
 
 /**
@@ -48,7 +48,7 @@ public class TestStopWatchImplementation extends TestCase {
       stopWatch.stop();
       fail("Expected StopWatchNotRunningException");
     }
-    catch (StopWatchNotRunningException e) {
+    catch (final StopWatchNotRunningException e) {
     }
 
     timeAuthorityStubFactory.assertNoMoreCalls();
@@ -62,21 +62,21 @@ public class TestStopWatchImplementation extends TestCase {
       stopWatch.start();
       fail("Expected StopWatchRunningException");
     }
-    catch (StopWatchRunningException e) {
+    catch (final StopWatchRunningException e) {
     }
 
     try {
       stopWatch.reset();
       fail("Expected StopWatchRunningException");
     }
-    catch (StopWatchRunningException e) {
+    catch (final StopWatchRunningException e) {
     }
 
     try {
       stopWatch.getTime();
       fail("Expected StopWatchRunningException");
     }
-    catch (StopWatchRunningException e) {
+    catch (final StopWatchRunningException e) {
     }
 
     timeAuthorityStubFactory.assertNoMoreCalls();
@@ -87,7 +87,7 @@ public class TestStopWatchImplementation extends TestCase {
       stopWatch2.add(stopWatch);
       fail("Expected StopWatchRunningException");
     }
-    catch (StopWatchRunningException e) {
+    catch (final StopWatchRunningException e) {
     }
 
     timeAuthorityStubFactory.assertNoMoreCalls();

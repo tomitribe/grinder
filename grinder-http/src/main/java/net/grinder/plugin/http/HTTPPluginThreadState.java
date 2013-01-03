@@ -1,4 +1,4 @@
-// Copyright (C) 2002 - 2012 Philip Aston
+// Copyright (C) 2002 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -27,11 +27,11 @@ import java.util.Map;
 import net.grinder.common.SSLContextFactory;
 import net.grinder.common.SSLContextFactory.SSLContextFactoryException;
 import net.grinder.common.SkeletonThreadLifeCycleListener;
+import net.grinder.common.TimeAuthority;
 import net.grinder.plugininterface.PluginException;
 import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.plugininterface.PluginThreadListener;
 import net.grinder.util.Sleeper;
-import net.grinder.util.TimeAuthority;
 import HTTPClient.CookieModule;
 import HTTPClient.HTTPConnection;
 import HTTPClient.HTTPResponse;

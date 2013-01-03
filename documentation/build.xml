@@ -176,14 +176,12 @@ for details of other targets.
          This is faster too. -->
     <copy todir="${script-javadoc-src.dir}">
       <fileset dir="${grinder-core.dir}/src/main/java">
-        <include name="net/grinder/common/AbstractTestSemantics.java"/>
-        <include name="net/grinder/common/FilenameFactory.java"/>
-        <include name="net/grinder/common/GrinderBuild.java"/>
-        <include name="net/grinder/common/GrinderException.java"/>
-        <include name="net/grinder/common/GrinderProperties.java"/>
-        <include name="net/grinder/common/Logger.java"/>
-        <include name="net/grinder/common/SSLContextFactory.java"/>
-        <include name="net/grinder/common/Test.java"/>
+        <include name="net/grinder/common/*.java"/>
+        <exclude name="net/grinder/common/Closer.java"/>
+        <exclude name="net/grinder/common/SkeletonThreadLifeCycleListener.java"/>
+        <exclude name="net/grinder/common/ThreadLifeCycleListener.java"/>
+        <exclude name="net/grinder/common/UncheckedGrinderException.java"/>
+        <exclude name="net/grinder/common/UncheckedInterruptedException.java"/>
         <include name="net/grinder/script/*.java"/>
         <exclude name="net/grinder/script/InternalScriptContext.java"/>
         <exclude name="net/grinder/script/TestRegistry.java"/>

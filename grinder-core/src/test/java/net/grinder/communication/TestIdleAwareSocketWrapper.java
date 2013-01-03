@@ -1,4 +1,4 @@
-// Copyright (C) 2012 Philip Aston
+// Copyright (C) 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -29,8 +29,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 
+import net.grinder.common.TimeAuthority;
 import net.grinder.util.StandardTimeAuthority;
-import net.grinder.util.TimeAuthority;
 
 import org.junit.AfterClass;
 import org.junit.Before;

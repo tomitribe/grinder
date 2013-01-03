@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2009 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -22,14 +22,13 @@
 package net.grinder.engine.process;
 
 import junit.framework.TestCase;
-
 import net.grinder.common.StubTest;
 import net.grinder.common.Test;
+import net.grinder.common.TimeAuthority;
 import net.grinder.scriptengine.Instrumenter;
 import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.statistics.StatisticsSetFactory;
 import net.grinder.testutility.RandomStubFactory;
-import net.grinder.util.TimeAuthority;
 import net.grinder.util.TimeAuthorityStubFactory;
 
 
@@ -50,7 +49,7 @@ public class TestTestRegistry extends TestCase {
   private final TimeAuthority m_timeAuthority =
     m_timeAuthorityStubFactory.getStub();
 
-  public TestTestRegistry(String name) {
+  public TestTestRegistry(final String name) {
     super(name);
   }
 
@@ -91,7 +90,7 @@ public class TestTestRegistry extends TestCase {
       testRegistryImplementation.register(test1);
       fail("Expected AssertionError");
     }
-    catch (AssertionError e) {
+    catch (final AssertionError e) {
     }
 
     final RandomStubFactory<Instrumenter> instrumenterStubFactory =

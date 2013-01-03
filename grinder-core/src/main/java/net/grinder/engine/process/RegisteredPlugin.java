@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2011 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,8 +21,6 @@
 
 package net.grinder.engine.process;
 
-import org.slf4j.Logger;
-
 import net.grinder.engine.common.EngineException;
 import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginException;
@@ -30,7 +28,8 @@ import net.grinder.plugininterface.PluginProcessContext;
 import net.grinder.plugininterface.PluginThreadListener;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.statistics.StatisticsServices;
-import net.grinder.util.TimeAuthority;
+
+import org.slf4j.Logger;
 
 
 /**
@@ -46,25 +45,26 @@ final class RegisteredPlugin implements PluginProcessContext {
   private final StatisticsServices m_statisticsServices;
   private final ThreadLocal<PluginThreadListener> m_threadListenerThreadLocal =
     new ThreadLocal<PluginThreadListener>();
-  private final TimeAuthority m_timeAuthority;
   private final Logger m_logger;
 
-  public RegisteredPlugin(GrinderPlugin plugin, ScriptContext scriptContext,
-                          ThreadContextLocator threadContextLocator,
-                          StatisticsServices statisticsServices,
-                          TimeAuthority timeAuthority, Logger logger) {
+  public RegisteredPlugin(final GrinderPlugin plugin,
+                          final ScriptContext scriptContext,
+                          final ThreadContextLocator threadContextLocator,
+                          final StatisticsServices statisticsServices,
+                          final Logger logger) {
     m_plugin = plugin;
     m_scriptContext = scriptContext;
     m_threadContextLocator = threadContextLocator;
     m_statisticsServices = statisticsServices;
-    m_timeAuthority = timeAuthority;
     m_logger = logger;
   }
 
+  @Override
   public ScriptContext getScriptContext() {
     return m_scriptContext;
   }
 
+  @Override
   public PluginThreadListener getPluginThreadListener()
     throws EngineException {
 
@@ -77,7 +77,8 @@ final class RegisteredPlugin implements PluginProcessContext {
     return createPluginThreadListener(threadContext);
   }
 
-  PluginThreadListener createPluginThreadListener(ThreadContext threadContext)
+  PluginThreadListener createPluginThreadListener(
+    final ThreadContext threadContext)
     throws EngineException {
 
     final PluginThreadListener existingPluginThreadListener =
@@ -92,7 +93,7 @@ final class RegisteredPlugin implements PluginProcessContext {
     try {
       newPluginThreadListener = m_plugin.createThreadListener(threadContext);
     }
-    catch (PluginException e) {
+    catch (final PluginException e) {
       m_logger.error(threadContext.getLogMarker(),
                      "Plugin could not create thread listener",
                      e);
@@ -107,11 +108,8 @@ final class RegisteredPlugin implements PluginProcessContext {
     return newPluginThreadListener;
   }
 
+  @Override
   public StatisticsServices getStatisticsServices() {
     return m_statisticsServices;
-  }
-
-  public TimeAuthority getTimeAuthority() {
-    return m_timeAuthority;
   }
 }

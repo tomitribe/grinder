@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -23,7 +23,9 @@ package net.grinder.engine.process;
 
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import net.grinder.common.ThreadLifeCycleListener;
 import net.grinder.engine.common.EngineException;
 import net.grinder.plugininterface.GrinderPlugin;
@@ -33,7 +35,6 @@ import net.grinder.plugininterface.PluginThreadListener;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.testutility.RandomStubFactory;
-import net.grinder.util.TimeAuthority;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -67,11 +68,6 @@ public class TestRegisteredPlugin {
     final ScriptContext scriptContext =
       scriptContextStubFactory.getStub();
 
-    final RandomStubFactory<TimeAuthority> timeAuthorityStubFactory =
-      RandomStubFactory.create(TimeAuthority.class);
-    final TimeAuthority timeAuthority =
-      timeAuthorityStubFactory.getStub();
-
     final ThreadContextLocator threadContextLocator =
       new StubThreadContextLocator();
 
@@ -80,13 +76,11 @@ public class TestRegisteredPlugin {
                            scriptContext,
                            threadContextLocator,
                            StatisticsServicesImplementation.getInstance(),
-                           timeAuthority,
                            m_logger);
 
     assertSame(scriptContext, registeredPlugin.getScriptContext());
     assertSame(StatisticsServicesImplementation.getInstance(),
                registeredPlugin.getStatisticsServices());
-    assertSame(timeAuthority, registeredPlugin.getTimeAuthority());
   }
 
   @Test public void testGetPluginThreadListener() throws Exception {
@@ -99,9 +93,6 @@ public class TestRegisteredPlugin {
     final RandomStubFactory<ScriptContext> scriptContextStubFactory =
       RandomStubFactory.create(ScriptContext.class);
 
-    final RandomStubFactory<TimeAuthority> timeAuthorityStubFactory =
-      RandomStubFactory.create(TimeAuthority.class);
-
     final StubThreadContextLocator threadContextLocator =
       new StubThreadContextLocator();
 
@@ -110,14 +101,13 @@ public class TestRegisteredPlugin {
                            scriptContextStubFactory.getStub(),
                            threadContextLocator,
                            StatisticsServicesImplementation.getInstance(),
-                           timeAuthorityStubFactory.getStub(),
                            m_logger);
 
     try {
       registeredPlugin.getPluginThreadListener();
       fail("Expected EngineException");
     }
-    catch (EngineException e) {
+    catch (final EngineException e) {
     }
 
     threadContextLocator.set(m_threadContext);
@@ -128,7 +118,7 @@ public class TestRegisteredPlugin {
       registeredPlugin.getPluginThreadListener();
       fail("Expected EngineException");
     }
-    catch (EngineException e) {
+    catch (final EngineException e) {
     }
 
     verify(m_threadContext).getLogMarker();
@@ -175,12 +165,12 @@ public class TestRegisteredPlugin {
       m_delegateStub = RandomStubFactory.create(GrinderPlugin.class).getStub();
     }
 
-    void setThrowExceptionFromCreateThreadListener(boolean b) {
+    void setThrowExceptionFromCreateThreadListener(final boolean b) {
       m_throwExceptionFromCreateThreadListener = b;
     }
 
     public PluginThreadListener override_createThreadListener(
-      Object proxy, PluginThreadContext pluginThreadContext)
+      final Object proxy, final PluginThreadContext pluginThreadContext)
       throws PluginException {
 
       if (m_throwExceptionFromCreateThreadListener) {

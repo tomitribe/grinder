@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -26,6 +26,7 @@ import java.beans.PropertyChangeListener;
 
 import javax.annotation.PreDestroy;
 
+import net.grinder.common.TimeAuthority;
 import net.grinder.communication.Acceptor;
 import net.grinder.communication.Address;
 import net.grinder.communication.CommunicationException;
@@ -39,7 +40,6 @@ import net.grinder.console.common.DisplayMessageConsoleException;
 import net.grinder.console.common.ErrorHandler;
 import net.grinder.console.common.Resources;
 import net.grinder.console.model.ConsoleProperties;
-import net.grinder.util.TimeAuthority;
 import net.grinder.util.thread.BooleanCondition;
 
 
@@ -82,10 +82,10 @@ public final class ConsoleCommunicationImplementation
    * @throws DisplayMessageConsoleException
    *           If properties are invalid.
    */
-  public ConsoleCommunicationImplementation(Resources resources,
-                                            ConsoleProperties properties,
-                                            ErrorHandler errorHandler,
-                                            TimeAuthority timeAuthority)
+  public ConsoleCommunicationImplementation(final Resources resources,
+                                            final ConsoleProperties properties,
+                                            final ErrorHandler errorHandler,
+                                            final TimeAuthority timeAuthority)
     throws DisplayMessageConsoleException {
     this(resources, properties, errorHandler, timeAuthority, 500, 30000);
   }
@@ -110,12 +110,12 @@ public final class ConsoleCommunicationImplementation
    * @throws DisplayMessageConsoleException
    *           If properties are invalid.
    */
-  public ConsoleCommunicationImplementation(Resources resources,
-                                            ConsoleProperties properties,
-                                            ErrorHandler errorHandler,
-                                            TimeAuthority timeAuthority,
-                                            long idlePollDelay,
-                                            long inactiveClientTimeOut)
+  public ConsoleCommunicationImplementation(final Resources resources,
+                                            final ConsoleProperties properties,
+                                            final ErrorHandler errorHandler,
+                                            final TimeAuthority timeAuthority,
+                                            final long idlePollDelay,
+                                            final long inactiveClientTimeOut)
     throws DisplayMessageConsoleException {
 
     m_resources = resources;
@@ -127,7 +127,8 @@ public final class ConsoleCommunicationImplementation
 
     properties.addPropertyChangeListener(
       new PropertyChangeListener() {
-        public void propertyChange(PropertyChangeEvent event) {
+        @Override
+        public void propertyChange(final PropertyChangeEvent event) {
           final String property = event.getPropertyName();
 
           if (property.equals(ConsoleProperties.CONSOLE_HOST_PROPERTY) ||
@@ -146,7 +147,7 @@ public final class ConsoleCommunicationImplementation
         m_acceptor.shutdown();
       }
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
       m_errorHandler.handleException(e);
       return;
     }
@@ -175,7 +176,7 @@ public final class ConsoleCommunicationImplementation
                                 1,
                                 m_timeAuthority);
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
       m_errorHandler.handleException(
         new DisplayMessageConsoleException(
           m_resources, "localBindError.text", e));
@@ -188,6 +189,7 @@ public final class ConsoleCommunicationImplementation
 
     final Thread acceptorProblemListener =
       new Thread("Acceptor problem listener") {
+        @Override
         public void run() {
           while (true) {
             final Exception exception = m_acceptor.getPendingException();
@@ -218,14 +220,14 @@ public final class ConsoleCommunicationImplementation
                              m_idlePollDelay,
                              m_inactiveClientTimeOut);
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
       throw new AssertionError(e);
     }
 
     try {
       m_sender = new FanOutServerSender(m_acceptor, ConnectionType.AGENT, 3);
     }
-    catch (Acceptor.ShutdownException e) {
+    catch (final Acceptor.ShutdownException e) {
       // I am tempted to make this an assertion.
       // Currently, this condition can only happen if the accept() call throws
       // an exception. I guess this might reasonably happen if a network i/f
@@ -248,6 +250,7 @@ public final class ConsoleCommunicationImplementation
    *
    * @return The registry.
    */
+  @Override
   public MessageDispatchRegistry getMessageDispatchRegistry() {
     return m_messageDispatcher;
   }
@@ -255,6 +258,7 @@ public final class ConsoleCommunicationImplementation
   /**
    * Shut down communication.
    */
+  @Override
   @PreDestroy
   public void shutdown() {
     m_shutdown.set(true);
@@ -269,6 +273,7 @@ public final class ConsoleCommunicationImplementation
    *         <code>false</code> if we've been shut down.
    * @see #shutdown()
    */
+  @Override
   public boolean processOneMessage() {
     while (true) {
       if (m_shutdown.get()) {
@@ -288,7 +293,7 @@ public final class ConsoleCommunicationImplementation
             return true;
           }
         }
-        catch (CommunicationException e) {
+        catch (final CommunicationException e) {
           // The receive or send failed. We only set m_processing to false when
           // our receiver has been shut down.
           m_errorHandler.handleException(e);
@@ -315,7 +320,8 @@ public final class ConsoleCommunicationImplementation
    *
    * @param message The message to send.
    */
-  public void sendToAgents(Message message) {
+  @Override
+  public void sendToAgents(final Message message) {
     if (m_sender == null) {
       m_errorHandler.handleErrorMessage(
         m_resources.getString("sendError.text"));
@@ -324,7 +330,7 @@ public final class ConsoleCommunicationImplementation
       try {
         m_sender.send(message);
       }
-      catch (CommunicationException e) {
+      catch (final CommunicationException e) {
         m_errorHandler.handleException(
           new DisplayMessageConsoleException(m_resources, "sendError.text", e));
       }
@@ -344,7 +350,9 @@ public final class ConsoleCommunicationImplementation
    * @param message
    *            The message to send.
    */
-  public void sendToAddressedAgents(Address address, Message message) {
+  @Override
+  public void sendToAddressedAgents(final Address address,
+                                    final Message message) {
     if (m_sender == null) {
       m_errorHandler.handleErrorMessage(
         m_resources.getString("sendError.text"));
@@ -353,7 +361,7 @@ public final class ConsoleCommunicationImplementation
       try {
         m_sender.send(address, message);
       }
-      catch (CommunicationException e) {
+      catch (final CommunicationException e) {
         m_errorHandler.handleException(
           new DisplayMessageConsoleException(m_resources, "sendError.text", e));
       }

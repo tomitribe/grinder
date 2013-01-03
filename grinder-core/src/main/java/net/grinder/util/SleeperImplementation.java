@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2011 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -26,9 +26,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.slf4j.Logger;
-
+import net.grinder.common.TimeAuthority;
 import net.grinder.util.thread.Condition;
+
+import org.slf4j.Logger;
 
 
 /**
@@ -61,10 +62,10 @@ public final class SleeperImplementation implements Sleeper {
    * @param factor All sleep times are modified by this factor.
    * @param limit9975Factor See {@link #sleepNormal(long)}.
    */
-  public SleeperImplementation(TimeAuthority timeAuthority,
-                               Logger logger,
-                               double factor,
-                               double limit9975Factor) {
+  public SleeperImplementation(final TimeAuthority timeAuthority,
+                               final Logger logger,
+                               final double factor,
+                               final double limit9975Factor) {
 
     if (factor < 0d || limit9975Factor < 0d) {
       throw new IllegalArgumentException("Factors must be positive");
@@ -85,7 +86,7 @@ public final class SleeperImplementation implements Sleeper {
    */
   public static synchronized void shutdownAllCurrentSleepers() {
 
-    for (WeakReference<SleeperImplementation> reference : s_allSleepers) {
+    for (final WeakReference<SleeperImplementation> reference : s_allSleepers) {
       final Sleeper sleeper = reference.get();
 
       if (sleeper != null) {
@@ -117,7 +118,8 @@ public final class SleeperImplementation implements Sleeper {
   /**
    * {@inheritDoc}
    */
-  @Override public void sleepNormal(long meanTime) throws ShutdownException {
+  @Override public void sleepNormal(final long meanTime)
+      throws ShutdownException {
 
     sleepNormal(meanTime, (long)((meanTime * m_limit9975Factor) / 3.0));
   }
@@ -125,7 +127,7 @@ public final class SleeperImplementation implements Sleeper {
   /**
    * {@inheritDoc}
    */
-  @Override public void sleepNormal(long meanTime, long sigma)
+  @Override public void sleepNormal(final long meanTime, final long sigma)
     throws ShutdownException {
 
     checkShutdown();
@@ -143,7 +145,8 @@ public final class SleeperImplementation implements Sleeper {
   /**
    * {@inheritDoc}
    */
-  @Override public void sleepFlat(long maximumTime) throws ShutdownException {
+  @Override public void sleepFlat(final long maximumTime)
+      throws ShutdownException {
 
     checkShutdown();
 
@@ -152,7 +155,7 @@ public final class SleeperImplementation implements Sleeper {
     }
   }
 
-  private void doSleep(long time) throws ShutdownException {
+  private void doSleep(final long time) throws ShutdownException {
 
     final long factoredTime = (long)(time * m_factor);
 

@@ -40,6 +40,7 @@ import net.grinder.common.GrinderException;
 import net.grinder.common.GrinderProperties;
 import net.grinder.common.SkeletonThreadLifeCycleListener;
 import net.grinder.common.Test;
+import net.grinder.common.TimeAuthority;
 import net.grinder.common.processidentity.ProcessReport;
 import net.grinder.common.processidentity.ProcessReport.State;
 import net.grinder.common.processidentity.WorkerIdentity;
@@ -84,7 +85,6 @@ import net.grinder.util.ListenerSupport.Informer;
 import net.grinder.util.Sleeper;
 import net.grinder.util.SleeperImplementation;
 import net.grinder.util.StandardTimeAuthority;
-import net.grinder.util.TimeAuthority;
 import net.grinder.util.thread.BooleanCondition;
 import net.grinder.util.thread.Condition;
 
@@ -282,8 +282,7 @@ final class GrinderProcess {
       new PluginRegistryImplementation(externalLogger,
                                        scriptContext,
                                        m_threadContexts,
-                                       m_statisticsServices,
-                                       m_times.getTimeAuthority());
+                                       m_statisticsServices);
 
     m_processLifeCycleListeners.add(pluginRegistry);
 
@@ -418,7 +417,7 @@ final class GrinderProcess {
       m_times.setExecutionStartTime();
 
       m_logger.info("start time is {} ms since Epoch",
-                  m_times.getExecutionStartTime());
+                    m_times.getExecutionStartTime());
 
       final TimerTask reportTimerTask =
         new ReportToConsoleTimerTask(threadSynchronisation,

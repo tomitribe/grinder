@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -48,6 +48,7 @@ import java.util.Random;
 
 import net.grinder.common.GrinderException;
 import net.grinder.common.SSLContextFactory;
+import net.grinder.common.TimeAuthority;
 import net.grinder.engine.process.dcr.DCRContextImplementation;
 import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginException;
@@ -65,7 +66,6 @@ import net.grinder.statistics.StatisticsIndexMap;
 import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.util.InsecureSSLContextFactory;
 import net.grinder.util.StandardTimeAuthority;
-import net.grinder.util.TimeAuthority;
 
 import org.junit.After;
 import org.junit.Before;

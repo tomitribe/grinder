@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -38,7 +38,6 @@ import net.grinder.plugininterface.PluginException;
 import net.grinder.plugininterface.PluginRegistry;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.statistics.StatisticsServicesImplementation;
-import net.grinder.util.TimeAuthority;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -58,7 +57,6 @@ public class TestPluginRegistryImplementation {
 
   @Mock private Logger m_logger;
   @Mock private ScriptContext m_scriptContext;
-  @Mock private TimeAuthority m_timeAuthority;
   @Mock private GrinderPlugin m_grinderPlugin;
   @Captor private ArgumentCaptor<RegisteredPlugin> m_pluginCaptor;
 
@@ -73,7 +71,7 @@ public class TestPluginRegistryImplementation {
     final PluginRegistry pluginRegistry =
       new PluginRegistryImplementation(
         m_logger, m_scriptContext, m_threadContextLocator,
-        StatisticsServicesImplementation.getInstance(), m_timeAuthority);
+        StatisticsServicesImplementation.getInstance());
 
     assertSame(pluginRegistry, PluginRegistry.getInstance());
   }
@@ -82,7 +80,7 @@ public class TestPluginRegistryImplementation {
     final PluginRegistry pluginRegistry =
       new PluginRegistryImplementation(
         m_logger, m_scriptContext, m_threadContextLocator,
-        StatisticsServicesImplementation.getInstance(), m_timeAuthority);
+        StatisticsServicesImplementation.getInstance());
 
     pluginRegistry.register(m_grinderPlugin);
 
@@ -90,7 +88,6 @@ public class TestPluginRegistryImplementation {
 
     final RegisteredPlugin registeredPlugin = m_pluginCaptor.getValue();
     assertSame(m_scriptContext, registeredPlugin.getScriptContext());
-    assertSame(m_timeAuthority, registeredPlugin.getTimeAuthority());
 
     verify(m_logger).info(contains("registered plug-in"),
                           contains("GrinderPlugin"));
@@ -104,7 +101,7 @@ public class TestPluginRegistryImplementation {
     final PluginRegistry pluginRegistry =
       new PluginRegistryImplementation(
         m_logger, m_scriptContext, m_threadContextLocator,
-        StatisticsServicesImplementation.getInstance(), m_timeAuthority);
+        StatisticsServicesImplementation.getInstance());
 
     final PluginException initialiseException = new PluginException("barf");
 
@@ -115,7 +112,7 @@ public class TestPluginRegistryImplementation {
       pluginRegistry.register(m_grinderPlugin);
       fail("Expected EngineException");
     }
-    catch (EngineException e) {
+    catch (final EngineException e) {
       assertSame(initialiseException, e.getCause());
     }
   }
@@ -124,7 +121,7 @@ public class TestPluginRegistryImplementation {
     final PluginRegistryImplementation pluginRegistry =
       new PluginRegistryImplementation(
         m_logger, m_scriptContext, m_threadContextLocator,
-        StatisticsServicesImplementation.getInstance(), m_timeAuthority);
+        StatisticsServicesImplementation.getInstance());
 
     final ThreadContext threadContext = mock(ThreadContext.class);
 

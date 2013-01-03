@@ -1,4 +1,4 @@
-// Copyright (C) 2003 - 2012 Philip Aston
+// Copyright (C) 2003 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -29,19 +29,22 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 
+import net.grinder.common.TimeAuthority;
 import net.grinder.common.UncheckedInterruptedException;
-import net.grinder.testutility.CallData;
-import net.grinder.testutility.RandomStubFactory;
 import net.grinder.util.StandardTimeAuthority;
-import net.grinder.util.TimeAuthority;
 
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 
 /**
@@ -51,7 +54,7 @@ import org.junit.Test;
  */
 public class TestAcceptor {
 
-  private TimeAuthority m_timeAuthority = new StandardTimeAuthority();
+  private final TimeAuthority m_timeAuthority = new StandardTimeAuthority();
 
   @Test public void testConstructor() throws Exception {
 
@@ -72,16 +75,16 @@ public class TestAcceptor {
 
     final int port = findFreePort();
 
-    for (int i=0; i<testAddresses.length; ++i) {
+    for (final String testAddresse : testAddresses) {
       final Acceptor acceptor =
-          new Acceptor(testAddresses[i], port, 2, m_timeAuthority);
+          new Acceptor(testAddresse, port, 2, m_timeAuthority);
       assertEquals(port, acceptor.getPort());
       assertNull(acceptor.peekPendingException());
       acceptor.shutdown();
 
       // Should also be able to use a OS allocated port.
       final Acceptor acceptor2 =
-          new Acceptor(testAddresses[i], 0, 2, m_timeAuthority);
+          new Acceptor(testAddresse, 0, 2, m_timeAuthority);
       assertEquals(port, acceptor.getPort());
       assertNull(acceptor2.peekPendingException());
       acceptor2.shutdown();
@@ -90,12 +93,12 @@ public class TestAcceptor {
     final ServerSocket usedSocket = new ServerSocket(0);
     final int usedPort = usedSocket.getLocalPort();
 
-    for (int i=0; i<testAddresses.length; ++i) {
+    for (final String testAddresse : testAddresses) {
       try {
-        new Acceptor(testAddresses[i], usedPort, 1, m_timeAuthority);
+        new Acceptor(testAddresse, usedPort, 1, m_timeAuthority);
         fail("Expected CommunicationException");
       }
-      catch (CommunicationException e) {
+      catch (final CommunicationException e) {
       }
     }
 
@@ -108,10 +111,9 @@ public class TestAcceptor {
 
     assertEquals(0, acceptor.getNumberOfConnections());
 
-    final RandomStubFactory<Acceptor.Listener> listenerStubFactory =
-      RandomStubFactory.create(Acceptor.Listener.class);
+    final Acceptor.Listener listener = mock(Acceptor.Listener.class);
 
-    acceptor.addListener(ConnectionType.WORKER, listenerStubFactory.getStub());
+    acceptor.addListener(ConnectionType.WORKER, listener);
 
     final ResourcePool controlSocketSet =
       acceptor.getSocketSet(ConnectionType.AGENT);
@@ -135,16 +137,12 @@ public class TestAcceptor {
       Thread.sleep(i * i * 10);
     }
 
-    listenerStubFactory.waitUntilCalled(1000);
+    final ArgumentCaptor<ConnectionIdentity> identityCaptor =
+        ArgumentCaptor.forClass(ConnectionIdentity.class);
 
-    final CallData callData =
-      listenerStubFactory.assertSuccess("connectionAccepted",
-                                        ConnectionType.class,
-                                        ConnectionIdentity.class);
-
-    assertEquals(ConnectionType.WORKER, callData.getParameters()[0]);
-
-    listenerStubFactory.assertNoMoreCalls();
+    verify(listener, timeout(1000))
+      .connectionAccepted(eq(ConnectionType.WORKER),
+                          identityCaptor.capture());
 
     assertSame(controlSocketSet,
                acceptor.getSocketSet(ConnectionType.AGENT));
@@ -171,15 +169,12 @@ public class TestAcceptor {
 
     assertEquals(0, acceptor.getNumberOfConnections());
 
-    final CallData callData2 =
-      listenerStubFactory.assertSuccess("connectionClosed",
-                                        ConnectionType.class,
-                                        ConnectionIdentity.class);
-
-    assertEquals(callData.getParameters()[1], callData2.getParameters()[1]);
+    verify(listener)
+    .connectionClosed(ConnectionType.WORKER,
+                      identityCaptor.getValue());
   }
 
-  private Acceptor createAcceptor(int numberOfThreads) throws Exception {
+  private Acceptor createAcceptor(final int numberOfThreads) throws Exception {
     // Figure out a free local port.
     final ServerSocket serverSocket = new ServerSocket(0);
     final int port = serverSocket.getLocalPort();
@@ -214,7 +209,7 @@ public class TestAcceptor {
       acceptor.getSocketSet(ConnectionType.AGENT);
       fail("Expected Acceptor.ShutdownException");
     }
-    catch (Acceptor.ShutdownException e) {
+    catch (final Acceptor.ShutdownException e) {
     }
 
     assertTrue(socketSet.reserveNext().isSentinel());
@@ -268,7 +263,7 @@ public class TestAcceptor {
       acceptor.getPendingException();
       fail("Expected UncheckedInterruptedException");
     }
-    catch (UncheckedInterruptedException e) {
+    catch (final UncheckedInterruptedException e) {
     }
   }
 }

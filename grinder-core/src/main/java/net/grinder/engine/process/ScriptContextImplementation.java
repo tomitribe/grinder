@@ -23,6 +23,7 @@ package net.grinder.engine.process;
 
 import net.grinder.common.GrinderException;
 import net.grinder.common.GrinderProperties;
+import net.grinder.common.TimeAuthority;
 import net.grinder.common.processidentity.WorkerIdentity;
 import net.grinder.communication.CommunicationException;
 import net.grinder.script.Barrier;
@@ -209,5 +210,10 @@ final class ScriptContextImplementation implements InternalScriptContext {
   public Barrier barrier(final String name) throws CommunicationException {
     return new BarrierImplementation(m_barrierGroups.getGroup(name),
                                      m_barrierIdentityFactory);
+  }
+
+  @Override
+  public TimeAuthority getTimeAuthority() {
+    return m_sleeper;
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2012 Philip Aston
+// Copyright (C) 2012 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
-import net.grinder.util.TimeAuthority;
+import net.grinder.common.TimeAuthority;
 
 /**
  * A socket wrapper that tracks how long it has been idle.
@@ -57,8 +57,8 @@ final class IdleAwareSocketWrapper extends SocketWrapper {
    * @throws CommunicationException
    *           If an error occurred.
    */
-  public IdleAwareSocketWrapper(Socket socket,
-                                TimeAuthority timeAuthority)
+  public IdleAwareSocketWrapper(final Socket socket,
+                                final TimeAuthority timeAuthority)
     throws CommunicationException {
 
     super(socket);
@@ -87,7 +87,7 @@ final class IdleAwareSocketWrapper extends SocketWrapper {
    * @throws IOException
    *           If the socket was closed at the start of the call.
    */
-  public boolean hasData(long inactiveClientTimeOut) throws IOException {
+  public boolean hasData(final long inactiveClientTimeOut) throws IOException {
 
     if (isClosed()) {
       throw new IOException("Socket is closed");

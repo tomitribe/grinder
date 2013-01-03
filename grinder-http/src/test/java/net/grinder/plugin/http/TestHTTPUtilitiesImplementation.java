@@ -1,4 +1,4 @@
-// Copyright (C) 2006 - 2012 Philip Aston
+// Copyright (C) 2006 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -30,6 +30,7 @@ import static org.mockito.Answers.RETURNS_MOCKS;
 import static org.mockito.Mockito.when;
 import net.grinder.common.GrinderException;
 import net.grinder.common.SSLContextFactory;
+import net.grinder.common.TimeAuthority;
 import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginProcessContext;
 import net.grinder.plugininterface.PluginRegistry;
@@ -39,7 +40,6 @@ import net.grinder.script.Statistics;
 import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.util.InsecureSSLContextFactory;
 import net.grinder.util.StandardTimeAuthority;
-import net.grinder.util.TimeAuthority;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -84,8 +84,6 @@ public class TestHTTPUtilitiesImplementation {
     when(m_pluginProcessContext.getScriptContext()).thenReturn(m_scriptContext);
     when(m_pluginProcessContext.getStatisticsServices())
       .thenReturn(StatisticsServicesImplementation.getInstance());
-
-    when(m_pluginProcessContext.getTimeAuthority()).thenReturn(timeAuthority);
 
     new PluginRegistry() {
       {

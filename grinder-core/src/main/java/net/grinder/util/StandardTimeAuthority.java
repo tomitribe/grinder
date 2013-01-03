@@ -1,4 +1,4 @@
-// Copyright (C) 2006 - 2009 Philip Aston
+// Copyright (C) 2006 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,8 @@
 
 package net.grinder.util;
 
+import net.grinder.common.TimeAuthority;
+
 
 /**
  * A standard {@link TimeAuthority} implementation.
@@ -42,6 +44,7 @@ public final class StandardTimeAuthority implements TimeAuthority {
    *
    * @return The time. The base time is the Epoch.
    */
+  @Override
   public long getTimeInMilliseconds() {
     return System.nanoTime() / 1000000 + m_epochOffset;
   }

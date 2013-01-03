@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -25,7 +25,6 @@ package net.grinder.plugininterface;
 import net.grinder.common.GrinderException;
 import net.grinder.script.Grinder;
 import net.grinder.statistics.StatisticsServices;
-import net.grinder.util.TimeAuthority;
 
 
 /**
@@ -60,11 +59,4 @@ public interface PluginProcessContext {
    * @return A {@link StatisticsServices}.
    */
   StatisticsServices getStatisticsServices();
-
-  /**
-   * Something that knows the time.
-   *
-   * @return The time authority.
-   */
-  TimeAuthority getTimeAuthority();
 }
