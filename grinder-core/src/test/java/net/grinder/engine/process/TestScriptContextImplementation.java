@@ -22,6 +22,7 @@
 package net.grinder.engine.process;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -133,6 +134,7 @@ public class TestScriptContextImplementation {
     assertSame(m_statistics, scriptContext.getStatistics());
     assertSame(m_sslControl, scriptContext.getSSLControl());
     assertSame(m_testRegistry, scriptContext.getTestRegistry());
+    assertNotNull(scriptContext.getTimeAuthority());
 
     when(m_threadContextLocator.get()).thenReturn(null);
 
