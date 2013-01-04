@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2011 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -41,7 +41,6 @@ class GrinderThread implements Runnable {
 
   private final Logger m_logger;
   private final WorkerThreadSynchronisation m_threadSynchronisation;
-  private final ProcessLifeCycleListener m_processLifeCycle;
   private final GrinderProperties m_properties;
   private final Sleeper m_sleeper;
   private final ThreadContext m_context;
@@ -53,7 +52,6 @@ class GrinderThread implements Runnable {
   public GrinderThread(final Logger logger,
                        final ThreadContext context,
                        final WorkerThreadSynchronisation threadSynchronisation,
-                       final ProcessLifeCycleListener processLifeCycle,
                        final GrinderProperties properties,
                        final Sleeper sleeper,
                        final WorkerRunnableFactory workerRunnableFactory)
@@ -62,13 +60,9 @@ class GrinderThread implements Runnable {
     m_logger = logger;
     m_context = context;
     m_threadSynchronisation = threadSynchronisation;
-    m_processLifeCycle = processLifeCycle;
     m_properties = properties;
     m_sleeper = sleeper;
     m_workerRunnableFactory = workerRunnableFactory;
-
-    // Dispatch the process context callback in the main thread.
-    m_processLifeCycle.threadCreated(m_context);
 
     m_threadSynchronisation.threadCreated();
   }
@@ -78,12 +72,8 @@ class GrinderThread implements Runnable {
    */
   @Override
   public void run() {
-    m_processLifeCycle.threadStarted(m_context);
-
     m_context.setCurrentRunNumber(-1);
 
-    // Fire begin thread event before creating the worker runnable to allow
-    // plug-ins to do per-thread initialisation required by the script code.
     m_context.fireBeginThreadEvent();
 
     try {

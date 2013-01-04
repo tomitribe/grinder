@@ -721,31 +721,6 @@ final class GrinderProcess {
     private final ScriptEngine m_scriptEngine;
     private final WorkerRunnableFactory m_defaultWorkerRunnableFactory;
 
-    private final ProcessLifeCycleListener m_threadLifeCycleCallbacks =
-      new ProcessLifeCycleListener() {
-        @Override
-        public void threadCreated(final ThreadContext threadContext) {
-          m_processLifeCycleListeners.apply(
-            new Informer<ProcessLifeCycleListener>() {
-              @Override
-              public void inform(final ProcessLifeCycleListener listener) {
-                listener.threadCreated(threadContext);
-              }
-            });
-        }
-
-        @Override
-        public void threadStarted(final ThreadContext threadContext) {
-          m_processLifeCycleListeners.apply(
-            new Informer<ProcessLifeCycleListener>() {
-              @Override
-              public void inform(final ProcessLifeCycleListener listener) {
-                listener.threadStarted(threadContext);
-              }
-            });
-        }
-      };
-
     private int m_i = -1;
 
     private ThreadStarterImplementation(
@@ -796,10 +771,19 @@ final class GrinderProcess {
           new GrinderThread(m_logger,
                             threadContext,
                             m_threadSynchronisation,
-                            m_threadLifeCycleCallbacks,
                             m_initialisationMessage.getProperties(),
                             m_sleeper,
                             workerRunnableFactory);
+
+
+      m_processLifeCycleListeners.apply(
+        new Informer<ProcessLifeCycleListener>() {
+          @Override
+          public void inform(final ProcessLifeCycleListener listener) {
+            listener.threadCreated(threadContext);
+          }
+        });
+
 
       final Thread t = new Thread(runnable, "thread " + threadNumber);
       t.setDaemon(true);
@@ -899,6 +883,11 @@ final class GrinderProcess {
           threadContext.registerThreadLifeCycleListener(
             new SkeletonThreadLifeCycleListener() {
               @Override
+              public void beginThread() {
+                m_threadContextThreadLocal.set(threadContext);
+              }
+
+              @Override
               public void endThread() {
                 m_threadContextsMap.remove(threadNumber);
               }
@@ -914,11 +903,6 @@ final class GrinderProcess {
         // Stop new threads in their tracks.
         threadContext.shutdown();
       }
-    }
-
-    @Override
-    public void threadStarted(final ThreadContext threadContext) {
-      m_threadContextThreadLocal.set(threadContext);
     }
 
     public boolean shutdown(final int threadNumber) {

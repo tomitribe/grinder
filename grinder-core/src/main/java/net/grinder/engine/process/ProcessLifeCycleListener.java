@@ -37,11 +37,4 @@ interface ProcessLifeCycleListener {
    * @param threadContext The thread context.
    */
   void threadCreated(ThreadContext threadContext);
-
-  /**
-   * Called from the worker thread when it is started.
-   *
-   * @param threadContext The thread context.
-   */
-  void threadStarted(ThreadContext threadContext);
 }

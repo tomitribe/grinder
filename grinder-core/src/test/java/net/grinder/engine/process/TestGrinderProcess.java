@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2012 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -178,7 +178,18 @@ public class TestGrinderProcess {
 
     final ThreadContext threadContext1 = mock(ThreadContext.class);
 
-    threadContexts.threadStarted(threadContext1);
+    threadContexts.threadCreated(threadContext1);
+
+    final ArgumentCaptor<ThreadLifeCycleListener> listenerCaptor =
+        ArgumentCaptor.forClass(ThreadLifeCycleListener.class);
+
+    verify(threadContext1)
+      .registerThreadLifeCycleListener(listenerCaptor.capture());
+
+    assertNull(threadContexts.get());
+
+    listenerCaptor.getValue().beginThread();
+
     assertSame(threadContext1, threadContexts.get());
 
     final Future<ThreadContext> future =

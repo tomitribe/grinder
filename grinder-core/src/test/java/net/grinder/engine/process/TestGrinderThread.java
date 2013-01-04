@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2011 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -51,7 +51,6 @@ public class TestGrinderThread extends AbstractJUnit4FileTestCase {
   @Mock private Logger m_logger;
   @Mock private ThreadContext m_threadContext;
   @Mock private WorkerThreadSynchronisation m_workerThreadSynchronisation;
-  @Mock private ProcessLifeCycleListener m_processLifeCycleListener;
   @Mock private Sleeper m_sleeper;
   @Mock private WorkerRunnableFactory m_workerRunnableFactory;
   @Mock private WorkerRunnable m_workerRunnable;
@@ -70,16 +69,13 @@ public class TestGrinderThread extends AbstractJUnit4FileTestCase {
     new GrinderThread(m_logger,
                       m_threadContext,
                       m_workerThreadSynchronisation,
-                      m_processLifeCycleListener,
                       m_properties,
                       m_sleeper,
                       m_workerRunnableFactory);
 
     verify(m_workerThreadSynchronisation).threadCreated();
 
-    verify(m_processLifeCycleListener).threadCreated(m_threadContext);
-
-    verifyNoMoreInteractions(m_processLifeCycleListener, m_threadContext);
+    verifyNoMoreInteractions(m_threadContext);
   }
 
   @Test public void testRun() throws Exception {
@@ -88,16 +84,11 @@ public class TestGrinderThread extends AbstractJUnit4FileTestCase {
       new GrinderThread(m_logger,
                         m_threadContext,
                         m_workerThreadSynchronisation,
-                        m_processLifeCycleListener,
                         m_properties,
                         m_sleeper,
                         m_workerRunnableFactory);
 
-    verify(m_processLifeCycleListener).threadCreated(m_threadContext);
-
     grinderThread.run();
-
-    verify(m_processLifeCycleListener).threadStarted(m_threadContext);
 
     verify(m_threadContext).fireBeginThreadEvent();
     verify(m_threadContext).fireBeginRunEvent();
@@ -122,7 +113,6 @@ public class TestGrinderThread extends AbstractJUnit4FileTestCase {
       new GrinderThread(m_logger,
                         m_threadContext,
                         m_workerThreadSynchronisation,
-                        m_processLifeCycleListener,
                         m_properties,
                         m_sleeper,
                         m_workerRunnableFactory);
@@ -155,7 +145,6 @@ public class TestGrinderThread extends AbstractJUnit4FileTestCase {
       new GrinderThread(m_logger,
                         m_threadContext,
                         m_workerThreadSynchronisation,
-                        m_processLifeCycleListener,
                         m_properties,
                         m_sleeper,
                         m_workerRunnableFactory);
@@ -192,7 +181,6 @@ public class TestGrinderThread extends AbstractJUnit4FileTestCase {
       new GrinderThread(m_logger,
                         m_threadContext,
                         m_workerThreadSynchronisation,
-                        m_processLifeCycleListener,
                         m_properties,
                         m_sleeper,
                         m_workerRunnableFactory);
@@ -224,7 +212,6 @@ public class TestGrinderThread extends AbstractJUnit4FileTestCase {
       new GrinderThread(m_logger,
                         m_threadContext,
                         m_workerThreadSynchronisation,
-                        m_processLifeCycleListener,
                         m_properties,
                         m_sleeper,
                         m_workerRunnableFactory);
@@ -249,7 +236,6 @@ public class TestGrinderThread extends AbstractJUnit4FileTestCase {
       new GrinderThread(m_logger,
                         m_threadContext,
                         m_workerThreadSynchronisation,
-                        m_processLifeCycleListener,
                         m_properties,
                         m_sleeper,
                         m_workerRunnableFactory);
@@ -271,14 +257,15 @@ public class TestGrinderThread extends AbstractJUnit4FileTestCase {
 
   private static final class MyScriptEngineException
     extends ScriptExecutionException {
-    public MyScriptEngineException(Throwable t) {
+    public MyScriptEngineException(final Throwable t) {
       super("whoops", t);
     }
 
-    public MyScriptEngineException(String message) {
+    public MyScriptEngineException(final String message) {
       super(message);
     }
 
+    @Override
     public String getShortMessage() {
       return "short message";
     }
