@@ -1,4 +1,4 @@
-// Copyright (C) 2002 - 2012 Philip Aston
+// Copyright (C) 2002 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,12 +21,10 @@
 
 package net.grinder.plugin.http;
 
+import net.grinder.common.GrinderException;
 import HTTPClient.ParseException;
 import HTTPClient.ProtocolNotSuppException;
 import HTTPClient.URI;
-
-import net.grinder.common.GrinderException;
-import net.grinder.plugininterface.PluginProcessContext;
 
 
 /**
@@ -45,7 +43,7 @@ public final class HTTPPluginControl {
   /**
    * Returns a {@link HTTPPluginConnection} that can be used to set
    * the default behaviour of new connections.
-   * @return An <code>HTTPPluginConnection</code>.
+   * @return An {@code HTTPPluginConnection}.
    */
   public static HTTPPluginConnection getConnectionDefaults() {
     return HTTPPluginConnectionDefaults.getConnectionDefaults();
@@ -54,7 +52,7 @@ public final class HTTPPluginControl {
   /**
    * Returns a {@link HTTPPluginConnection} for a particular URL.
    *
-   * <p>The resulting <code>HTTPPluginConnection</code> is valid for
+   * <p>The resulting {@code HTTPPluginConnection} is valid for
    * the current thread and the current run. It can be used to set
    * specific authentication details, default headers, cookies, proxy
    * servers, and so on for the current thread/run on a per-URL
@@ -64,19 +62,16 @@ public final class HTTPPluginControl {
    * called from a worker thread.</p>
    *
    * @param url An absolute URL that specifies the connection.
-   * @return a <code>HTTPPluginConnection</code> value
-   * @exception GrinderException If an error occurs.
-   * @exception ParseException If <code>url</code> can not be parsed.
-   * @exception ProtocolNotSuppException If <code>url</code>
+   * @return a {@code HTTPPluginConnection} value
+   * @throws GrinderException If an error occurs.
+   * @throws ParseException If {@code url} can not be parsed.
+   * @throws ProtocolNotSuppException If {@code url}
    * specifies an unsupported protocol.
    */
-  public static HTTPPluginConnection getThreadConnection(String url)
+  public static HTTPPluginConnection getThreadConnection(final String url)
     throws GrinderException, ParseException, ProtocolNotSuppException {
 
-    final HTTPPluginThreadState threadState =
-      (HTTPPluginThreadState)getProcessContext().getPluginThreadListener();
-
-    return threadState.getConnectionWrapper(new URI(url));
+    return getThreadState().getConnectionWrapper(new URI(url));
   }
 
   /**
@@ -88,23 +83,25 @@ public final class HTTPPluginControl {
    * called from a worker thread.</p>
    *
    * @return The context object used for
-   * <code>HTTPClient.HTTPConnections</code> created by this thread.
-   * @exception GrinderException If an error occurs.
+   * {@code HTTPClient.HTTPConnections} created by this thread.
+   * @throws GrinderException If an error occurs.
    */
   public static Object getThreadHTTPClientContext() throws GrinderException {
-    return getProcessContext().getPluginThreadListener();
+    return getThreadState();
   }
 
   /**
    * Provides access to an {@link HTTPUtilities} instance.
    *
    * @return The utilities instance.
+   * @throws GrinderException If an error occurs.
    */
-  public static HTTPUtilities getHTTPUtilities() {
-    return new HTTPUtilitiesImplementation(getProcessContext());
+  public static HTTPUtilities getHTTPUtilities() throws GrinderException {
+    return new HTTPUtilitiesImplementation(HTTPPlugin.getPlugin());
   }
 
-  private static PluginProcessContext getProcessContext() {
-    return HTTPPlugin.getPlugin().getPluginProcessContext();
+  private static HTTPPluginThreadState getThreadState()
+      throws GrinderException {
+    return HTTPPlugin.getPlugin().getThreadState();
   }
 }

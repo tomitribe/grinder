@@ -52,7 +52,7 @@ public interface PluginThreadContext {
    * allows plug-ins to discount the cost of expensive pre or post processing.
    *
    * <p>
-   * Has no effect if called when the is no dispatch in progress.
+   * Has no effect if called when there is no test dispatch in progress.
    * </p>
    */
   void pauseClock();

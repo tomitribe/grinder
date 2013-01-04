@@ -15,6 +15,13 @@ The Grinder 3.12 (not yet released)
   Fix bug #231 - Spelling in sample grinder.properties. Reported and
   fixed by Yoni Yalovitsky.
 
+  Fix bug #227 - Rework plugin configuration using
+  picocontainer. Thanks to Nate for the request. This brings the
+  plugin container in-line with the approach used for TCPProxy
+  filters, console components, and script engines. Custom plugins must
+  be re-written before they will work with 3.12 - refer to the
+  HTTPPlugin for an example.
+
 
 The Grinder 3.11
 ----------------

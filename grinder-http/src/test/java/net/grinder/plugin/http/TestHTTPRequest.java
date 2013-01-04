@@ -34,7 +34,6 @@ import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -46,14 +45,10 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Random;
 
-import net.grinder.common.GrinderException;
 import net.grinder.common.SSLContextFactory;
-import net.grinder.common.TimeAuthority;
 import net.grinder.engine.process.dcr.DCRContextImplementation;
-import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginException;
 import net.grinder.plugininterface.PluginProcessContext;
-import net.grinder.plugininterface.PluginRegistry;
 import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.InvalidContextException;
@@ -63,9 +58,7 @@ import net.grinder.scriptengine.Instrumenter;
 import net.grinder.scriptengine.Recorder;
 import net.grinder.scriptengine.java.JavaScriptEngineService;
 import net.grinder.statistics.StatisticsIndexMap;
-import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.util.InsecureSSLContextFactory;
-import net.grinder.util.StandardTimeAuthority;
 
 import org.junit.After;
 import org.junit.Before;
@@ -76,6 +69,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 
+import HTTPClient.HTTPConnection.TimeAuthority;
 import HTTPClient.HTTPResponse;
 import HTTPClient.HttpURLConnection;
 import HTTPClient.NVPair;
@@ -93,15 +87,17 @@ public class TestHTTPRequest {
   private final SSLContextFactory m_sslContextFactory =
       new InsecureSSLContextFactory();
 
+  @Mock private PluginProcessContext m_pluginProcessContext;
   @Mock private ScriptContext m_scriptContext;
   @Mock private Statistics m_statistics;
   @Mock private PluginThreadContext m_threadContext;
-  @Mock private PluginProcessContext m_pluginProcessContext;
+  @Mock private TimeAuthority m_timeAuthority;
   @Mock private StatisticsForTest m_statisticsForTest;
 
   @Mock private Logger m_logger;
   @Captor private ArgumentCaptor<String> m_stringCaptor;
 
+  private HTTPPlugin m_httpPlugin;
   private HTTPRequestHandler m_handler;
 
   @Before public void setUp() throws Exception {
@@ -112,34 +108,16 @@ public class TestHTTPRequest {
       new HTTPPluginThreadState(m_threadContext,
                                 m_sslContextFactory,
                                 null,
-                                new StandardTimeAuthority());
-
-    when(m_statistics.isTestInProgress()).thenReturn(false);
+                                m_timeAuthority);
 
     when(m_scriptContext.getStatistics()).thenReturn(m_statistics);
     when(m_scriptContext.getLogger()).thenReturn(m_logger);
 
-    when(m_pluginProcessContext.getPluginThreadListener())
+    m_httpPlugin = new HTTPPlugin(m_pluginProcessContext,
+                                  m_scriptContext);
+
+    when(m_pluginProcessContext.getPluginThreadListener(m_httpPlugin))
       .thenReturn(threadState);
-    when(m_pluginProcessContext.getScriptContext()).thenReturn(m_scriptContext);
-    when(m_pluginProcessContext.getStatisticsServices())
-      .thenReturn(StatisticsServicesImplementation.getInstance());
-
-    new PluginRegistry() {
-      {
-        setInstance(this);
-      }
-
-      @Override
-      public void register(final GrinderPlugin plugin) throws GrinderException {
-        plugin.initialize(m_pluginProcessContext);
-      }
-    };
-
-    HTTPPlugin.getPlugin().initialize(m_pluginProcessContext);
-
-    // Discard the registration of statistic views.
-    reset(m_statistics);
 
     m_handler = new HTTPRequestHandler();
     m_handler.start();
@@ -804,7 +782,6 @@ public class TestHTTPRequest {
     assertEquals(-1, message.indexOf("Redirect"));
 
     verify(m_statistics).isTestInProgress();
-    verifyNoMoreInteractions(m_statistics);
   }
 
   @Test public void testRedirectResponseProcessing() throws Exception {
@@ -900,7 +877,7 @@ public class TestHTTPRequest {
                                 null,
                                 timeAuthority);
 
-    when(m_pluginProcessContext.getPluginThreadListener())
+    when(m_pluginProcessContext.getPluginThreadListener(m_httpPlugin))
       .thenReturn(threadState);
 
     when(m_statistics.isTestInProgress()).thenReturn(true);
@@ -957,7 +934,7 @@ public class TestHTTPRequest {
                                 null,
                                 timeAuthority);
 
-    when(m_pluginProcessContext.getPluginThreadListener())
+    when(m_pluginProcessContext.getPluginThreadListener(m_httpPlugin))
       .thenReturn(threadState);
 
     when(m_statistics.isTestInProgress()).thenReturn(true);
@@ -1012,7 +989,7 @@ public class TestHTTPRequest {
                                 null,
                                 timeAuthority);
 
-    when(m_pluginProcessContext.getPluginThreadListener())
+    when(m_pluginProcessContext.getPluginThreadListener(m_httpPlugin))
       .thenReturn(threadState);
 
     when(m_statistics.isTestInProgress()).thenReturn(true);

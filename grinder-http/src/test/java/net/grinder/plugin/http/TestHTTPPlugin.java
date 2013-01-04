@@ -21,34 +21,40 @@
 
 package net.grinder.plugin.http;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singleton;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.net.URLClassLoader;
 import java.util.Collections;
+import java.util.HashSet;
 
 import net.grinder.common.GrinderException;
-import net.grinder.plugininterface.GrinderPlugin;
+import net.grinder.engine.common.EngineException;
+import net.grinder.engine.process.PluginContainerScopeTunnel;
 import net.grinder.plugininterface.PluginException;
 import net.grinder.plugininterface.PluginProcessContext;
-import net.grinder.plugininterface.PluginRegistry;
 import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.plugininterface.PluginThreadListener;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.Statistics;
+import net.grinder.statistics.StatisticsServices;
 import net.grinder.util.BlockingClassLoader;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.slf4j.Logger;
 
 
 /**
@@ -61,42 +67,62 @@ public class TestHTTPPlugin {
   @Mock private PluginProcessContext m_pluginProcessContext;
   @Mock private ScriptContext m_scriptContext;
   @Mock private Statistics m_statistics;
+  @Mock private Logger m_logger;
+  @Mock private StatisticsServices m_statisticsServices;
 
   @Before public void setUp() {
     MockitoAnnotations.initMocks(this);
 
-    when(m_pluginProcessContext.getScriptContext()).thenReturn(m_scriptContext);
     when(m_scriptContext.getStatistics()).thenReturn(m_statistics);
+  }
+
+  private static void usePlugin(final ClassLoader loader) throws Exception {
+    // We use via HTTPRequest because we need a public method to cross the
+    // classloader boundary.
+    Class.forName(HTTPRequest.class.getName(), true, loader);
   }
 
   @Test public void testInitialiseWithBadHTTPClient() throws Exception {
 
-    final String pluginName = HTTPPlugin.class.getName();
-
     final URLClassLoader blockingLoader =
       new BlockingClassLoader(singleton("HTTPClient.RetryModule"),
-                              singleton(pluginName),
+                              new HashSet<String>(
+                                  asList(HTTPPlugin.class.getName() + "*",
+                                         HTTPRequest.class.getName() + "*")),
                               Collections.<String>emptySet(),
                               false);
-
-    new PluginRegistry() {
-      {
-        setInstance(this);
-      }
-
-      @Override
-      public void register(final GrinderPlugin plugin) throws GrinderException {
-        plugin.initialize(m_pluginProcessContext);
-      }
-    };
-
     try {
-      Class.forName(pluginName, true, blockingLoader);
-      fail("Expected PluginException");
+      // Initialise.
+      blockingLoader.loadClass(HTTPPlugin.class.getName())
+        .getConstructor(PluginProcessContext.class, ScriptContext.class)
+        .newInstance(m_pluginProcessContext, m_scriptContext);
+
+      usePlugin(blockingLoader);
+
+      fail();
     }
     catch (final ExceptionInInitializerError e) {
       // EIIE ->  PluginException -> ClassNotFoundException
       assertTrue(e.getCause().getCause() instanceof ClassNotFoundException);
+    }
+  }
+
+  @Test public void testGetPluginNotInitialised() throws Exception {
+
+    final URLClassLoader blockingLoader =
+      new BlockingClassLoader(Collections.<String>emptySet(),
+                              new HashSet<String>(
+                                  asList(HTTPPlugin.class.getName() + "*",
+                                         HTTPRequest.class.getName() + "*")),
+                              Collections.<String>emptySet(),
+                              false);
+    try {
+      usePlugin(blockingLoader);
+
+      fail();
+    }
+    catch (final ExceptionInInitializerError e) {
+      assertTrue(e.getCause() instanceof PluginException);
     }
   }
 
@@ -107,11 +133,12 @@ public class TestHTTPPlugin {
     doThrow(grinderException).when(m_statistics)
       .registerDataLogExpression(isA(String.class), isA(String.class));
 
-    final HTTPPlugin plugin = new HTTPPlugin();
+    final HTTPPlugin plugin = new HTTPPlugin(m_pluginProcessContext,
+                                             m_scriptContext);
 
     try {
-      plugin.initialize(m_pluginProcessContext);
-      fail("Expected PluginException");
+      plugin.ensureInitialised();
+      fail();
     }
     catch (final PluginException e) {
       assertSame(grinderException, e.getCause());
@@ -119,11 +146,8 @@ public class TestHTTPPlugin {
   }
 
   @Test public void testCreateThreadListener() throws Exception {
-    final HTTPPlugin plugin = new HTTPPlugin();
-
-    plugin.initialize(m_pluginProcessContext);
-
-    assertSame(m_pluginProcessContext, plugin.getPluginProcessContext());
+    final HTTPPlugin plugin =
+        new HTTPPlugin(m_pluginProcessContext, m_scriptContext);
 
     final PluginThreadContext
       pluginThreadContext = mock(PluginThreadContext.class);
@@ -131,5 +155,12 @@ public class TestHTTPPlugin {
       plugin.createThreadListener(pluginThreadContext);
 
     assertNotNull(threadListener);
+  }
+
+  @Test public void testRegistration() throws EngineException {
+    new PluginContainerScopeTunnel(m_logger, m_scriptContext, null);
+
+    verify(m_logger).info(isA(String.class),
+                          contains(HTTPPlugin.class.getName()));
   }
 }

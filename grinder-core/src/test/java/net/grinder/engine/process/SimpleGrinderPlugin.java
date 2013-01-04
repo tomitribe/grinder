@@ -1,5 +1,4 @@
-// Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2013 Philip Aston
+// Copyright (C) 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -20,30 +19,25 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package net.grinder.plugininterface;
+package net.grinder.engine.process;
 
-import net.grinder.common.GrinderException;
+import net.grinder.plugininterface.GrinderPlugin;
+import net.grinder.plugininterface.PluginException;
+import net.grinder.plugininterface.PluginThreadContext;
+import net.grinder.plugininterface.PluginThreadListener;
 
+public class SimpleGrinderPlugin implements GrinderPlugin {
 
-/**
- * <p>This class is used to share process information between the
- * Grinder and the plug-in.</p>
- *
- * @author Paco Gomez
- * @author Philip Aston
- */
-public interface PluginProcessContext {
+  private static PluginThreadListener s_result;
 
-  /**
-   * Returns the {@link PluginThreadListener} for the current thread for a
-   * particular plug-in.
-   * Instances are created by the plug-in's implementation of {@link
-   * GrinderPlugin#createThreadListener}.
-   *
-   * @param plugin The plug in.
-   * @return The thread listener for the current thread.
-   * @exception GrinderException If the thread listener could not be obtained.
-   */
-  PluginThreadListener getPluginThreadListener(GrinderPlugin plugin)
-      throws GrinderException;
+  public static void setResult(final PluginThreadListener result) {
+    s_result = result;
+  }
+
+  @Override
+  public PluginThreadListener
+    createThreadListener(final PluginThreadContext pluginThreadContext)
+        throws PluginException {
+    return s_result;
+  }
 }

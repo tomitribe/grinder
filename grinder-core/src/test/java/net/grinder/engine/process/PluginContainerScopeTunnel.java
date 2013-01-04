@@ -1,5 +1,4 @@
-// Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2013 Philip Aston
+// Copyright (C) 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -20,30 +19,35 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package net.grinder.plugininterface;
+package net.grinder.engine.process;
 
-import net.grinder.common.GrinderException;
+import net.grinder.engine.common.EngineException;
+import net.grinder.script.Grinder.ScriptContext;
+
+import org.slf4j.Logger;
 
 
 /**
- * <p>This class is used to share process information between the
- * Grinder and the plug-in.</p>
+ * Scope tunnel required by {@link TestPluginContainer} due to class loader
+ * stunts.
  *
- * @author Paco Gomez
  * @author Philip Aston
  */
-public interface PluginProcessContext {
+public class PluginContainerScopeTunnel {
 
-  /**
-   * Returns the {@link PluginThreadListener} for the current thread for a
-   * particular plug-in.
-   * Instances are created by the plug-in's implementation of {@link
-   * GrinderPlugin#createThreadListener}.
-   *
-   * @param plugin The plug in.
-   * @return The thread listener for the current thread.
-   * @exception GrinderException If the thread listener could not be obtained.
-   */
-  PluginThreadListener getPluginThreadListener(GrinderPlugin plugin)
-      throws GrinderException;
+  private final PluginContainer m_delegate;
+
+  public PluginContainerScopeTunnel(
+    final Logger logger,
+    final ScriptContext scriptContext,
+    final ThreadContextLocator threadContextLocator) throws EngineException {
+
+     m_delegate = new PluginContainer(logger,
+                                      scriptContext,
+                                      threadContextLocator);
+  }
+
+  public void threadCreated(final ThreadContext threadContext) {
+    m_delegate.threadCreated(threadContext);
+  }
 }

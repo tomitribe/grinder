@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -24,27 +24,52 @@ package net.grinder.plugininterface;
 
 
 /**
- * This interface defines the callbacks that an individual Grinder
- * thread can make on a plugin.
+ * Interface that a plugin should implement.
+ *
+ * <p>
+ * The Grinder discovers plugin implementations from the {@code
+ * META-INF/net.grinder.plugin} resource files. Each plugin should
+ * register its class name as a line in such a resource file.
+ * </p>
+ *
+ * <p>
+ * Each plugin is injected with framework services using PicoContainer.
+ * The use of PicoContainer should be transparent; implementations simply need
+ * to declare the services they require as constructor parameters.
+ * </p>
+ *
+ * <p>
+ * Available services include:
+ * </p>
+ *
+ * <ul>
+ * <li>{@link PluginProcessContext}</li>
+ * <li>{@link net.grinder.script.ScriptContext}</li>
+ * </ul>
  *
  * @author Philip Aston
  */
 public interface GrinderPlugin {
 
   /**
-   * This method is executed when the process starts. It is only
-   * executed once.
-   * @param processContext Process information.
-   * @exception PluginException If an error occurs.
+   * All resources with this name are loaded to discover implementations.
    */
-  void initialize(PluginProcessContext processContext) throws PluginException;
+  String RESOURCE_NAME = "META-INF/net.grinder.plugin";
 
   /**
-   * This method is called to create a handler for each thread.
+   * This method is called from each new worker thread.
+   *
+   * <p>The plugin should implement this method to a return a handler object
+   * that receives thread specific events. It may be useful to add
+   * thread-specific state to this object.
+   *
+   * <p>A worker thread can retrieve its handler for a particular
+   *  plug-in using
+   * {@link PluginProcessContext#getPluginThreadListener(GrinderPlugin)}.</p>
    *
    * @param pluginThreadContext Thread context information.
    * @return A {@code PluginThreadListener} implementation.
-   * @exception PluginException If an error occurs.
+   * @throws PluginException If an error occurs.
    */
   PluginThreadListener createThreadListener(
     PluginThreadContext pluginThreadContext)

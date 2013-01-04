@@ -27,13 +27,13 @@ import java.util.Map;
 import net.grinder.common.SSLContextFactory;
 import net.grinder.common.SSLContextFactory.SSLContextFactoryException;
 import net.grinder.common.SkeletonThreadLifeCycleListener;
-import net.grinder.common.TimeAuthority;
 import net.grinder.plugininterface.PluginException;
 import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.plugininterface.PluginThreadListener;
 import net.grinder.util.Sleeper;
 import HTTPClient.CookieModule;
 import HTTPClient.HTTPConnection;
+import HTTPClient.HTTPConnection.TimeAuthority;
 import HTTPClient.HTTPResponse;
 import HTTPClient.ParseException;
 import HTTPClient.ProtocolNotSuppException;
@@ -55,7 +55,8 @@ class HTTPPluginThreadState
     new HashMap<URI, HTTPConnectionWrapper>();
   private HTTPResponse m_lastResponse;
   private final Sleeper m_slowClientSleeper;
-  private final TimeAuthorityAdapter m_timeAuthority;
+  private final TimeAuthority m_timeAuthority;
+
 
   HTTPPluginThreadState(final PluginThreadContext threadContext,
                         final SSLContextFactory sslContextFactory,
@@ -65,7 +66,7 @@ class HTTPPluginThreadState
     m_threadContext = threadContext;
     m_sslContextFactory = sslContextFactory;
     m_slowClientSleeper = slowClientSleeper;
-    m_timeAuthority = new TimeAuthorityAdapter(timeAuthority);
+    m_timeAuthority = timeAuthority;
   }
 
   public PluginThreadContext getThreadContext() {
@@ -128,21 +129,6 @@ class HTTPPluginThreadState
 
   public HTTPResponse getLastResponse() {
     return m_lastResponse;
-  }
-
-  private static final class TimeAuthorityAdapter implements
-      HTTPClient.HTTPConnection.TimeAuthority {
-
-    private final TimeAuthority m_timeAuthority;
-
-    public TimeAuthorityAdapter(final TimeAuthority timeAuthority) {
-      m_timeAuthority = timeAuthority;
-    }
-
-    @Override
-    public long getTimeInMilliseconds() {
-      return m_timeAuthority.getTimeInMilliseconds();
-    }
   }
 }
 

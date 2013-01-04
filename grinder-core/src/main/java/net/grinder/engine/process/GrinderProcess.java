@@ -278,13 +278,12 @@ final class GrinderProcess {
 
     Grinder.grinder = scriptContext;
 
-    final PluginRegistryImplementation pluginRegistry =
-      new PluginRegistryImplementation(externalLogger,
-                                       scriptContext,
-                                       m_threadContexts,
-                                       m_statisticsServices);
+    final PluginContainer pluginContainer =
+      new PluginContainer(externalLogger,
+                          scriptContext,
+                          m_threadContexts);
 
-    m_processLifeCycleListeners.add(pluginRegistry);
+    m_processLifeCycleListeners.add(pluginContainer);
 
     m_processLifeCycleListeners.add(m_threadContexts);
 

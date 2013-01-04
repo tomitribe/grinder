@@ -1,4 +1,4 @@
-// Copyright (C) 2004, 2005, 2006, 2007 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -35,14 +35,6 @@ public interface ThreadLifeCycleListener {
 
   /**
    * This method is called just after the thread has started.
-   *
-   * <p>
-   * Plugin thread listeners created by
-   * {@link net.grinder.plugininterface.GrinderPlugin#createThreadListener} will
-   * will receive this event, so long as their plugin registers itself before
-   * the worker threads start (see notes at
-   * {@link net.grinder.plugininterface.PluginRegistry}).
-   * </p>
    */
   void beginThread();
 

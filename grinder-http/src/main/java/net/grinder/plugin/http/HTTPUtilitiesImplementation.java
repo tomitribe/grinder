@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2011 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -33,7 +33,6 @@ import java.util.regex.Pattern;
 import net.grinder.common.GrinderException;
 import net.grinder.plugin.http.tcpproxyfilter.RegularExpressions;
 import net.grinder.plugin.http.tcpproxyfilter.RegularExpressionsImplementation;
-import net.grinder.plugininterface.PluginProcessContext;
 import net.grinder.util.AttributeStringParser;
 import net.grinder.util.AttributeStringParserImplementation;
 import net.grinder.util.http.URIParser;
@@ -60,25 +59,26 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     new ThreadLocal<ParsedBody>();
   private final NameValue[] m_emptyNameValues = new NameValue[0];
 
-  private final PluginProcessContext m_processContext;
+  private final HTTPPlugin m_httpPlugin;
 
-  public HTTPUtilitiesImplementation(PluginProcessContext processContext) {
-    m_processContext = processContext;
+  public HTTPUtilitiesImplementation(final HTTPPlugin httpPlugin) {
+    m_httpPlugin = httpPlugin;
   }
 
-  public NVPair basicAuthorizationHeader(String userID, String password) {
+  @Override
+  public NVPair basicAuthorizationHeader(final String userID,
+                                         final String password) {
     return new NVPair("Authorization",
                       "Basic " +
                       Codecs.base64Encode(userID + ":" + password));
   }
 
+  @Override
   public HTTPResponse getLastResponse() throws GrinderException {
-    final HTTPPluginThreadState threadState =
-      (HTTPPluginThreadState)m_processContext.getPluginThreadListener();
-
-    return threadState.getLastResponse();
+    return m_httpPlugin.getThreadState().getLastResponse();
   }
 
+  @Override
   public String valueFromLocationURI(final String tokenName)
     throws GrinderException {
 
@@ -93,7 +93,7 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     try {
       location = response.getHeader("Location");
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       throw new AssertionError("HTTPResponse not initialised (" + e + ")");
     }
 
@@ -101,7 +101,9 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
 
     if (location != null) {
       m_uriParser.parse(location, new URIParser.AbstractParseListener() {
-        public boolean pathParameterNameValue(String name, String value) {
+        @Override
+        public boolean pathParameterNameValue(final String name,
+                                              final String value) {
           if (name.equals(tokenName)) {
             result[0] = value;
             return false;
@@ -110,7 +112,9 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
           return true;
         }
 
-        public boolean queryStringNameValue(String name, String value) {
+        @Override
+        public boolean queryStringNameValue(final String name,
+                                            final String value) {
           if (name.equals(tokenName)) {
             result[0] = value;
             return false;
@@ -124,12 +128,15 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     return result[0];
   }
 
+  @Override
   public String valueFromBodyInput(final String tokenName)
     throws GrinderException {
     return valueFromBodyInput(tokenName, null);
   }
 
-  public String valueFromBodyInput(String tokenName, String afterText)
+  @Override
+  public String valueFromBodyInput(final String tokenName,
+                                   final String afterText)
     throws GrinderException {
 
     final HTTPResponse response = getLastResponse();
@@ -141,12 +148,15 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     return getParsedBody(response).valueFromBodyInput(tokenName, afterText);
   }
 
+  @Override
   public List<String> valuesFromBodyInput(final String tokenName)
     throws GrinderException {
     return valuesFromBodyInput(tokenName, null);
   }
 
-  public List<String> valuesFromBodyInput(String tokenName, String afterText)
+  @Override
+  public List<String> valuesFromBodyInput(final String tokenName,
+                                          final String afterText)
     throws GrinderException {
 
     final HTTPResponse response = getLastResponse();
@@ -158,12 +168,15 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     return getParsedBody(response).valuesFromBodyInput(tokenName, afterText);
   }
 
+  @Override
   public String valueFromHiddenInput(final String tokenName)
     throws GrinderException {
     return valueFromHiddenInput(tokenName, null);
   }
 
-  public String valueFromHiddenInput(String tokenName, String afterText)
+  @Override
+  public String valueFromHiddenInput(final String tokenName,
+                                     final String afterText)
     throws GrinderException {
 
     final HTTPResponse response = getLastResponse();
@@ -175,12 +188,15 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     return getParsedBody(response).valueFromHiddenInput(tokenName, afterText);
   }
 
+  @Override
   public List<String> valuesFromHiddenInput(final String tokenName)
     throws GrinderException {
     return valuesFromHiddenInput(tokenName, null);
   }
 
-  public List<String> valuesFromHiddenInput(String tokenName, String afterText)
+  @Override
+  public List<String> valuesFromHiddenInput(final String tokenName,
+                                            final String afterText)
     throws GrinderException {
 
     final HTTPResponse response = getLastResponse();
@@ -192,12 +208,14 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     return getParsedBody(response).valuesFromHiddenInput(tokenName, afterText);
   }
 
+  @Override
   public String valueFromBodyURI(final String tokenName)
     throws GrinderException {
     return valueFromBodyURI(tokenName, null);
   }
 
-  public String valueFromBodyURI(final String tokenName, String afterText)
+  @Override
+  public String valueFromBodyURI(final String tokenName, final String afterText)
     throws GrinderException {
 
     final HTTPResponse response = getLastResponse();
@@ -209,13 +227,15 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     return getParsedBody(response).valueFromBodyURI(tokenName, afterText);
   }
 
+  @Override
   public List<String> valuesFromBodyURI(final String tokenName)
     throws GrinderException {
     return valuesFromBodyURI(tokenName, null);
   }
 
+  @Override
   public List<String> valuesFromBodyURI(final String tokenName,
-                                        String afterText)
+                                        final String afterText)
     throws GrinderException {
 
     final HTTPResponse response = getLastResponse();
@@ -227,7 +247,7 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     return getParsedBody(response).valuesFromBodyURI(tokenName, afterText);
   }
 
-  private ParsedBody getParsedBody(HTTPResponse response) {
+  private ParsedBody getParsedBody(final HTTPResponse response) {
     final ParsedBody original = m_parsedBodyThreadLocal.get();
 
     if (original != null && original.isValidForResponse(response)) {
@@ -252,14 +272,14 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     private final MatchList m_hiddenInputMatchList;
     private final MatchList m_bodyURIMatchList;
 
-    public ParsedBody(HTTPResponse response) {
+    public ParsedBody(final HTTPResponse response) {
       m_response = response;
 
       try {
         // This shouldn't fail as we have already read the complete response.
         m_body = response.getText();
       }
-      catch (Exception e) {
+      catch (final Exception e) {
         throw new AssertionError(e);
       }
 
@@ -271,34 +291,38 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
       m_bodyURIMatchList = new BodyURIMatchList(m_body);
     }
 
-    public boolean isValidForResponse(HTTPResponse response) {
+    public boolean isValidForResponse(final HTTPResponse response) {
       return m_response.equals(response);
     }
 
-    public String valueFromBodyInput(String tokenName, String afterText) {
+    public String valueFromBodyInput(final String tokenName,
+                                     final String afterText) {
       return m_bodyInputMatchList.getMatchValue(tokenName, afterText);
     }
 
-    public List<String> valuesFromBodyInput(String tokenName,
-                                            String afterText) {
+    public List<String> valuesFromBodyInput(final String tokenName,
+                                            final String afterText) {
       return m_bodyInputMatchList.getMatchValues(tokenName, afterText);
     }
 
 
-    public String valueFromHiddenInput(String tokenName, String afterText) {
+    public String valueFromHiddenInput(final String tokenName,
+                                       final String afterText) {
       return m_hiddenInputMatchList.getMatchValue(tokenName, afterText);
     }
 
-    public List<String> valuesFromHiddenInput(String tokenName,
-                                              String afterText) {
+    public List<String> valuesFromHiddenInput(final String tokenName,
+                                              final String afterText) {
       return m_hiddenInputMatchList.getMatchValues(tokenName, afterText);
     }
 
-    public String valueFromBodyURI(String tokenName, String afterText) {
+    public String valueFromBodyURI(final String tokenName,
+                                   final String afterText) {
       return m_bodyURIMatchList.getMatchValue(tokenName, afterText);
     }
 
-    public List<String> valuesFromBodyURI(String tokenName, String afterText) {
+    public List<String> valuesFromBodyURI(final String tokenName,
+                                          final String afterText) {
       return m_bodyURIMatchList.getMatchValues(tokenName, afterText);
     }
   }
@@ -307,7 +331,7 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     private final String m_name;
     private final String m_value;
 
-    public NameValue(String name, String value) {
+    public NameValue(final String name, final String value) {
       m_name = name;
       m_value = value;
     }
@@ -325,7 +349,7 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     private final int m_position;
     private final String m_value;
 
-    public Match(int position, String value) {
+    public Match(final int position, final String value) {
       m_position = position;
       m_value = value;
     }
@@ -343,14 +367,14 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     private final List<Match> m_matchesByPosition = new ArrayList<Match>();
     private int m_lastPosition = -1;
 
-    public void addMatch(Match match) {
+    public void addMatch(final Match match) {
       m_matchesByPosition.add(match);
       m_lastPosition = match.getPosition();
     }
 
-    public Match getMatchFrom(int startFrom) {
+    public Match getMatchFrom(final int startFrom) {
       if (m_lastPosition >= startFrom) {
-        for (Match match : m_matchesByPosition) {
+        for (final Match match : m_matchesByPosition) {
           if (match.getPosition() >= startFrom) {
             return match;
           }
@@ -372,7 +396,7 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     private final Map<String, CachedMatchList> m_map =
       new HashMap<String, CachedMatchList>();
 
-    public CachedMatchList get(String tokenName) {
+    public CachedMatchList get(final String tokenName) {
       final CachedMatchList existing = m_map.get(tokenName);
 
       if (existing != null) {
@@ -390,12 +414,14 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
     private final Matcher m_matcher;
     private final CachedValueMap m_cache = new CachedValueMap();
 
-    public AbstractMatchList(Pattern pattern, String body) {
+    public AbstractMatchList(final Pattern pattern, final String body) {
       m_body = body;
       m_matcher = pattern.matcher(body);
     }
 
-    public String getMatchValue(String tokenName, String afterText) {
+    @Override
+    public String getMatchValue(final String tokenName,
+                                final String afterText) {
       final int startFrom = getStartFrom(afterText);
 
       if (startFrom == -1) {
@@ -408,7 +434,9 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
       return match != null ? match.getValue() : "";
     }
 
-    public List<String> getMatchValues(String tokenName, String afterText) {
+    @Override
+    public List<String> getMatchValues(final String tokenName,
+                                       final String afterText) {
 
       int startFrom = getStartFrom(afterText);
 
@@ -432,9 +460,9 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
       }
     }
 
-    private Match getMatch(CachedMatchList cachedValueList,
-                           String tokenName,
-                           int startFrom) {
+    private Match getMatch(final CachedMatchList cachedValueList,
+                           final String tokenName,
+                           final int startFrom) {
 
       final Match existingMatch = cachedValueList.getMatchFrom(startFrom);
 
@@ -450,11 +478,11 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
 
         final int matchPosition = m_matcher.start();
 
-        for (int i = 0; i < nameValueArray.length; ++i) {
-          final String name = nameValueArray[i].getName();
+        for (final NameValue element : nameValueArray) {
+          final String name = element.getName();
 
           final Match match = new Match(matchPosition,
-                                        nameValueArray[i].getValue());
+                                        element.getValue());
 
           if (name.equals(tokenName)) {
             cachedValueList.addMatch(match);
@@ -472,7 +500,7 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
       return result;
     }
 
-    private int getStartFrom(String text) {
+    private int getStartFrom(final String text) {
       // afterText parameter is infrequently used, so memoizing this
       // method would cost more than it saved.
 
@@ -488,10 +516,11 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
 
   private final class InputMatchList extends AbstractMatchList {
 
-    public InputMatchList(Pattern pattern, String body) {
+    public InputMatchList(final Pattern pattern, final String body) {
       super(pattern, body);
     }
 
+    @Override
     protected NameValue[] parseMatch() {
       final AttributeStringParser.AttributeMap map =
         m_attributeStringParser.parse(getMatcher().group());
@@ -509,22 +538,27 @@ class HTTPUtilitiesImplementation implements HTTPUtilities {
 
   private final class BodyURIMatchList extends AbstractMatchList {
 
-    public BodyURIMatchList(String body) {
+    public BodyURIMatchList(final String body) {
       super(m_regularExpressions.getHyperlinkURIPattern(), body);
     }
 
+    @Override
     protected NameValue[] parseMatch() {
       final List<NameValue> result = new ArrayList<NameValue>();
 
       final String uri = getMatcher().group(1);
 
       m_uriParser.parse(uri, new URIParser.AbstractParseListener() {
-        public boolean pathParameterNameValue(String name, String value) {
+        @Override
+        public boolean pathParameterNameValue(final String name,
+                                              final String value) {
           result.add(new NameValue(name, value));
           return true;
         }
 
-        public boolean queryStringNameValue(String name, String value) {
+        @Override
+        public boolean queryStringNameValue(final String name,
+                                            final String value) {
           result.add(new NameValue(name, value));
           return true;
         }

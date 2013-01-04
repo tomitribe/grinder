@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2012 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -24,18 +24,19 @@ package net.grinder.plugin.http;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
-import static org.mockito.Mockito.RETURNS_MOCKS;
-import static org.mockito.Mockito.mock;
+import static org.mockito.Answers.RETURNS_MOCKS;
 import static org.mockito.Mockito.when;
-import net.grinder.common.GrinderException;
-import net.grinder.plugininterface.GrinderPlugin;
+import net.grinder.common.SSLContextFactory;
 import net.grinder.plugininterface.PluginProcessContext;
-import net.grinder.plugininterface.PluginRegistry;
+import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.script.Grinder.ScriptContext;
+import net.grinder.script.Statistics;
 import net.grinder.util.InsecureSSLContextFactory;
-import net.grinder.util.StandardTimeAuthority;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 
 /**
@@ -45,43 +46,36 @@ import org.junit.Test;
  */
 public class TestHTTPPluginControl {
 
+  private final SSLContextFactory m_sslContextFactory =
+      new InsecureSSLContextFactory();
+
+  @Mock private PluginProcessContext m_pluginProcessContext;
+  @Mock(answer = RETURNS_MOCKS) private ScriptContext m_scriptContext;
+  @Mock private Statistics m_statistics;
+  @Mock private PluginThreadContext m_threadContext;
+  @Mock private HTTPClient.HTTPConnection.TimeAuthority m_timeAuthority;
+
+  private HTTPPlugin m_httpPlugin;
+
+  @Before public void setUp() throws Exception {
+    MockitoAnnotations.initMocks(this);
+
+    when(m_scriptContext.getStatistics()).thenReturn(m_statistics);
+
+    m_httpPlugin = new HTTPPlugin(m_pluginProcessContext,
+                                  m_scriptContext);
+  }
+
   @Test public void testHTTPPluginControl() throws Exception {
+
     final HTTPPluginThreadState threadState =
-      new HTTPPluginThreadState(null,
-                                new InsecureSSLContextFactory(),
+      new HTTPPluginThreadState(m_threadContext,
+                                m_sslContextFactory,
                                 null,
-                                new StandardTimeAuthority());
+                                m_timeAuthority);
 
-    final ScriptContext scriptContext =
-        mock(ScriptContext.class, RETURNS_MOCKS);
-
-    final PluginProcessContext pluginProcessContext =
-        mock(PluginProcessContext.class);
-
-    when(pluginProcessContext.getPluginThreadListener())
+    when(m_pluginProcessContext.getPluginThreadListener(m_httpPlugin))
       .thenReturn(threadState);
-    when(pluginProcessContext.getScriptContext()).thenReturn(scriptContext);
-
-    new PluginRegistry() {
-      { setInstance(this); }
-
-      @Override
-      public void register(final GrinderPlugin plugin) throws GrinderException {
-        plugin.initialize(pluginProcessContext);
-      }
-    };
-
-    // Sigh, if a previous test has registered a stub PluginProcessContext, we
-    // need to rewire it to make this test valid. Further proof that static
-    // references are evil.
-    final PluginProcessContext existingMock =
-        HTTPPlugin.getPlugin().getPluginProcessContext();
-    if (existingMock != null &&
-        existingMock != pluginProcessContext) {
-
-      when(existingMock.getPluginThreadListener()).thenReturn(threadState);
-      when(existingMock.getScriptContext()).thenReturn(scriptContext);
-    }
 
     final HTTPPluginConnection connectionDefaults =
       HTTPPluginControl.getConnectionDefaults();

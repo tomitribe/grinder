@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2012 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // Copyright (C) 2003 Bill Schnellinger
 // Copyright (C) 2003 Bertrand Ave
 // Copyright (C) 2004 John Stanford White
@@ -45,20 +45,20 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.slf4j.Logger;
-
 import net.grinder.common.GrinderException;
 import net.grinder.plugininterface.PluginException;
-import net.grinder.plugininterface.PluginProcessContext;
 import net.grinder.plugininterface.PluginThreadContext;
+import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.InvalidContextException;
 import net.grinder.script.Statistics;
-import net.grinder.script.Test;
-import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.Statistics.StatisticsForTest;
+import net.grinder.script.Test;
 import net.grinder.script.Test.InstrumentationFilter;
 import net.grinder.statistics.StatisticsIndexMap;
 import net.grinder.util.StreamCopier;
+
+import org.slf4j.Logger;
+
 import HTTPClient.Codecs;
 import HTTPClient.HTTPConnection;
 import HTTPClient.HTTPResponse;
@@ -97,10 +97,17 @@ import HTTPClient.URI;
  * @author Philip Aston
  */
 public class HTTPRequest {
-
+  // We delay the initialisation of the HTTPPlugin until a script uses
+  // HTTPRequest. Scripts must import HTTPRequest from their initialising
+  // thread, otherwise the custom statistics will fail to be added to
+  // the data log.
   static {
-    // Ensure that the HTTPPlugin is registered.
-    HTTPPlugin.getPlugin();
+    try {
+      HTTPPlugin.getPlugin().ensureInitialised();
+    }
+    catch (final PluginException e) {
+      throw new ExceptionInInitializerError(e);
+    }
   }
 
   private static final Pattern s_pathParser =
@@ -145,7 +152,8 @@ public class HTTPRequest {
    * @throws ParseException If the URL cannot be parsed.
    * @throws URLException If the URL is not absolute.
    */
-  public final void setUrl(String url) throws ParseException, URLException {
+  public final void setUrl(final String url)
+      throws ParseException, URLException {
     if (!isAbsolute(url)) {
       throw new URLException("URL must be absolute");
     }
@@ -172,19 +180,20 @@ public class HTTPRequest {
    *          <code>defaultPairs</code> entries with the same name.
    * @return The merged arrays.
    */
-  private NVPair[] mergeArrays(NVPair[] defaultPairs, NVPair[] overridePairs) {
+  private NVPair[] mergeArrays(final NVPair[] defaultPairs,
+                               final NVPair[] overridePairs) {
 
     final List<NVPair> result =
       new ArrayList<NVPair>(defaultPairs.length + overridePairs.length);
 
     final Set<String> seen = new HashSet<String>();
 
-    for (NVPair p : overridePairs) {
+    for (final NVPair p : overridePairs) {
       result.add(p);
       seen.add(p.getName());
     }
 
-    for (NVPair p : defaultPairs) {
+    for (final NVPair p : defaultPairs) {
       if (!seen.contains(p.getName())) {
         result.add(p);
       }
@@ -203,7 +212,7 @@ public class HTTPRequest {
    *
    * @param headers The default headers to be used for this request.
    */
-  public final void setHeaders(NVPair[] headers) {
+  public final void setHeaders(final NVPair[] headers) {
     m_defaultHeaders = headers;
   }
 
@@ -212,6 +221,7 @@ public class HTTPRequest {
    *
    * @return a string representation of the object
    */
+  @Override
   public String toString() {
     final StringBuilder result = new StringBuilder("");
 
@@ -227,10 +237,10 @@ public class HTTPRequest {
 
     final NVPair[] defaultHeaders = m_defaultHeaders;
 
-    for (int i = 0; i < defaultHeaders.length; i++) {
-      result.append(defaultHeaders[i].getName());
+    for (final NVPair defaultHeader : defaultHeaders) {
+      result.append(defaultHeader.getName());
       result.append(": ");
-      result.append(defaultHeaders[i].getValue());
+      result.append(defaultHeader.getValue());
       result.append("\n");
     }
 
@@ -256,7 +266,7 @@ public class HTTPRequest {
    *
    * @param data The default data to be used for this request.
    */
-  public final void setData(byte[] data) {
+  public final void setData(final byte[] data) {
     m_defaultData = data;
   }
 
@@ -273,7 +283,8 @@ public class HTTPRequest {
    * @return The data read from the file.
    * @throws IOException If the file could not be read.
    */
-  public final byte[] setDataFromFile(String filename) throws IOException {
+  public final byte[] setDataFromFile(final String filename)
+      throws IOException {
 
     final File file = new File(filename);
 
@@ -306,7 +317,7 @@ public class HTTPRequest {
    * @param formData The default form or query data to be used for
    * this request.
    */
-  public final void setFormData(NVPair[] formData) {
+  public final void setFormData(final NVPair[] formData) {
     m_defaultFormData = formData;
   }
 
@@ -344,6 +355,7 @@ public class HTTPRequest {
    * </p>
    *
    * <pre>
+   * TODO - Find a better way.
    *   final PluginProcessContext pluginProcessContext =
    *     getPluginProcessContext();
    *
@@ -364,7 +376,7 @@ public class HTTPRequest {
    *
    * @param b <code>true</code> => The response body will be read.
    */
-  public void setReadResponseBody(boolean b) {
+  public void setReadResponseBody(final boolean b) {
     m_readResponseBody = b;
   }
 
@@ -388,7 +400,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse DELETE(String uri) throws Exception {
+  public final HTTPResponse DELETE(final String uri) throws Exception {
     return DELETE(uri, getHeaders());
   }
 
@@ -407,13 +419,14 @@ public class HTTPRequest {
    * @throws Exception
    *              If an error occurs.
    */
-  public final HTTPResponse DELETE(final String uri, NVPair[] headers)
+  public final HTTPResponse DELETE(final String uri, final NVPair[] headers)
     throws Exception {
 
     return new AbstractRequest(uri, headers) {
-        HTTPResponse doRequest(HTTPConnection connection,
-                               String path,
-                               NVPair[] mergedHeaders)
+        @Override
+        HTTPResponse doRequest(final HTTPConnection connection,
+                               final String path,
+                               final NVPair[] mergedHeaders)
           throws IOException, ModuleException {
           return connection.Delete(path, mergedHeaders);
         }
@@ -441,7 +454,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse GET(String uri) throws Exception {
+  public final HTTPResponse GET(final String uri) throws Exception {
     return GET(uri, getFormData(), getHeaders());
   }
 
@@ -453,7 +466,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse GET(NVPair[] queryData) throws Exception {
+  public final HTTPResponse GET(final NVPair[] queryData) throws Exception {
     return GET(null, queryData, getHeaders());
   }
 
@@ -494,12 +507,13 @@ public class HTTPRequest {
    */
   public final HTTPResponse GET(final String uri,
                                 final NVPair[] queryData,
-                                NVPair[] headers) throws Exception {
+                                final NVPair[] headers) throws Exception {
 
     return new AbstractRequest(uri, headers) {
-        HTTPResponse doRequest(HTTPConnection connection,
-                               String path,
-                               NVPair[] mergedHeaders)
+        @Override
+        HTTPResponse doRequest(final HTTPConnection connection,
+                               final String path,
+                               final NVPair[] mergedHeaders)
           throws IOException, ModuleException {
           return connection.Get(path, queryData, mergedHeaders);
         }
@@ -527,7 +541,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse HEAD(String uri) throws Exception {
+  public final HTTPResponse HEAD(final String uri) throws Exception {
     return HEAD(uri, getHeaders());
   }
 
@@ -539,7 +553,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse HEAD(NVPair[] queryData) throws Exception {
+  public final HTTPResponse HEAD(final NVPair[] queryData) throws Exception {
     return HEAD(null, queryData, getHeaders());
   }
 
@@ -580,12 +594,13 @@ public class HTTPRequest {
    */
   public final HTTPResponse HEAD(final String uri,
                                  final NVPair[] queryData,
-                                 NVPair[] headers) throws Exception {
+                                 final NVPair[] headers) throws Exception {
 
     return new AbstractRequest(uri, headers) {
-        HTTPResponse doRequest(HTTPConnection connection,
-                               String path,
-                               NVPair[] mergedHeaders)
+        @Override
+        HTTPResponse doRequest(final HTTPConnection connection,
+                               final String path,
+                               final NVPair[] mergedHeaders)
           throws IOException, ModuleException {
           return connection.Head(path, queryData, mergedHeaders);
         }
@@ -613,7 +628,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse OPTIONS(String uri) throws Exception {
+  public final HTTPResponse OPTIONS(final String uri) throws Exception {
     return OPTIONS(uri, getData(), getHeaders());
   }
 
@@ -654,12 +669,13 @@ public class HTTPRequest {
    */
   public final HTTPResponse OPTIONS(final String uri,
                                     final byte[] data,
-                                    NVPair[] headers) throws Exception {
+                                    final NVPair[] headers) throws Exception {
 
     return new AbstractRequest(uri, headers) {
-        HTTPResponse doRequest(HTTPConnection connection,
-                               String path,
-                               NVPair[] mergedHeaders)
+        @Override
+        HTTPResponse doRequest(final HTTPConnection connection,
+                               final String path,
+                               final NVPair[] mergedHeaders)
           throws IOException, ModuleException {
           return connection.Options(path, mergedHeaders, data);
         }
@@ -682,7 +698,8 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse OPTIONS(String uri, InputStream inputStream)
+  public final HTTPResponse OPTIONS(final String uri,
+                                    final InputStream inputStream)
     throws Exception {
     return OPTIONS(uri, inputStream, getHeaders());
   }
@@ -708,17 +725,19 @@ public class HTTPRequest {
    */
   public final HTTPResponse OPTIONS(final String uri,
                                     final InputStream inputStream,
-                                    NVPair[] headers) throws Exception {
+                                    final NVPair[] headers) throws Exception {
 
     return new AbstractStreamingRequest(uri, headers) {
+        @Override
         InputStream getInputStream() {
           return inputStream;
         }
 
-        HTTPResponse doStreamingRequest(HTTPConnection connection,
-                                        String path,
-                                        NVPair[] mergedHeaders,
-                                        HttpOutputStream outputStream)
+        @Override
+        HTTPResponse doStreamingRequest(final HTTPConnection connection,
+                                        final String path,
+                                        final NVPair[] mergedHeaders,
+                                        final HttpOutputStream outputStream)
           throws IOException, ModuleException {
           return connection.Options(path, mergedHeaders, outputStream);
         }
@@ -746,7 +765,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse POST(String uri) throws Exception {
+  public final HTTPResponse POST(final String uri) throws Exception {
     final byte[] data = getData();
 
     if (data != null) {
@@ -766,7 +785,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse POST(NVPair[] formData) throws Exception {
+  public final HTTPResponse POST(final NVPair[] formData) throws Exception {
     return POST(null, formData, getHeaders());
   }
 
@@ -783,7 +802,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse POST(String uri, NVPair[] formData)
+  public final HTTPResponse POST(final String uri, final NVPair[] formData)
     throws Exception {
     return POST(uri, formData, getHeaders());
   }
@@ -806,12 +825,13 @@ public class HTTPRequest {
    */
   public final HTTPResponse POST(final String uri,
                                  final NVPair[] formData,
-                                 NVPair[] headers) throws Exception {
+                                 final NVPair[] headers) throws Exception {
 
     return new AbstractRequest(uri, headers) {
-        HTTPResponse doRequest(HTTPConnection connection,
-                               String path,
-                               NVPair[] mergedHeaders)
+        @Override
+        HTTPResponse doRequest(final HTTPConnection connection,
+                               final String path,
+                               final NVPair[] mergedHeaders)
           throws IOException, ModuleException {
           return connection.Post(path, formData, mergedHeaders);
         }
@@ -840,8 +860,8 @@ public class HTTPRequest {
    */
   public final HTTPResponse POST(final String uri,
                                  final NVPair[] formData,
-                                 NVPair[] headers,
-                                 boolean isMultipart) throws Exception {
+                                 final NVPair[] headers,
+                                 final boolean isMultipart) throws Exception {
     if (!isMultipart) {
       return POST(uri, formData, headers);
     }
@@ -852,9 +872,10 @@ public class HTTPRequest {
     final byte[] data = Codecs.mpFormDataEncode(formData, null, contentHeader);
 
     return new AbstractRequest(uri, mergeArrays(headers, contentHeader)) {
-        HTTPResponse doRequest(HTTPConnection connection,
-                               String path,
-                               NVPair[] mergedHeaders)
+        @Override
+        HTTPResponse doRequest(final HTTPConnection connection,
+                               final String path,
+                               final NVPair[] mergedHeaders)
           throws IOException, ModuleException {
           return connection.Post(path, data, mergedHeaders);
         }
@@ -862,7 +883,7 @@ public class HTTPRequest {
       .getHTTPResponse();
   }
 
-  private static void checkArray(NVPair[] headers, String context) {
+  private static void checkArray(final NVPair[] headers, final String context) {
 
     if (headers == null) {
       throw new NullPointerException(context + " is null");
@@ -892,7 +913,8 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse POST(String uri, byte[] data) throws Exception {
+  public final HTTPResponse POST(final String uri, final byte[] data)
+      throws Exception {
     return POST(uri, data, getHeaders());
   }
 
@@ -913,12 +935,13 @@ public class HTTPRequest {
    */
   public final HTTPResponse POST(final String uri,
                                  final byte[] data,
-                                 NVPair[] headers) throws Exception {
+                                 final NVPair[] headers) throws Exception {
 
     return new AbstractRequest(uri, headers) {
-        HTTPResponse doRequest(HTTPConnection connection,
-                               String path,
-                               NVPair[] mergedHeaders)
+        @Override
+        HTTPResponse doRequest(final HTTPConnection connection,
+                               final String path,
+                               final NVPair[] mergedHeaders)
           throws IOException, ModuleException {
           return connection.Post(path, data, mergedHeaders);
         }
@@ -941,7 +964,8 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse POST(String uri, InputStream inputStream)
+  public final HTTPResponse POST(final String uri,
+                                 final InputStream inputStream)
     throws Exception {
     return POST(uri, inputStream, getHeaders());
   }
@@ -967,17 +991,19 @@ public class HTTPRequest {
    */
   public final HTTPResponse POST(final String uri,
                                  final InputStream inputStream,
-                                 NVPair[] headers) throws Exception {
+                                 final NVPair[] headers) throws Exception {
 
     return new AbstractStreamingRequest(uri, headers) {
+        @Override
         InputStream getInputStream() {
           return inputStream;
         }
 
-        HTTPResponse doStreamingRequest(HTTPConnection connection,
-                                        String path,
-                                        NVPair[] mergedHeaders,
-                                        HttpOutputStream outputStream)
+        @Override
+        HTTPResponse doStreamingRequest(final HTTPConnection connection,
+                                        final String path,
+                                        final NVPair[] mergedHeaders,
+                                        final HttpOutputStream outputStream)
           throws IOException, ModuleException {
           return connection.Post(path, outputStream, mergedHeaders);
         }
@@ -1005,7 +1031,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse PUT(String uri) throws Exception {
+  public final HTTPResponse PUT(final String uri) throws Exception {
     return PUT(uri, getData(), getHeaders());
   }
 
@@ -1021,7 +1047,8 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse PUT(String uri, byte[] data) throws Exception {
+  public final HTTPResponse PUT(final String uri,
+                                final byte[] data) throws Exception {
     return PUT(uri, data, getHeaders());
   }
 
@@ -1045,12 +1072,13 @@ public class HTTPRequest {
    */
   public final HTTPResponse PUT(final String uri,
                                 final byte[] data,
-                                NVPair[] headers) throws Exception {
+                                final NVPair[] headers) throws Exception {
 
     return new AbstractRequest(uri, headers) {
-        HTTPResponse doRequest(HTTPConnection connection,
-                               String path,
-                               NVPair[] mergedHeaders)
+        @Override
+        HTTPResponse doRequest(final HTTPConnection connection,
+                               final String path,
+                               final NVPair[] mergedHeaders)
           throws IOException, ModuleException {
           return connection.Put(path, data, mergedHeaders);
         }
@@ -1073,7 +1101,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse PUT(String uri, InputStream inputStream)
+  public final HTTPResponse PUT(final String uri, final InputStream inputStream)
     throws Exception {
     return PUT(uri, inputStream, getHeaders());
   }
@@ -1098,17 +1126,19 @@ public class HTTPRequest {
    */
   public final HTTPResponse PUT(final String uri,
                                 final InputStream inputStream,
-                                NVPair[] headers) throws Exception {
+                                final NVPair[] headers) throws Exception {
 
     return new AbstractStreamingRequest(uri, headers) {
+        @Override
         InputStream getInputStream() {
           return inputStream;
         }
 
-        HTTPResponse doStreamingRequest(HTTPConnection connection,
-                                        String path,
-                                        NVPair[] mergedHeaders,
-                                        HttpOutputStream outputStream)
+        @Override
+        HTTPResponse doStreamingRequest(final HTTPConnection connection,
+                                        final String path,
+                                        final NVPair[] mergedHeaders,
+                                        final HttpOutputStream outputStream)
           throws IOException, ModuleException {
           return connection.Put(path, outputStream, mergedHeaders);
         }
@@ -1136,7 +1166,7 @@ public class HTTPRequest {
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
    */
-  public final HTTPResponse TRACE(String uri) throws Exception {
+  public final HTTPResponse TRACE(final String uri) throws Exception {
     return TRACE(uri, getHeaders());
   }
 
@@ -1155,13 +1185,14 @@ public class HTTPRequest {
    * @throws Exception
    *              If an error occurs.
    */
-  public final HTTPResponse TRACE(final String uri, NVPair[] headers)
+  public final HTTPResponse TRACE(final String uri, final NVPair[] headers)
     throws Exception {
 
     return new AbstractRequest(uri, headers) {
-        HTTPResponse doRequest(HTTPConnection connection,
-                              String path,
-                              NVPair[] mergedHeaders)
+        @Override
+        HTTPResponse doRequest(final HTTPConnection connection,
+                              final String path,
+                              final NVPair[] mergedHeaders)
           throws IOException, ModuleException {
           return connection.Trace(path, mergedHeaders);
         }
@@ -1175,23 +1206,14 @@ public class HTTPRequest {
    *
    * @param response The response.
    */
-  protected void processResponse(HTTPResponse response) {
-  }
-
-  /**
-   * Provide subclasses access to the process context.
-   *
-   * @return The process context.
-   */
-  protected PluginProcessContext getPluginProcessContext() {
-    return HTTPPlugin.getPlugin().getPluginProcessContext();
+  protected void processResponse(final HTTPResponse response) {
   }
 
   private abstract class AbstractRequest {
     private final URI m_url;
     private final NVPair[] m_mergedHeaders;
 
-    public AbstractRequest(String uri, NVPair[] headers)
+    public AbstractRequest(final String uri, final NVPair[] headers)
       throws ParseException, URLException {
 
       final NVPair[] defaultHeaders = getHeaders();
@@ -1248,11 +1270,10 @@ public class HTTPRequest {
       throws GrinderException, IOException, ModuleException, ParseException,
              ProtocolNotSuppException {
 
-      final PluginProcessContext pluginProcessContext =
-        getPluginProcessContext();
-
-      final HTTPPluginThreadState threadState = (HTTPPluginThreadState)
-        pluginProcessContext.getPluginThreadListener();
+      final HTTPPlugin plugin = HTTPPlugin.getPlugin();
+      plugin.ensureInitialised();
+      final HTTPPluginThreadState threadState = plugin.getThreadState();
+      final ScriptContext scriptContext = plugin.getScriptContext();
 
       final PluginThreadContext threadContext = threadState.getThreadContext();
 
@@ -1277,7 +1298,7 @@ public class HTTPRequest {
       try {
         httpResponse = doRequest(connection, path, m_mergedHeaders);
       }
-      catch (InterruptedIOException e) {
+      catch (final InterruptedIOException e) {
         // We never interrupt worker threads, so we can be sure this is due to
         // a HTTPClient.
         throw new TimeoutException(e);
@@ -1311,9 +1332,6 @@ public class HTTPRequest {
       final String message =
         httpResponse.getOriginalURI() + " -> " + statusCode + " " +
         httpResponse.getReasonLine() + ", " + responseLength + " bytes";
-
-      final ScriptContext scriptContext =
-        pluginProcessContext.getScriptContext();
 
       final Logger logger = scriptContext.getLogger();
 
@@ -1373,7 +1391,7 @@ public class HTTPRequest {
           }
         }
       }
-      catch (InvalidContextException e) {
+      catch (final InvalidContextException e) {
         throw new PluginException("Failed to set statistic", e);
       }
 
@@ -1393,20 +1411,20 @@ public class HTTPRequest {
 
   private abstract class AbstractStreamingRequest extends AbstractRequest {
 
-    public AbstractStreamingRequest(String uri, NVPair[] headers)
+    public AbstractStreamingRequest(final String uri, final NVPair[] headers)
       throws ParseException, URLException {
       super(uri, headers);
     }
 
-    HTTPResponse doRequest(HTTPConnection connection,
-                           String path,
-                           NVPair[] mergedHeaders)
+    @Override
+    HTTPResponse doRequest(final HTTPConnection connection,
+                           final String path,
+                           final NVPair[] mergedHeaders)
       throws IOException, ModuleException {
 
       long contentLength = -1;
 
-      for (int i = 0; i < mergedHeaders.length; ++i) {
-        final NVPair header = mergedHeaders[i];
+      for (final NVPair header : mergedHeaders) {
         if (header != null &&
             "Content-Length".equalsIgnoreCase(header.getName())) {
           contentLength = Long.parseLong(header.getValue());
@@ -1436,7 +1454,7 @@ public class HTTPRequest {
       throws IOException, ModuleException;
   }
 
-  private static boolean isAbsolute(String uri) {
+  private static boolean isAbsolute(final String uri) {
     return s_absoluteURIPattern.matcher(uri).matches();
   }
 
@@ -1446,7 +1464,8 @@ public class HTTPRequest {
   private static InstrumentationFilter s_httpMethodFilter =
     new InstrumentationFilter() {
 
-      public boolean matches(Object item) {
+      @Override
+      public boolean matches(final Object item) {
         return s_httpMethodNames.contains(((Method)item).getName());
       }
     };

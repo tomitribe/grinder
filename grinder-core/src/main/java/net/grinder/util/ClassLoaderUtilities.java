@@ -1,4 +1,4 @@
-// Copyright (C) 2011 - 2012 Philip Aston
+// Copyright (C) 2011 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -66,8 +66,8 @@ public class ClassLoaderUtilities {
    * @throws IOException
    *           If there was a problem parsing the resources.
    */
-  public static List<String> allResourceLines(ClassLoader classLoader,
-                                              String resourceName)
+  public static List<String> allResourceLines(final ClassLoader classLoader,
+                                              final String resourceName)
     throws IOException {
 
     final List<String> result = new ArrayList<String>();
@@ -141,8 +141,8 @@ public class ClassLoaderUtilities {
    * @see #loadRegisteredImplementations(String, Class, ClassLoader)
    */
   public static List<Class<?>>
-    loadRegisteredImplementations(String resourceName,
-                                  ClassLoader classLoader)
+    loadRegisteredImplementations(final String resourceName,
+                                  final ClassLoader classLoader)
                                       throws EngineException {
 
     return loadRegisteredImplementations(resourceName,
@@ -168,8 +168,8 @@ public class ClassLoaderUtilities {
    * @see #loadRegisteredImplementations(String, Class, ClassLoader)
    */
   public static <T> List<Class<? extends T>>
-    loadRegisteredImplementations(String resourceName,
-                                  Class<T> cls) throws EngineException {
+    loadRegisteredImplementations(final String resourceName,
+                                  final Class<T> cls) throws EngineException {
 
     return loadRegisteredImplementations(resourceName,
                                          cls,
@@ -203,9 +203,9 @@ public class ClassLoaderUtilities {
    */
   @SuppressWarnings("unchecked")
   public static <T> List<Class<? extends T>>
-    loadRegisteredImplementations(String resourceName,
-                                  Class<T> cls,
-                                  ClassLoader classLoader)
+    loadRegisteredImplementations(final String resourceName,
+                                  final Class<T> cls,
+                                  final ClassLoader classLoader)
                                       throws EngineException {
 
     final List<String> names;
@@ -213,7 +213,7 @@ public class ClassLoaderUtilities {
     try {
       names = allResourceLines(classLoader, resourceName);
     }
-    catch (IOException e) {
+    catch (final IOException e) {
       throw new EngineException("Failed to load implementation", e);
     }
 
@@ -222,14 +222,15 @@ public class ClassLoaderUtilities {
     final List<Class<? extends T>> result =
         new ArrayList<Class<? extends T>>(names.size());
 
-    for (String implementationName : names) {
+    for (final String implementationName : names) {
 
       if (!seen.add(implementationName)) {
         continue;
       }
 
       try {
-        final Class<?> implementationClass = Class.forName(implementationName);
+        final Class<?> implementationClass =
+            classLoader.loadClass(implementationName);
 
         if (cls.isAssignableFrom(implementationClass)) {
           result.add((Class<? extends T>) implementationClass);
@@ -240,7 +241,7 @@ public class ClassLoaderUtilities {
                                     cls.getName());
         }
       }
-      catch (ClassNotFoundException e) {
+      catch (final ClassNotFoundException e) {
         throw new EngineException("Could not load '" + implementationName + "'",
                                   e);
       }

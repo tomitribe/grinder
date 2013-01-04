@@ -28,18 +28,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Answers.RETURNS_MOCKS;
 import static org.mockito.Mockito.when;
-import net.grinder.common.GrinderException;
 import net.grinder.common.SSLContextFactory;
-import net.grinder.common.TimeAuthority;
-import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginProcessContext;
-import net.grinder.plugininterface.PluginRegistry;
 import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.Statistics;
-import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.util.InsecureSSLContextFactory;
-import net.grinder.util.StandardTimeAuthority;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -64,44 +58,31 @@ public class TestHTTPUtilitiesImplementation {
   @Mock(answer = RETURNS_MOCKS) private ScriptContext m_scriptContext;
   @Mock private Statistics m_statistics;
   @Mock private PluginThreadContext m_threadContext;
+  @Mock private HTTPClient.HTTPConnection.TimeAuthority m_timeAuthority;
+
+  private HTTPPlugin m_httpPlugin;
 
   @Before public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
-
-    final TimeAuthority timeAuthority = new StandardTimeAuthority();
 
     final HTTPPluginThreadState threadState =
       new HTTPPluginThreadState(m_threadContext,
                                 m_sslContextFactory,
                                 null,
-                                timeAuthority);
+                                m_timeAuthority);
 
     when(m_scriptContext.getStatistics()).thenReturn(m_statistics);
 
-    when(m_pluginProcessContext.getPluginThreadListener())
+    m_httpPlugin = new HTTPPlugin(m_pluginProcessContext,
+                                  m_scriptContext);
+
+    when(m_pluginProcessContext.getPluginThreadListener(m_httpPlugin))
       .thenReturn(threadState);
-
-    when(m_pluginProcessContext.getScriptContext()).thenReturn(m_scriptContext);
-    when(m_pluginProcessContext.getStatisticsServices())
-      .thenReturn(StatisticsServicesImplementation.getInstance());
-
-    new PluginRegistry() {
-      {
-        setInstance(this);
-      }
-
-      @Override
-      public void register(final GrinderPlugin plugin) throws GrinderException {
-        plugin.initialize(m_pluginProcessContext);
-      }
-    };
-
-    HTTPPlugin.getPlugin().initialize(m_pluginProcessContext);
   }
 
   @Test public void testBasicAuthorizationHeader() throws Exception {
     final HTTPUtilities httpUtilities =
-      new HTTPUtilitiesImplementation(m_pluginProcessContext);
+      new HTTPUtilitiesImplementation(m_httpPlugin);
 
     final NVPair pair =
       httpUtilities.basicAuthorizationHeader("foo", "secret");
@@ -116,7 +97,7 @@ public class TestHTTPUtilitiesImplementation {
 
   @Test public void testGetLastResponse() throws Exception {
     final HTTPUtilities httpUtilities =
-      new HTTPUtilitiesImplementation(m_pluginProcessContext);
+      new HTTPUtilitiesImplementation(m_httpPlugin);
 
     assertEquals(null, httpUtilities.getLastResponse());
 
@@ -135,7 +116,7 @@ public class TestHTTPUtilitiesImplementation {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
-      new HTTPUtilitiesImplementation(m_pluginProcessContext);
+      new HTTPUtilitiesImplementation(m_httpPlugin);
     assertEquals("", httpUtilities.valueFromLocationURI("foo"));
 
     final HTTPRequestHandler handler = new HTTPRequestHandler();
@@ -175,7 +156,7 @@ public class TestHTTPUtilitiesImplementation {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
-      new HTTPUtilitiesImplementation(m_pluginProcessContext);
+      new HTTPUtilitiesImplementation(m_httpPlugin);
     assertEquals("", httpUtilities.valueFromBodyURI("foo"));
 
     final HTTPRequestHandler handler = new HTTPRequestHandler();
@@ -223,7 +204,7 @@ public class TestHTTPUtilitiesImplementation {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
-      new HTTPUtilitiesImplementation(m_pluginProcessContext);
+      new HTTPUtilitiesImplementation(m_httpPlugin);
     assertEquals(emptyList(), httpUtilities.valuesFromBodyURI("foo"));
 
     final HTTPRequestHandler handler = new HTTPRequestHandler();
@@ -277,7 +258,7 @@ public class TestHTTPUtilitiesImplementation {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
-      new HTTPUtilitiesImplementation(m_pluginProcessContext);
+      new HTTPUtilitiesImplementation(m_httpPlugin);
     assertEquals("", httpUtilities.valueFromBodyInput("foo"));
 
     final HTTPRequestHandler handler = new HTTPRequestHandler();
@@ -306,7 +287,7 @@ public class TestHTTPUtilitiesImplementation {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
-      new HTTPUtilitiesImplementation(m_pluginProcessContext);
+      new HTTPUtilitiesImplementation(m_httpPlugin);
     assertEquals(emptyList(), httpUtilities.valuesFromBodyInput("foo"));
 
     final HTTPRequestHandler handler = new HTTPRequestHandler();
@@ -339,7 +320,7 @@ public class TestHTTPUtilitiesImplementation {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
-      new HTTPUtilitiesImplementation(m_pluginProcessContext);
+      new HTTPUtilitiesImplementation(m_httpPlugin);
     assertEquals("", httpUtilities.valueFromHiddenInput("foo"));
 
     final HTTPRequestHandler handler = new HTTPRequestHandler();
@@ -368,7 +349,7 @@ public class TestHTTPUtilitiesImplementation {
     final HTTPRequest request = new HTTPRequest();
 
     final HTTPUtilities httpUtilities =
-      new HTTPUtilitiesImplementation(m_pluginProcessContext);
+      new HTTPUtilitiesImplementation(m_httpPlugin);
     assertEquals(emptyList(), httpUtilities.valuesFromHiddenInput("foo"));
 
     final HTTPRequestHandler handler = new HTTPRequestHandler();

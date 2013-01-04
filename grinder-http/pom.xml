@@ -47,6 +47,15 @@
       <version>3.12-SNAPSHOT</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>grinder-core</artifactId>
+      <type>test-jar</type>
+      <version>3.12-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
