@@ -158,8 +158,6 @@ public class TestPluginRegistryImplementation {
     threadListener.endThread();
     threadListener.beginShutdown();
 
-    // No-op.
-    pluginRegistry.threadStarted(threadContext);
 
     verifyNoMoreInteractions(threadContext);
   }

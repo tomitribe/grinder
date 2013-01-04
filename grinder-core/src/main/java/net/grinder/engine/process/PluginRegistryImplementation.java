@@ -127,8 +127,4 @@ final class PluginRegistryImplementation
         }
       });
   }
-
-  @Override
-  public void threadStarted(final ThreadContext threadContext) {
-  }
 }
