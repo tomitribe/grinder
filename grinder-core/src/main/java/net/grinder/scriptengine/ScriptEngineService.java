@@ -1,4 +1,4 @@
-// Copyright (C) 2011 Philip Aston
+// Copyright (C) 2011 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -32,11 +32,10 @@ import net.grinder.engine.common.ScriptLocation;
  * <p>
  * The Grinder discovers script engine implementations from the {@code
  * META-INF/net.grinder.scriptengines} resource files. Each engine should
- * register its class name as a line in such a resource file. The order of the
- * search engines is important, since it determines priority. The engines are
- * ordered first by the class path search order used to load the resource files,
- * and then the order of lines in the resource files. Earlier engines have
- * higher priority.
+ * register its class name as a line in such a resource file. The order is
+ * important, since it determines priority. The engines are ordered first by
+ * the class path search order used to load the resource files, and then the
+ * order of lines in the resource files. Earlier engines have higher priority.
  * </p>
  *
  * <p>
@@ -50,10 +49,10 @@ import net.grinder.engine.common.ScriptLocation;
  * </p>
  *
  * <ul>
- * <li><code>net.grinder.common.Logger</code></li>
- * <li><code>net.grinder.common.GrinderProperties</code></li>
- * <li><code>net.grinder.script.ScriptContext</code></li>
- * <li><code>net.grinder.scriptengine.DCRContext</code></li>
+ * <li>{@link net.grinder.common.Logger}</li>
+ * <li>{@link net.grinder.common.GrinderProperties}</li>
+ * <li>{@link net.grinder.script.ScriptContext}</li>
+ * <li>{@link net.grinder.scriptengine.DCRContext}</li>
  * </ul>
  *
  * <p>
