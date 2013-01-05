@@ -17,14 +17,6 @@
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>grinder-dcr-agent</artifactId>
-      <version>3.12-SNAPSHOT</version>
-      <scope>provided</scope>
-    </dependency>
-
-
-    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>compile</scope>
