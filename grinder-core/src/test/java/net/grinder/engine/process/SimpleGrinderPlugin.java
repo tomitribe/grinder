@@ -23,7 +23,6 @@ package net.grinder.engine.process;
 
 import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginException;
-import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.plugininterface.PluginThreadListener;
 
 public class SimpleGrinderPlugin implements GrinderPlugin {
@@ -35,9 +34,7 @@ public class SimpleGrinderPlugin implements GrinderPlugin {
   }
 
   @Override
-  public PluginThreadListener
-    createThreadListener(final PluginThreadContext pluginThreadContext)
-        throws PluginException {
+  public PluginThreadListener createThreadListener() throws PluginException {
     return s_result;
   }
 }

@@ -82,7 +82,7 @@ public class TestPluginProcessContextImplementation {
     threadContextLocator.set(m_threadContext);
 
     final PluginException e = new PluginException("");
-    when(m_plugin.createThreadListener(m_threadContext)).thenThrow(e);
+    when(m_plugin.createThreadListener()).thenThrow(e);
 
     final PluginProcessContext processContext =
       new PluginProcessContextImplementation(threadContextLocator, m_logger);
@@ -108,7 +108,7 @@ public class TestPluginProcessContextImplementation {
     final PluginProcessContext processContext =
       new PluginProcessContextImplementation(threadContextLocator, m_logger);
 
-    when(m_plugin.createThreadListener(m_threadContext))
+    when(m_plugin.createThreadListener())
     .thenReturn(m_pluginThreadListener);
 
     final PluginThreadListener pluginThreadListener1 =
@@ -117,7 +117,7 @@ public class TestPluginProcessContextImplementation {
     final PluginThreadListener pluginThreadListener2 =
       processContext.getPluginThreadListener(m_plugin);
 
-    verify(m_plugin).createThreadListener(m_threadContext);
+    verify(m_plugin).createThreadListener();
     verify(m_threadContext)
       .registerThreadLifeCycleListener(m_pluginThreadListener);
 

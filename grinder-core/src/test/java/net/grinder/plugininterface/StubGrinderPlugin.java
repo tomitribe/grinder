@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000, 2001, 2002 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -24,21 +24,14 @@ package net.grinder.plugininterface;
 
 
 /**
- * <code>GrinderPlugin</code> stub.
+ * {@link GrinderPlugin} stub.
  *
  * @author Philip Aston
- **/
-public class StubGrinderPlugin implements GrinderPlugin
-{
-    public void initialize(PluginProcessContext processContext)
-	throws PluginException 
-    {
-    }
+ */
+public class StubGrinderPlugin implements GrinderPlugin {
 
-    public PluginThreadListener createThreadListener(
-	PluginThreadContext threadContext)
-	throws PluginException
-    {
+    @Override
+    public PluginThreadListener createThreadListener() throws PluginException {
 	return null;
     }
 }

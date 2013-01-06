@@ -67,11 +67,8 @@ public interface GrinderPlugin {
    *  plug-in using
    * {@link PluginProcessContext#getPluginThreadListener(GrinderPlugin)}.</p>
    *
-   * @param pluginThreadContext Thread context information.
    * @return A {@code PluginThreadListener} implementation.
    * @throws PluginException If an error occurs.
    */
-  PluginThreadListener createThreadListener(
-    PluginThreadContext pluginThreadContext)
-    throws PluginException;
+  PluginThreadListener createThreadListener() throws PluginException;
 }

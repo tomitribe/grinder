@@ -30,7 +30,6 @@ import static org.junit.Assert.fail;
 import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,7 +42,6 @@ import net.grinder.engine.common.EngineException;
 import net.grinder.engine.process.PluginContainerScopeTunnel;
 import net.grinder.plugininterface.PluginException;
 import net.grinder.plugininterface.PluginProcessContext;
-import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.plugininterface.PluginThreadListener;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.Statistics;
@@ -149,10 +147,7 @@ public class TestHTTPPlugin {
     final HTTPPlugin plugin =
         new HTTPPlugin(m_pluginProcessContext, m_scriptContext);
 
-    final PluginThreadContext
-      pluginThreadContext = mock(PluginThreadContext.class);
-    final PluginThreadListener threadListener =
-      plugin.createThreadListener(pluginThreadContext);
+    final PluginThreadListener threadListener = plugin.createThreadListener();
 
     assertNotNull(threadListener);
   }

@@ -92,7 +92,7 @@ final class PluginProcessContextImplementation
     final PluginThreadListener newPluginThreadListener;
 
     try {
-      newPluginThreadListener = plugin.createThreadListener(threadContext);
+      newPluginThreadListener = plugin.createThreadListener();
     }
     catch (final PluginException e) {
       m_logger.error(threadContext.getLogMarker(),

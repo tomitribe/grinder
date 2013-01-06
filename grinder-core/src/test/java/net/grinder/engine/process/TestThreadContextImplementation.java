@@ -1,4 +1,4 @@
-// Copyright (C) 2006 - 2012 Philip Aston
+// Copyright (C) 2006 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -150,7 +150,7 @@ public class TestThreadContextImplementation {
       threadContext.popDispatchContext();
       fail("Expected AssertionError");
     }
-    catch (AssertionError e) {
+    catch (final AssertionError e) {
     }
 
     when(m_dispatchContext.getTest()).thenReturn(new StubTest(14, "test"));
@@ -203,22 +203,6 @@ public class TestThreadContextImplementation {
 
     verifyNoMoreInteractions(stopWatch, stopWatch2);
 
-    threadContext.pauseClock();
-    verify(anotherDispatchContext, times(2)).getPauseTimer();
-    verify(stopWatch).start();
-
-    threadContext.resumeClock();
-    verify(anotherDispatchContext, times(3)).getPauseTimer();
-    verify(stopWatch).stop();
-
-    threadContext.popDispatchContext();
-
-    verify(anotherDispatchContext).getStatisticsForTest();
-    verify(anotherDispatchContext).report();
-
-    threadContext.pauseClock();
-    threadContext.resumeClock();
-
     threadContext.fireBeginThreadEvent();
     threadContext.fireBeginRunEvent();
     threadContext.fireEndRunEvent();
@@ -229,7 +213,7 @@ public class TestThreadContextImplementation {
       threadContext.popDispatchContext();
       fail("Expected AssertionError");
     }
-    catch (AssertionError e) {
+    catch (final AssertionError e) {
     }
   }
 
@@ -372,7 +356,7 @@ public class TestThreadContextImplementation {
         threadContext.pushDispatchContext(m_dispatchContext);
         fail("Expected ShutdownException");
       }
-      catch (ShutdownException e) {
+      catch (final ShutdownException e) {
       }
 
       threadContext.popDispatchContext(); // No-op.
@@ -399,7 +383,7 @@ public class TestThreadContextImplementation {
       threadContext.popDispatchContext();
       fail("Expected AssertionError");
     }
-    catch (AssertionError e) {
+    catch (final AssertionError e) {
       assertSame(t, e.getCause());
     }
   }
@@ -425,7 +409,7 @@ public class TestThreadContextImplementation {
       threadContext.reportPendingDispatchContext();
       fail("Expected AssertionError");
     }
-    catch (AssertionError e) {
+    catch (final AssertionError e) {
       assertSame(t, e.getCause());
     }
   }

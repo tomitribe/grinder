@@ -22,6 +22,12 @@ The Grinder 3.12 (not yet released)
   be re-written before they will work with 3.12 - refer to the
   HTTPPlugin for an example.
 
+  Add pauseClock() and resumeClock() to
+  Statistics.StatisticsForTest. These methods allow plug-ins and
+  advanced scripts to discount the cost of expensive pre or post
+  processing. This feature previouslyy was available to plug-ins
+  through the PluginThreadContext interface, which has been removed.
+
 
 The Grinder 3.11
 ----------------

@@ -1,4 +1,4 @@
-// Copyright (C) 2004, 2005, 2006, 2007 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -23,7 +23,6 @@ package net.grinder.engine.process;
 
 import net.grinder.common.SSLContextFactory;
 import net.grinder.common.ThreadLifeCycleListener;
-import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.script.Statistics.StatisticsForTest;
 
 import org.slf4j.Marker;
@@ -34,7 +33,11 @@ import org.slf4j.Marker;
  *
  * @author Philip Aston
  */
-interface ThreadContext extends PluginThreadContext {
+interface ThreadContext /* extends PluginThreadContext */ {
+
+  int getThreadNumber();
+
+  int getRunNumber();
 
   DispatchResultReporter getDispatchResultReporter();
 

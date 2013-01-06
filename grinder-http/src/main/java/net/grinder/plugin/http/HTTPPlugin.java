@@ -30,7 +30,6 @@ import net.grinder.common.TimeAuthority;
 import net.grinder.plugininterface.GrinderPlugin;
 import net.grinder.plugininterface.PluginException;
 import net.grinder.plugininterface.PluginProcessContext;
-import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.plugininterface.PluginThreadListener;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.Statistics;
@@ -221,13 +220,11 @@ public class HTTPPlugin implements GrinderPlugin {
   /**
    * Called by the engine to obtain a new PluginThreadListener.
    *
-   * @param threadContext The plug-in thread context.
    * @return The new plug-in thread listener.
    * @exception PluginException if an error occurs.
    */
   @Override
-  public PluginThreadListener createThreadListener(
-    final PluginThreadContext threadContext) throws PluginException {
+  public PluginThreadListener createThreadListener() throws PluginException {
 
     return new HTTPPluginThreadState(m_scriptContext.getSSLControl(),
                                      m_slowClientSleeper,
