@@ -49,7 +49,6 @@ import net.grinder.common.SSLContextFactory;
 import net.grinder.engine.process.dcr.DCRContextImplementation;
 import net.grinder.plugininterface.PluginException;
 import net.grinder.plugininterface.PluginProcessContext;
-import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.InvalidContextException;
 import net.grinder.script.Statistics;
@@ -90,7 +89,6 @@ public class TestHTTPRequest {
   @Mock private PluginProcessContext m_pluginProcessContext;
   @Mock private ScriptContext m_scriptContext;
   @Mock private Statistics m_statistics;
-  @Mock private PluginThreadContext m_threadContext;
   @Mock private TimeAuthority m_timeAuthority;
   @Mock private StatisticsForTest m_statisticsForTest;
 
@@ -105,8 +103,7 @@ public class TestHTTPRequest {
     MockitoAnnotations.initMocks(this);
 
     final HTTPPluginThreadState threadState =
-      new HTTPPluginThreadState(m_threadContext,
-                                m_sslContextFactory,
+      new HTTPPluginThreadState(m_sslContextFactory,
                                 null,
                                 m_timeAuthority);
 
@@ -872,8 +869,7 @@ public class TestHTTPRequest {
       });
 
     final HTTPPluginThreadState threadState =
-      new HTTPPluginThreadState(m_threadContext,
-                                m_sslContextFactory,
+      new HTTPPluginThreadState(m_sslContextFactory,
                                 null,
                                 timeAuthority);
 
@@ -903,7 +899,6 @@ public class TestHTTPRequest {
       .addLong(StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY, 119);
     verify(m_statisticsForTest)
       .addLong(StatisticsIndexMap.HTTP_PLUGIN_CONNECTIONS_ESTABLISHED, 1);
-    verifyNoMoreInteractions(m_statisticsForTest);
 
     try {
       timeAuthority.getTimeInMilliseconds();
@@ -929,8 +924,7 @@ public class TestHTTPRequest {
         });
 
     final HTTPPluginThreadState threadState =
-      new HTTPPluginThreadState(m_threadContext,
-                                m_sslContextFactory,
+      new HTTPPluginThreadState(m_sslContextFactory,
                                 null,
                                 timeAuthority);
 
@@ -959,7 +953,6 @@ public class TestHTTPRequest {
       .addLong(StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY, 19);
     verify(m_statisticsForTest)
       .addLong(StatisticsIndexMap.HTTP_PLUGIN_CONNECTIONS_ESTABLISHED, 1);
-    verifyNoMoreInteractions(m_statisticsForTest);
 
     try {
       timeAuthority.getTimeInMilliseconds();
@@ -984,8 +977,7 @@ public class TestHTTPRequest {
       });
 
     final HTTPPluginThreadState threadState =
-      new HTTPPluginThreadState(m_threadContext,
-                                m_sslContextFactory,
+      new HTTPPluginThreadState(m_sslContextFactory,
                                 null,
                                 timeAuthority);
 
@@ -1025,7 +1017,6 @@ public class TestHTTPRequest {
       .addLong(StatisticsIndexMap.HTTP_PLUGIN_FIRST_BYTE_TIME_KEY, 119);
     verify(m_statisticsForTest)
       .addLong(StatisticsIndexMap.HTTP_PLUGIN_CONNECTIONS_ESTABLISHED, 1);
-    verifyNoMoreInteractions(m_statisticsForTest);
 
     try {
       timeAuthority.getTimeInMilliseconds();

@@ -1,4 +1,4 @@
-// Copyright (C) 2006 - 2008 Philip Aston
+// Copyright (C) 2006 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -26,9 +26,9 @@ import net.grinder.script.InvalidContextException;
 import net.grinder.script.NoSuchStatisticException;
 import net.grinder.script.Statistics.StatisticsForTest;
 import net.grinder.statistics.ImmutableStatisticsSet;
-import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.StatisticsIndexMap.DoubleIndex;
 import net.grinder.statistics.StatisticsIndexMap.LongIndex;
+import net.grinder.statistics.StatisticsSet;
 
 
 /**
@@ -58,9 +58,9 @@ final class StatisticsForTestImplementation implements StatisticsForTest {
   private StatisticsSet m_statistics;
 
   public StatisticsForTestImplementation(
-    DispatchContext dispatchContext,
-    TestStatisticsHelper testStatisticsHelper,
-    StatisticsSet statistics) {
+    final DispatchContext dispatchContext,
+    final TestStatisticsHelper testStatisticsHelper,
+    final StatisticsSet statistics) {
 
     m_testStatisticsHelper = testStatisticsHelper;
     m_test = dispatchContext.getTest();
@@ -93,52 +93,63 @@ final class StatisticsForTestImplementation implements StatisticsForTest {
     return m_immutableStatistics;
   }
 
+  @Override
   public Test getTest() {
     return m_test;
   }
 
-  public void setLong(String statisticName, long value)
+  @Override
+  public void setLong(final String statisticName, final long value)
     throws InvalidContextException, NoSuchStatisticException {
 
     getStatisticsChecked().setValue(getLongIndex(statisticName), value);
   }
 
-  public void setDouble(String statisticName, double value)
+  @Override
+  public void setDouble(final String statisticName, final double value)
     throws InvalidContextException, NoSuchStatisticException {
 
     getStatisticsChecked().setValue(getDoubleIndex(statisticName), value);
   }
 
-  public void addLong(String statisticName, long value)
+  @Override
+  public void addLong(final String statisticName, final long value)
     throws InvalidContextException, NoSuchStatisticException {
 
     getStatisticsChecked().addValue(getLongIndex(statisticName), value);
   }
 
-  public void addDouble(String statisticName, double value)
+  @Override
+  public void addDouble(final String statisticName, final double value)
     throws InvalidContextException, NoSuchStatisticException {
 
     getStatisticsChecked().addValue(getDoubleIndex(statisticName), value);
   }
 
-  public long getLong(String statisticName) throws NoSuchStatisticException {
+  @Override
+  public long getLong(final String statisticName)
+      throws NoSuchStatisticException {
     return getImmutableStatistics().getValue(getLongIndex(statisticName));
   }
 
-  public double getDouble(String statisticName)
+  @Override
+  public double getDouble(final String statisticName)
     throws NoSuchStatisticException {
 
     return getImmutableStatistics().getValue(getDoubleIndex(statisticName));
   }
 
-  public void setSuccess(boolean success) throws InvalidContextException {
+  @Override
+  public void setSuccess(final boolean success) throws InvalidContextException {
     m_testStatisticsHelper.setSuccess(getStatisticsChecked(), success);
   }
 
+  @Override
   public boolean getSuccess() {
     return m_testStatisticsHelper.getSuccess(getImmutableStatistics());
   }
 
+  @Override
   public long getTime() {
     if (m_dispatchContext != null) {
       return m_dispatchContext.getElapsedTime();
@@ -148,7 +159,7 @@ final class StatisticsForTestImplementation implements StatisticsForTest {
     }
   }
 
-  private DoubleIndex getDoubleIndex(String statisticName)
+  private DoubleIndex getDoubleIndex(final String statisticName)
     throws NoSuchStatisticException {
 
     final DoubleIndex index =
@@ -163,7 +174,7 @@ final class StatisticsForTestImplementation implements StatisticsForTest {
     return index;
   }
 
-  private LongIndex getLongIndex(String statisticName)
+  private LongIndex getLongIndex(final String statisticName)
     throws NoSuchStatisticException {
 
     final LongIndex index =
@@ -176,5 +187,23 @@ final class StatisticsForTestImplementation implements StatisticsForTest {
     }
 
     return index;
+  }
+
+  private StopWatch getPauseTimer() throws InvalidContextException {
+    if (m_dispatchContext == null) {
+      throw new InvalidContextException("The test is no longer in progress.");
+    }
+
+    return m_dispatchContext.getPauseTimer();
+  }
+
+  @Override
+  public void pauseClock() throws InvalidContextException {
+    getPauseTimer().start();
+  }
+
+  @Override
+  public void resumeClock() throws InvalidContextException {
+    getPauseTimer().stop();
   }
 }

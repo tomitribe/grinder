@@ -30,7 +30,6 @@ import static org.mockito.Answers.RETURNS_MOCKS;
 import static org.mockito.Mockito.when;
 import net.grinder.common.SSLContextFactory;
 import net.grinder.plugininterface.PluginProcessContext;
-import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.Statistics;
 import net.grinder.util.InsecureSSLContextFactory;
@@ -57,7 +56,6 @@ public class TestHTTPUtilitiesImplementation {
   @Mock private PluginProcessContext m_pluginProcessContext;
   @Mock(answer = RETURNS_MOCKS) private ScriptContext m_scriptContext;
   @Mock private Statistics m_statistics;
-  @Mock private PluginThreadContext m_threadContext;
   @Mock private HTTPClient.HTTPConnection.TimeAuthority m_timeAuthority;
 
   private HTTPPlugin m_httpPlugin;
@@ -66,8 +64,7 @@ public class TestHTTPUtilitiesImplementation {
     MockitoAnnotations.initMocks(this);
 
     final HTTPPluginThreadState threadState =
-      new HTTPPluginThreadState(m_threadContext,
-                                m_sslContextFactory,
+      new HTTPPluginThreadState(m_sslContextFactory,
                                 null,
                                 m_timeAuthority);
 

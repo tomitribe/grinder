@@ -47,7 +47,6 @@ import java.util.regex.Pattern;
 
 import net.grinder.common.GrinderException;
 import net.grinder.plugininterface.PluginException;
-import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.script.Grinder.ScriptContext;
 import net.grinder.script.InvalidContextException;
 import net.grinder.script.Statistics;
@@ -79,9 +78,9 @@ import HTTPClient.URI;
  * defaults.</p>
  *
  * <p><strong>WARNING:</strong> The default values set with the various
- * <code>set</code> methods, and apply to all users of the
- * <code>HTTPRequest</code>. If a worker thread needs to set a thread specific
- * value, it should either use its own <code>HTTPRequest</code>, or not use the
+ * {@code set} methods, and apply to all users of the
+ * {@code HTTPRequest}. If a worker thread needs to set a thread specific
+ * value, it should either use its own {@code HTTPRequest}, or not use the
  * defaults and pass the value as an argument to the HTTP method.</p>
  *
  * <p><h3>Streaming</h3>There are variants of POST, PUT, and OPTIONS that
@@ -123,7 +122,7 @@ public class HTTPRequest {
   private volatile boolean m_readResponseBody = true;
 
   /**
-   * Creates a new <code>HTTPRequest</code> instance.
+   * Creates a new {@code HTTPRequest} instance.
    */
   public HTTPRequest() {
   }
@@ -132,7 +131,7 @@ public class HTTPRequest {
    * Gets the default URL.
    *
    * @return The default URL to be used for this request, or
-   * <code>null</code> if the default URL has not been set.
+   * {@code null} if the default URL has not been set.
    */
   public final String getUrl() {
     final URI url = m_defaultURL;
@@ -145,7 +144,7 @@ public class HTTPRequest {
    *
    * <p>See the {@link HTTPRequest warning above} regarding thread safety.
    * Multiple worker threads that need to set a specific URL should either not
-   * share the same <code>HTTPRequest</code>, or pass the URL as an argument
+   * share the same {@code HTTPRequest}, or pass the URL as an argument
    * to the call to the HTTP method.</p>
    *
    * @param url The URL to be used for this request.
@@ -177,7 +176,7 @@ public class HTTPRequest {
    *          Default array.
    * @param overridePairs
    *          Array to merge. Entries take precedence over
-   *          <code>defaultPairs</code> entries with the same name.
+   *          {@code defaultPairs} entries with the same name.
    * @return The merged arrays.
    */
   private NVPair[] mergeArrays(final NVPair[] defaultPairs,
@@ -207,7 +206,7 @@ public class HTTPRequest {
    *
    * <p>See the {@link HTTPRequest warning above} regarding thread safety.
    * Multiple worker threads that need to set specific headers should either not
-   * share the same <code>HTTPRequest</code>, or pass the headers as an argument
+   * share the same {@code HTTPRequest}, or pass the headers as an argument
    * to the call to the HTTP method.</p>
    *
    * @param headers The default headers to be used for this request.
@@ -261,8 +260,8 @@ public class HTTPRequest {
    *
    * <p>See the {@link HTTPRequest warning above} regarding thread safety.
    * Multiple worker threads that need to set specific data should either not
-   * share the same <code>HTTPRequest</code>, or pass the data as an argument
-   * to the call to <code>POST</code>, or <code>PUT</code>.</p>
+   * share the same {@code HTTPRequest}, or pass the data as an argument
+   * to the call to {@code POST}, or {@code PUT}.</p>
    *
    * @param data The default data to be used for this request.
    */
@@ -275,8 +274,8 @@ public class HTTPRequest {
    *
    * <p>See the {@link HTTPRequest warning above} regarding thread safety.
    * Multiple worker threads that need to set specific data should either not
-   * share the same <code>HTTPRequest</code>, or pass the data as an argument
-   * to the call to <code>POST</code>, or <code>PUT</code>. If the later is
+   * share the same {@code HTTPRequest}, or pass the data as an argument
+   * to the call to {@code POST}, or {@code PUT}. If the later is
    * done, this method can still be used to read data from a file.</p>
    *
    * @param filename Path name of data file.
@@ -324,7 +323,7 @@ public class HTTPRequest {
   /**
    * Return whether or not the whole response body will be read.
    *
-   * @return <code>true</code> => The response body will be read.
+   * @return {@code true} => The response body will be read.
    * @see #setReadResponseBody
    */
   public boolean getReadResponseBody() {
@@ -334,19 +333,19 @@ public class HTTPRequest {
   /**
    * Set whether or not the whole response body will be read.
    *
-   * <p>If <code>true</code>, the response body will be read during one
-   * of the HTTP method operations (<code>GET</code>, <code>PUT</code>, ...).
+   * <p>If {@code true}, the response body will be read during one
+   * of the HTTP method operations ({@code GET}, {@code PUT}, ...).
    * Otherwise, the response body will not be read. Most users will want
-   * to leave this set to its default value of <code>true</code>.
+   * to leave this set to its default value of {@code true}.
    *
-   * <p>If set to <code>false</code>, the response body stream will be
+   * <p>If set to {@code false}, the response body stream will be
    * available for reading from the {@link HTTPResponse#getInputStream()}, and
    * the following effects will be observed for the test statistics:</p>
    *
    * <ol>
    * <li>The time taken to read the body will not included in the recorded test
    * time.</li>
-   * <li>The response body length will be recorded as <code>0</code>.
+   * <li>The response body length will be recorded as {@code 0}.
    * </li>
    * </ol>
    *
@@ -355,33 +354,20 @@ public class HTTPRequest {
    * </p>
    *
    * <pre>
-   * TODO - Find a better way.
-   *   final PluginProcessContext pluginProcessContext =
-   *     getPluginProcessContext();
+   *   bodyLength = ... // Read body from HTTPResponse.
    *
-   *   final HTTPPluginThreadState threadState =
-   *     (HTTPPluginThreadState)pluginProcessContext.getPluginThreadListener();
-   *
-   *   final PluginThreadContext threadContext = threadState.getThreadContext();
-   *
-   *   threadContext.resumeClock();
-   *   final int bodyLength = ... // Read body from HTTPResponse.
-   *   threadContext.pauseClock();
-   *
-   *   final StatisticsForTest testStatistics = statistics.getForCurrentTest();
-   *   testStatistics.addLong(
+   *   statistics.addLong(
    *     StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_LENGTH_KEY, bodyLength);
-   *
    * </pre>
    *
-   * @param b <code>true</code> => The response body will be read.
+   * @param b {@code true} => The response body will be read.
    */
   public void setReadResponseBody(final boolean b) {
     m_readResponseBody = b;
   }
 
   /**
-   * Makes an HTTP <code>DELETE</code> request.
+   * Makes an HTTP {@code DELETE} request.
    *
    * @return Contains details of the servers response.
    * @throws Exception If an error occurs.
@@ -391,7 +377,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>DELETE</code> request.
+   * Makes an HTTP {@code DELETE} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -405,7 +391,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>DELETE</code> request.
+   * Makes an HTTP {@code DELETE} request.
    *
    * @param uri
    *          The URI. If a default URL has been specified with {@link #setUrl},
@@ -435,7 +421,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>GET</code> request.
+   * Makes an HTTP {@code GET} request.
    *
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
@@ -445,7 +431,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>GET</code> request.
+   * Makes an HTTP {@code GET} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -459,7 +445,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>GET</code> request.
+   * Makes an HTTP {@code GET} request.
    *
    * @param queryData Request headers. Replaces all the values set
    * by {@link #setFormData}.
@@ -471,7 +457,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>GET</code> request.
+   * Makes an HTTP {@code GET} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -488,7 +474,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>GET</code> request.
+   * Makes an HTTP {@code GET} request.
    *
    * @param uri
    *          The URI. If a default URL has been specified with {@link #setUrl},
@@ -522,7 +508,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>HEAD</code> request.
+   * Makes an HTTP {@code HEAD} request.
    *
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
@@ -532,7 +518,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>HEAD</code> request.
+   * Makes an HTTP {@code HEAD} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -546,7 +532,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>HEAD</code> request.
+   * Makes an HTTP {@code HEAD} request.
    *
    * @param queryData Request headers. Replaces all the values set
    * by {@link #setFormData}.
@@ -558,7 +544,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>HEAD</code> request.
+   * Makes an HTTP {@code HEAD} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -575,7 +561,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>HEAD</code> request.
+   * Makes an HTTP {@code HEAD} request.
    *
    * @param uri
    *          The URI. If a default URL has been specified with {@link #setUrl},
@@ -609,7 +595,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>OPTIONS</code> request.
+   * Makes an HTTP {@code OPTIONS} request.
    *
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
@@ -619,7 +605,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>OPTIONS</code> request.
+   * Makes an HTTP {@code OPTIONS} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -633,7 +619,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>OPTIONS</code> request.
+   * Makes an HTTP {@code OPTIONS} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -650,7 +636,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>OPTIONS</code> request.
+   * Makes an HTTP {@code OPTIONS} request.
    *
    * @param uri
    *          The URI. If a default URL has been specified with {@link #setUrl},
@@ -684,7 +670,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>OPTIONS</code> request. This version allows the data
+   * Makes an HTTP {@code OPTIONS} request. This version allows the data
    * to be passed as a stream, see the note in the
    * {@link HTTPRequest class description}.
    *
@@ -706,7 +692,7 @@ public class HTTPRequest {
 
 
   /**
-   * Makes an HTTP <code>OPTIONS</code> request. This version allows the data
+   * Makes an HTTP {@code OPTIONS} request. This version allows the data
    * to be passed as a stream, see the note in the
    * {@link HTTPRequest class description}.
    *
@@ -746,7 +732,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>POST</code> request.
+   * Makes an HTTP {@code POST} request.
    *
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
@@ -756,7 +742,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>POST</code> request.
+   * Makes an HTTP {@code POST} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -777,10 +763,10 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>POST</code> request.
+   * Makes an HTTP {@code POST} request.
    *
    * @param formData Data to be submitted as an
-   * <code>application/x-www-form-urlencoded</code> encoded request
+   * {@code application/x-www-form-urlencoded} encoded request
    * body.
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
@@ -790,14 +776,14 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>POST</code> request.
+   * Makes an HTTP {@code POST} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
    * relative, it will be resolved relative to the default URL.
    * Otherwise this value must be an absolute URL.
    * @param formData Data to be submitted as an
-   * <code>application/x-www-form-urlencoded</code> encoded request
+   * {@code application/x-www-form-urlencoded} encoded request
    * body.
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
@@ -808,14 +794,14 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>POST</code> request.
+   * Makes an HTTP {@code POST} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
    * relative, it will be resolved relative to the default URL.
    * Otherwise this value must be an absolute URL.
    * @param formData Data to be submitted as an
-   * <code>application/x-www-form-urlencoded</code> encoded request
+   * {@code application/x-www-form-urlencoded} encoded request
    * body.
    * @param headers
    *          Request headers. Overrides headers with matching names set by
@@ -840,15 +826,15 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>POST</code> request.
+   * Makes an HTTP {@code POST} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
    * relative, it will be resolved relative to the default URL.
    * Otherwise this value must be an absolute URL.
    * @param formData Data to be submitted as an
-   * <code>application/x-www-form-urlencoded</code> or
-   * <code>multipart/form-data</code> encoded request
+   * {@code application/x-www-form-urlencoded} or
+   * {@code multipart/form-data} encoded request
    * body.
    * @param headers
    *          Request headers. Overrides headers with matching names set by
@@ -902,7 +888,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>POST</code> request.
+   * Makes an HTTP {@code POST} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -919,7 +905,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>POST</code> request.
+   * Makes an HTTP {@code POST} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -950,7 +936,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>POST</code> request. This version allows the data
+   * Makes an HTTP {@code POST} request. This version allows the data
    * to be passed as a stream, see the note in the
    * {@link HTTPRequest class description}.
    *
@@ -972,7 +958,7 @@ public class HTTPRequest {
 
 
   /**
-   * Makes an HTTP <code>POST</code> request. This version allows the data
+   * Makes an HTTP {@code POST} request. This version allows the data
    * to be passed as a stream, see the note in the
    * {@link HTTPRequest class description}.
    *
@@ -1012,7 +998,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>PUT</code> request.
+   * Makes an HTTP {@code PUT} request.
    *
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
@@ -1022,7 +1008,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>PUT</code> request.
+   * Makes an HTTP {@code PUT} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -1036,7 +1022,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>PUT</code> request.
+   * Makes an HTTP {@code PUT} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -1053,7 +1039,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>PUT</code> request.
+   * Makes an HTTP {@code PUT} request.
    *
    * @param uri
    *          The URI. If a default URL has been specified with {@link #setUrl},
@@ -1087,7 +1073,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>PUT</code> request. This version allows the data
+   * Makes an HTTP {@code PUT} request. This version allows the data
    * to be passed as a stream, see the note in the
    * {@link HTTPRequest class description}.
    *
@@ -1107,7 +1093,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>PUT</code> request. This version allows the data
+   * Makes an HTTP {@code PUT} request. This version allows the data
    * to be passed as a stream, see the note in the
    * {@link HTTPRequest class description}.
    *
@@ -1147,7 +1133,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>TRACE</code> request.
+   * Makes an HTTP {@code TRACE} request.
    *
    * @return Contains details of the server's response.
    * @throws Exception If an error occurs.
@@ -1157,7 +1143,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>TRACE</code> request.
+   * Makes an HTTP {@code TRACE} request.
    *
    * @param uri The URI. If a default URL has been specified with
    * {@link #setUrl}, this value need not be absolute and, if
@@ -1171,7 +1157,7 @@ public class HTTPRequest {
   }
 
   /**
-   * Makes an HTTP <code>TRACE</code> request.
+   * Makes an HTTP {@code TRACE} request.
    *
    * @param uri
    *          The URI. If a default URL has been specified with {@link #setUrl},
@@ -1203,6 +1189,11 @@ public class HTTPRequest {
   /**
    * Subclasses of HTTPRequest that wish to post-process responses
    * should override this method.
+   *
+   * <p>If there is a test in progress, the time taken by this method
+   * will not included in its statistics. (The clock will be
+   * {@link StatisticsForTest#pauseClock() stopped} while this method
+   * is called).</p>
    *
    * @param response The response.
    */
@@ -1275,8 +1266,6 @@ public class HTTPRequest {
       final HTTPPluginThreadState threadState = plugin.getThreadState();
       final ScriptContext scriptContext = plugin.getScriptContext();
 
-      final PluginThreadContext threadContext = threadState.getThreadContext();
-
       final String pathAndQuery = m_url.getPathAndQuery();
       final String fragment = m_url.getFragment();
 
@@ -1317,8 +1306,14 @@ public class HTTPRequest {
         responseLength = 0;
       }
 
+      final Statistics statistics = scriptContext.getStatistics();
+      final StatisticsForTest statisticsForCurrentTest =
+          statistics.isTestInProgress() ? statistics.getForCurrentTest() : null;
+
       // Stop the clock whilst we do potentially expensive result processing.
-      threadContext.pauseClock();
+      if (statisticsForCurrentTest != null) {
+        statisticsForCurrentTest.pauseClock();
+      }
 
       final long dnsTime = connection.getDnsTime();
       final long connectTime = connection.getConnectTime();
@@ -1352,13 +1347,8 @@ public class HTTPRequest {
       }
 
       try {
-        final Statistics statistics = scriptContext.getStatistics();
-
-        if (statistics.isTestInProgress()) {
+        if (statisticsForCurrentTest != null) {
           // Log the custom statistics if we have a statistics context.
-
-          final StatisticsForTest statisticsForCurrentTest =
-            statistics.getForCurrentTest();
 
           statisticsForCurrentTest.addLong(
             StatisticsIndexMap.HTTP_PLUGIN_RESPONSE_LENGTH_KEY, responseLength);
@@ -1398,7 +1388,9 @@ public class HTTPRequest {
       processResponse(httpResponse);
       threadState.setLastResponse(httpResponse);
 
-      threadContext.resumeClock();
+      if (statisticsForCurrentTest != null) {
+        statisticsForCurrentTest.resumeClock();
+      }
 
       return httpResponse;
     }

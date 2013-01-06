@@ -1,4 +1,4 @@
-// Copyright (C) 2007 - 2012 Philip Aston
+// Copyright (C) 2007 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 import net.grinder.common.SSLContextFactory;
-import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.util.InsecureSSLContextFactory;
 import net.grinder.util.Sleeper;
 
@@ -49,8 +48,6 @@ public class TestHTTPPluginThreadState {
   private final SSLContextFactory m_sslContextFactory =
       new InsecureSSLContextFactory();
 
-  @Mock private PluginThreadContext m_threadContext;
-
   @Mock private Sleeper m_sleeper;
 
   @Before
@@ -61,12 +58,9 @@ public class TestHTTPPluginThreadState {
   @Test
   public void testHTTPPluginThreadState() throws Exception {
     final HTTPPluginThreadState pluginThreadState =
-      new HTTPPluginThreadState(m_threadContext,
-                                m_sslContextFactory,
+      new HTTPPluginThreadState(m_sslContextFactory,
                                 m_sleeper,
                                 null);
-
-    assertSame(m_threadContext, pluginThreadState.getThreadContext());
 
     pluginThreadState.beginThread();
 
@@ -118,8 +112,7 @@ public class TestHTTPPluginThreadState {
         new HTTPConnection(new URI(handler.getURL()));
 
       final HTTPPluginThreadState pluginThreadState =
-        new HTTPPluginThreadState(m_threadContext,
-                                  m_sslContextFactory,
+        new HTTPPluginThreadState(m_sslContextFactory,
                                   m_sleeper,
                                   null);
 

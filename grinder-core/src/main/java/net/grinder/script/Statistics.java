@@ -1,4 +1,4 @@
-// Copyright (C) 2003 - 2008 Philip Aston
+// Copyright (C) 2003 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -700,5 +700,28 @@ public interface Statistics  {
      * @return The elapsed time for the test.
      */
     long getTime();
+
+
+    /**
+     * The time taken between invocations of {@link #pauseClock()} and
+     * {@link #resumeClock} is not included in the recorded time for this test.
+     *
+     *
+     * <p>This is an advanced API, primarily for the use of scripts and plug-ins
+     * that wish to discount the cost of expensive pre or post processing.</p>
+     *
+     * @throws InvalidContextException If the test has completed. This method
+     * can only be called when there is a test in progress, so will not work
+     * if called on the result of {@link Statistics#getForLastTest()}.
+     * @since 3.12
+     */
+    void pauseClock() throws InvalidContextException;
+
+    /**
+     * @see #pauseClock()
+     * @throws InvalidContextException If the test has completed.
+     * @since 3.12
+     */
+    void resumeClock() throws InvalidContextException;
   }
 }

@@ -28,7 +28,6 @@ import net.grinder.common.SSLContextFactory;
 import net.grinder.common.SSLContextFactory.SSLContextFactoryException;
 import net.grinder.common.SkeletonThreadLifeCycleListener;
 import net.grinder.plugininterface.PluginException;
-import net.grinder.plugininterface.PluginThreadContext;
 import net.grinder.plugininterface.PluginThreadListener;
 import net.grinder.util.Sleeper;
 import HTTPClient.CookieModule;
@@ -48,7 +47,6 @@ import HTTPClient.URI;
 class HTTPPluginThreadState
   extends SkeletonThreadLifeCycleListener implements PluginThreadListener {
 
-  private final PluginThreadContext m_threadContext;
   private final SSLContextFactory m_sslContextFactory;
 
   private final Map<URI, HTTPConnectionWrapper> m_httpConnectionWrappers =
@@ -57,20 +55,13 @@ class HTTPPluginThreadState
   private final Sleeper m_slowClientSleeper;
   private final TimeAuthority m_timeAuthority;
 
-
-  HTTPPluginThreadState(final PluginThreadContext threadContext,
-                        final SSLContextFactory sslContextFactory,
+  HTTPPluginThreadState(final SSLContextFactory sslContextFactory,
                         final Sleeper slowClientSleeper,
                         final TimeAuthority timeAuthority)
     throws PluginException {
-    m_threadContext = threadContext;
     m_sslContextFactory = sslContextFactory;
     m_slowClientSleeper = slowClientSleeper;
     m_timeAuthority = timeAuthority;
-  }
-
-  public PluginThreadContext getThreadContext() {
-    return m_threadContext;
   }
 
   public HTTPConnectionWrapper getConnectionWrapper(final URI uri)

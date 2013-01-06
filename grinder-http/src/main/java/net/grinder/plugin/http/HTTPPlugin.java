@@ -229,8 +229,7 @@ public class HTTPPlugin implements GrinderPlugin {
   public PluginThreadListener createThreadListener(
     final PluginThreadContext threadContext) throws PluginException {
 
-    return new HTTPPluginThreadState(threadContext,
-                                     m_scriptContext.getSSLControl(),
+    return new HTTPPluginThreadState(m_scriptContext.getSSLControl(),
                                      m_slowClientSleeper,
                                      m_httpClientTimeAuthority);
   }
