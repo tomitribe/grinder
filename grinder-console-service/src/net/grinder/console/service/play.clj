@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -23,21 +23,25 @@
   "Start and stop the console from the REPL."
   (:import
     net.grinder.common.GrinderBuild
-    org.slf4j.LoggerFactory
-    net.grinder.console.textui.TextUI))
+    org.slf4j.LoggerFactory))
 
+(defonce ^:private stopper (atom nil))
 
-(let [resources (net.grinder.console.common.ResourcesImplementation.
-                  "net.grinder.console.common.resources.Console")
-      logger (LoggerFactory/getLogger "test")]
-  (def cf(net.grinder.console.ConsoleFoundation. resources logger))
-  (.createUI cf TextUI)
-  )
+(defn stop []
+  (let [s @stopper]
+    (if s (s))))
 
 (defn start
   []
-  (future (repeatedly (.run cf))))
+  (stop)
+  (let [resources (net.grinder.console.common.ResourcesImplementation.
+                  "net.grinder.console.common.resources.Console")
+        logger (LoggerFactory/getLogger "test")
+        cf (net.grinder.console.ConsoleFoundation. resources logger true)]
+    (reset! stopper
+            (fn []
+              (.shutdown cf)
+              (reset! stopper nil)))
+    (future (.run cf))))
 
-(defn stop
-  []
-  (.shutdown cf))
+

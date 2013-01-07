@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; Copyright (C) 2012 Marc Holden
 ; All rights reserved.
 ;
@@ -22,7 +22,7 @@
 
 (ns net.grinder.console.service.rest
   "Compojure application that provides the console REST API."
-  (:use [compojure [core :only [GET POST PUT context defroutes routes]]
+  (:use [compojure [core :only [GET POST PUT context routes]]
                    [route :only [not-found]]]
         [ring.middleware.format-params :only [wrap-restful-params]]
         [ring.middleware.format-response :only [wrap-restful-response]])

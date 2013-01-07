@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -20,7 +20,7 @@
 ; OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (ns net.grinder.console.service.bootstrap_impl
-  "Bootstrap class implementation. A seperate namespace is used to work
+  "Bootstrap class implementation. A separate namespace is used to work
    around http://dev.clojure.org/jira/browse/CLJ-322. See
    https://groups.google.com/forum/?fromgroups#!topic/clojure/k2_o80sgayk"
   (:require
