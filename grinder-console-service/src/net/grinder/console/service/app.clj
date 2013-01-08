@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -22,11 +22,13 @@
 (ns net.grinder.console.service.app
   "Main Ring application."
   (:use
+    [compojure [core :only [context routes]]]
     [clj-stacktrace.repl :only [pst-str]])
   (:require
     [net.grinder.console.model [processes :as processes]
                                [recording :as recording]]
-    [net.grinder.console.service [rest :as rest]]
+    [net.grinder.console.service [rest :as rest]
+                                 [web :as web]]
     [clojure.tools [logging :as log]]
     ))
 
@@ -57,12 +59,12 @@
 
 (defn- create-app
   [state]
-  (let [rest-app (rest/create-app state)]
+  (let [rest-app (rest/create-app state)
+        web-app (web/create-app state)]
     (->
-      (fn
-        [req]
-        ; For now, we dispatch everything to the REST handlers.
-        (rest-app req))
+      (routes
+        (context "/ui" [] web-app)
+        rest-app)
        wrap-stacktrace
        wrap-request-logging)))
 
