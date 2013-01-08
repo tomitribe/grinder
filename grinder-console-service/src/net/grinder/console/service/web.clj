@@ -22,7 +22,10 @@
 (ns net.grinder.console.service.web
   "Compojure application that provides the console web UI."
   (:use [compojure [core :only [GET POST PUT context routes]]
-                   [route :only [not-found resources]]])
+                   [route :only [not-found resources]]]
+         hiccup.core
+         hiccup.form
+         hiccup.page)
   (:require
     [compojure.handler]
     [net.grinder.console.model [files :as files]
@@ -30,6 +33,31 @@
                                [properties :as properties]
                                [recording :as recording]])
   )
+
+
+(defn render-properties-form [p]
+  (html5
+    (include-css "resources/forms.css")
+    (form-to
+      {:id :properties}
+      [:post "./properties" ]
+      [:hgroup
+       [:h1 "Console Properties"]
+       ]
+
+      [:fieldset
+       [:legend "General Settings"]
+
+       (for [[k v ] (properties/get-properties p)]
+         [:div
+           (label k k)
+           (text-field {:placeholder "default"} k v)])
+       ]
+      (submit-button {:id "submit"} "save"))))
+
+(defn handle-properties-form [params]
+  (println params)
+  {:body (str "stored" (params :task))})
 
 (defn create-app
   "Create the Ring routes, given a map of the various console components."
@@ -40,7 +68,9 @@
            file-distribution]}]
   (->
     (routes
-      (resources "/resource/" {:root "static"})
+      (resources "/resources/" {:root "static"})
+       (GET "/properties" [] (render-properties-form properties))
+       (POST "/properties" {params :params} (handle-properties-form params))
       (not-found "Whoop!!!")
       )
     compojure.handler/api))
