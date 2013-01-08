@@ -1,0 +1,132 @@
+body {
+	color: white;
+	background-color: #123456;
+}
+
+#wrapper {
+	margin-right: auto;
+	margin-left: auto;
+	width: 95%;
+}
+
+#header {
+	float: left;
+	width: 100%;
+}
+
+#title {
+	float: left;
+  width: 70%;
+}
+
+#logo {
+  float: right;
+  width: 20%;
+}
+
+#logo img {
+  float: right;
+  max-width: 10em;
+}
+
+#content {
+	margin-top: 3em;
+	margin-right: 1em;
+	float: right;
+	width: 70%;
+}
+
+#sidebar { /*border-right-color: #e8e8e8;
+	border-right-style: solid;
+	border-right-width: 1px;
+	*/
+	margin-top: 7em;
+	padding-right: 1em;
+	margin-right: 1em;
+	float: left;
+	width: 20%;
+}
+
+#sidebar a {
+	color: white;
+	text-decoration: none;
+  font: 2em;
+  background-color: #345678;
+  border-radius: 8px;
+  padding: 4%;
+  float: left;
+  margin-top: 30px;
+  border: 2px solid #bfbfbf;
+  width:80%;
+  text-align: center;
+}
+
+#content fieldset {
+	background-color: white;
+	color: black;
+	border-radius: 1em;
+	border-style: none;
+}
+
+#content {
+	font-family: Arial, Helvetica, Verdana, sans-serif;
+	font-weight: 400;
+}
+
+#content hgroup {
+	margin-bottom: 1em;
+}
+
+#content div {
+	width: 100%;
+	margin-bottom: 1em;
+	float: left;
+}
+
+#content legend {
+	font-style: italic;
+	color: #434242;
+	font-size: 0.8em;
+	margin-bottom: 20px;
+	float: left;
+	width: 100%;
+}
+
+#content label {
+	width: 20%;
+	float: left;
+}
+
+#content input {
+	height: 1.5em;
+	width: 60%;
+	float: right;
+}
+
+#content input {
+	border: 1px solid #bfbfbf;
+	padding: 0.2em;
+	font-size: 1.1em;
+	line-height: 1.2em;
+	background: #ffffff;
+	background: linear-gradient(top, #ffffff 0%, #ededed 8%, #ffffff 100%);
+	border-radius: 4px;
+	box-shadow: 2px 2px 5px hsla(0, 0%, 16.6667%, 0.1);
+}
+
+#content input#submit {
+	text-decoration: none;
+	height: 34px;
+	font: 1.25em;
+	background-color: #b01c20;
+	border-radius: 4px;
+	color: white;
+	float: right;
+	margin-bottom: 10px;
+	background: linear-gradient(top, rgb(241, 92, 96) 0%, rgb(176, 28, 32)
+		100% );
+	margin-top: 10px;
+	box-shadow: 5px 5px 5px hsla(0, 0%, 26.6667%, 0.8);
+	border: 2px solid #bfbfbf;
+	background-color: #b01c20;
+}

@@ -24,6 +24,8 @@
   (:use [compojure [core :only [GET POST PUT context routes]]
                    [route :only [not-found resources]]]
          hiccup.core
+         hiccup.def
+         hiccup.element
          hiccup.form
          hiccup.page)
   (:require
@@ -34,15 +36,29 @@
                                [recording :as recording]])
   )
 
+(defelem page [body]
+  (html5
+    (include-css "resources/main.css")
+    [:div {:id :wrapper}
+      [:div {:id :header}
+       [:div {:id :title} [:h1 "The Grinder"]]
+       [:div {:id :logo} (image "core/logo.png" "Logo")]]
+      [:div {:id :sidebar}
+       (link-to "./properties" "Console Properties")]
+      [:div {:id :content}
+       (html body)]]
+  ))
+
 
 (defn render-properties-form [p]
-  (html5
-    (include-css "resources/forms.css")
+  (page
     (form-to
       {:id :properties}
       [:post "./properties" ]
       [:hgroup
-       [:h1 "Console Properties"]
+       [:h2
+        "Console Properties"
+       ]
        ]
 
       [:fieldset
@@ -53,7 +69,7 @@
            (label k k)
            (text-field {:placeholder "default"} k v)])
        ]
-      (submit-button {:id "submit"} "save"))))
+      (submit-button {:id "submit"} "Save"))))
 
 (defn handle-properties-form [params]
   (println params)
@@ -69,8 +85,9 @@
   (->
     (routes
       (resources "/resources/" {:root "static"})
-       (GET "/properties" [] (render-properties-form properties))
-       (POST "/properties" {params :params} (handle-properties-form params))
+      (resources "/core/" {:root "net/grinder/console/common/resources"})
+      (GET "/properties" [] (render-properties-form properties))
+      (POST "/properties" {params :params} (handle-properties-form params))
       (not-found "Whoop!!!")
       )
     compojure.handler/api))
