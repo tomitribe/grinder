@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2012 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // Copyright (C) 2012 Marc Holden
 // All rights reserved.
 //
@@ -275,13 +275,13 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
 
     final State triggeredState = sampleModelImplementation.getState();
     assertEquals(IgnoringInitialSamples, triggeredState.getValue());
-    assertEquals("whatever 1", triggeredState.getDescription());
+    assertEquals("whatever: 1", triggeredState.getDescription());
 
 
     final TimerTask triggeredSampleTask = m_timer.getLastScheduledTimerTask();
     triggeredSampleTask.run();
 
-    assertEquals("whatever 2", triggeredState.getDescription());
+    assertEquals("whatever: 2", triggeredState.getDescription());
 
 
     sampleModelImplementation.addTestReport(testStatisticsMap);
@@ -289,7 +289,7 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     sampleModelImplementation.addTestReport(testStatisticsMap);
     triggeredSampleTask.run();
 
-    assertEquals("whatever 3",
+    assertEquals("whatever: 3",
                  sampleModelImplementation.getState().getDescription());
 
 
@@ -297,13 +297,13 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
       triggeredSampleTask.run();
     }
 
-    assertEquals("whatever 7",
+    assertEquals("whatever: 7",
       sampleModelImplementation.getState().getDescription());
 
 
     triggeredSampleTask.run();
 
-    assertEquals("whatever 8",
+    assertEquals("whatever: 8",
       sampleModelImplementation.getState().getDescription());
     assertEquals(IgnoringInitialSamples, sampleModelImplementation.getState().getValue());
 
@@ -314,12 +314,12 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
 
     final State capturingState = sampleModelImplementation.getState();
     assertEquals(Recording, capturingState.getValue());
-    assertEquals("running 1", capturingState.getDescription());
+    assertEquals("running: 1", capturingState.getDescription());
 
 
     sampleModelImplementation.addTestReport(testStatisticsMap);
 
-    assertEquals("running 1",
+    assertEquals("running: 1",
       sampleModelImplementation.getState().getDescription());
 
 
@@ -327,14 +327,14 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     assertNotSame(triggeredSampleTask, capturingSampleTask);
     capturingSampleTask.run();
 
-    assertEquals("running 2",
+    assertEquals("running: 2",
       sampleModelImplementation.getState().getDescription());
 
 
     sampleModelImplementation.addTestReport(testStatisticsMap);
     capturingSampleTask.run();
 
-    assertEquals("running 3",
+    assertEquals("running: 3",
       sampleModelImplementation.getState().getDescription());
 
 

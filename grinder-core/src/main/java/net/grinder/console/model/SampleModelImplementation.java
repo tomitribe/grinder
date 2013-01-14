@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2012 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // Copyright (C) 2012 Marc Holden
 // All rights reserved.
 //
@@ -118,10 +118,11 @@ public final class SampleModelImplementation implements SampleModel {
     m_timer = timer;
     m_errorHandler = errorHandler;
 
-    m_stateIgnoringString = resources.getString("state.ignoring.label") + ' ';
+    m_stateIgnoringString = resources.getString("state.ignoring.label") + ": ";
     m_stateWaitingString = resources.getString("state.waiting.label");
     m_stateStoppedString = resources.getString("state.stopped.label");
-    m_stateCapturingString = resources.getString("state.capturing.label") + ' ';
+    m_stateCapturingString =
+        resources.getString("state.capturing.label") + ": ";
     m_unknownTestString = resources.getString("ignoringUnknownTest.text");
 
     final StatisticsIndexMap indexMap =

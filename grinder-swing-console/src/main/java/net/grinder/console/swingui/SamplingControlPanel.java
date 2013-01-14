@@ -62,7 +62,7 @@ class SamplingControlPanel extends JPanel {
 
   public SamplingControlPanel(Resources resources) {
     m_sampleIntervalString =
-      resources.getString("sampleInterval.label") + " ";
+      resources.getString("sampleInterval.label") + ": ";
 
     m_ignoreSampleString = resources.getString("ignoreCount.label") + " ";
 
