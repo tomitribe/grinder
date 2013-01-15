@@ -35,7 +35,7 @@
   []
   (stop)
   (let [resources (net.grinder.console.common.ResourcesImplementation.
-                  "net.grinder.console.common.resources.Console")
+                    "net.grinder.console.common.resources.Console")
         logger (LoggerFactory/getLogger "test")
         cf (net.grinder.console.ConsoleFoundation. resources logger true)]
     (reset! stopper

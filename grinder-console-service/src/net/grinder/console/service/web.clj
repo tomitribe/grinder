@@ -23,11 +23,12 @@
   "Compojure application that provides the console web UI."
   (:use [compojure [core :only [GET POST PUT context routes]]
                    [route :only [not-found resources]]]
-         hiccup.core
-         hiccup.def
-         hiccup.element
-         hiccup.form
-         hiccup.page)
+        ;[net.grinder.console.service [app :only [reinit-app]]]
+        hiccup.core
+        hiccup.def
+        hiccup.element
+        hiccup.form
+        hiccup.page)
   (:require
     [compojure.handler]
     [net.grinder.console.model [files :as files]
@@ -49,8 +50,26 @@
        (html body)]]
   ))
 
+(defn- property->description [r s]
+  (if-let [label (.getString r (str (name s) ".label") false)]
+    label
+    (name s))
+  )
 
-(defn render-properties-form [p]
+(defn- render-property-group [legend res properties]
+  [:fieldset
+   [:legend legend]
+   (for [[d k v]
+         (sort
+           (map
+             (fn [[k v]] [(property->description res k) k v])
+             properties))]
+     [:div
+      (label k d)
+      (text-field {:placeholder "default"} k v)])
+   ])
+
+(defn- render-properties-form [p res]
   (page
     (form-to
       {:id :properties}
@@ -58,22 +77,50 @@
       [:hgroup
        [:h2
         "Console Properties"
-       ]
-       ]
+       ]]
 
-      [:fieldset
-       [:legend "General Settings"]
+      (let [properties (properties/get-properties p)
+            groups [["Communication"
+                     #{:consoleHost
+                       :consolePort
+                       :httpHost
+                       :httpPort}]
+                    ["Sampling"
+                     #{:significantFigures
+                       :collectSampleCount
+                       :sampleInterval
+                       :ignoreSampleCount}]
+                    ["File Distribution"
+                     #{:scanDistributionFilesPeriod
+                       :distributionDirectory
+                       :propertiesFile
+                       :distributionFileFilterExpression}]]
+            all (conj groups
+                  ["Other Settings"
+                   (apply clojure.set/difference
+                     (set (keys properties))
+                     (map second groups))])
+            ]
+        (for [[l ks] all]
+          (render-property-group l res (select-keys properties ks))))
 
-       (for [[k v ] (properties/get-properties p)]
-         [:div
-           (label k k)
-           (text-field {:placeholder "default"} k v)])
-       ]
       (submit-button {:id "submit"} "Save"))))
 
 (defn handle-properties-form [params]
   (println params)
   {:body (str "stored" (params :task))})
+
+
+(defn- wrap-spy [handler spyname]
+  (fn [request]
+    (println "-------------------------------")
+    (println spyname "request:")
+    (clojure.pprint/pprint request)
+    (let [response (handler request)]
+      (println spyname "response:")
+      (clojure.pprint/pprint response)
+      (println "-------------------------------")
+      response)))
 
 (defn create-app
   "Create the Ring routes, given a map of the various console components."
@@ -81,13 +128,20 @@
            sample-model
            sample-model-views
            properties
-           file-distribution]}]
+           file-distribution
+           console-resources]}]
   (->
     (routes
       (resources "/resources/" {:root "static"})
-      (resources "/core/" {:root "net/grinder/console/common/resources"})
-      (GET "/properties" [] (render-properties-form properties))
+      ;(wrap-spy
+        (resources "/core/" {:root "net/grinder/console/common/resources"})
+      ;  "core")
+      ;(wrap-spy
+        (GET "/properties" [] (render-properties-form properties console-resources))
+      ;  "props")
       (POST "/properties" {params :params} (handle-properties-form params))
       (not-found "Whoop!!!")
       )
     compojure.handler/api))
+
+;(reinit-app)

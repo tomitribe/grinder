@@ -73,7 +73,8 @@
     sampleModelViews
     processControl
     errorQueue
-    fileDistribution ]
+    fileDistribution
+    resources]
 
   (let [state
         {:context {:properties properties
@@ -81,7 +82,8 @@
                    :sample-model-views sampleModelViews
                    :process-control processControl
                    :error-handler errorQueue
-                   :file-distribution fileDistribution}
+                   :file-distribution fileDistribution
+                   :console-resources resources}
          :server (atom nil)}]
 
     (.addPropertyChangeListener

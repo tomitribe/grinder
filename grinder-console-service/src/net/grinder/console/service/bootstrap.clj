@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -34,7 +34,8 @@
                     net.grinder.console.model.SampleModelViews
                     net.grinder.console.communication.ProcessControl
                     net.grinder.console.common.ErrorQueue
-                    net.grinder.console.distribution.FileDistribution]
+                    net.grinder.console.distribution.FileDistribution
+                    net.grinder.console.common.Resources]
                    [] }
    :init init
    :implements [org.picocontainer.Startable]

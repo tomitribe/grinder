@@ -69,11 +69,7 @@
        wrap-request-logging)))
 
 
-; Support reloading.
 (defonce ^:private state (atom nil))
-
-(if-let [s @state]
-  (def app (create-app s)))
 
 (defn init-app
   [{m :sample-model, pc :process-control, :as s}]
@@ -82,3 +78,12 @@
   (reset! state s)
   (def app (create-app s))
   #'app)
+
+(defn reinit-app
+  "Utility to re-create the app using the existing state."
+  []
+  (when-let [s @state]
+    (def app (create-app s))))
+
+; Re-create the app if this file is re-evaluated.
+(reinit-app)
