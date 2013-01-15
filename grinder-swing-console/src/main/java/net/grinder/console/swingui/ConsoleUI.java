@@ -806,7 +806,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
         new File(m_resources.getString("default.filename")));
 
       m_saveTotalsCheckBox =
-        new JCheckBox(m_resources.getString("saveResults.includeTotals.label"));
+        new JCheckBox(m_resources.getString("saveTotalsWithResults.label"));
       m_saveTotalsCheckBox.setSelected(
         m_properties.getSaveTotalsWithResults());
 
