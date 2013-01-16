@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2009 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,20 +21,35 @@
 
 package net.grinder.console.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.grinder.console.common.Resources;
 import net.grinder.console.model.SampleModelViews.Listener;
 import net.grinder.statistics.ExpressionView;
 import net.grinder.statistics.StatisticsServices;
 import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.statistics.StatisticsView;
 import net.grinder.statistics.TestStatisticsQueries;
-import net.grinder.testutility.AbstractFileTestCase;
-import net.grinder.testutility.RandomStubFactory;
+import net.grinder.testutility.AbstractJUnit4FileTestCase;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 
 /**
@@ -42,21 +57,22 @@ import net.grinder.testutility.RandomStubFactory;
  *
  * @author Philip Aston
  */
-public class TestSampleModelViewsImplementation extends AbstractFileTestCase {
+public class TestSampleModelViewsImplementation
+  extends AbstractJUnit4FileTestCase {
 
-  private final RandomStubFactory<SampleModel> m_modelStubFactory =
-    RandomStubFactory.create(SampleModel.class);
-  private final SampleModel m_model = m_modelStubFactory.getStub();
+  @Mock private SampleModel m_model;
+  @Mock private Resources m_resources;
 
   private ConsoleProperties m_consoleProperties;
 
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before public void setUp() throws Exception {
+    initMocks(this);
+
     m_consoleProperties =
-      new ConsoleProperties(null, new File(getDirectory(), "props"));
+      new ConsoleProperties(m_resources, new File(getDirectory(), "props"));
   }
 
-  public void testConstruction() throws Exception {
+  @Test public void testConstruction() throws Exception {
 
     final StatisticsServices statisticsServices =
       StatisticsServicesImplementation.getInstance();
@@ -71,7 +87,7 @@ public class TestSampleModelViewsImplementation extends AbstractFileTestCase {
         statisticsServices,
         m_model);
 
-    m_modelStubFactory.assertSuccess("getPeakTPSExpression");
+    verify(m_model).getPeakTPSExpression();
 
     final Set<ExpressionView> cumulativeViewSet =
       expressionViewsSet(sampleModelViews.getCumulativeStatisticsView());
@@ -118,17 +134,17 @@ public class TestSampleModelViewsImplementation extends AbstractFileTestCase {
     assertSame(statisticsQueries,
                statisticsServices.getTestStatisticsQueries());
 
-    m_modelStubFactory.assertNoMoreCalls();
+    verifyNoMoreInteractions(m_model);
   }
 
   private HashSet<ExpressionView> expressionViewsSet(
-    StatisticsView statisticsView) {
+    final StatisticsView statisticsView) {
 
     return new HashSet<ExpressionView>(
         Arrays.asList(statisticsView.getExpressionViews()));
   }
 
-  public void testListeners() throws Exception {
+  @Test public void testListeners() throws Exception {
     final StatisticsServices statisticsServices =
       StatisticsServicesImplementation.getInstance();
 
@@ -138,24 +154,23 @@ public class TestSampleModelViewsImplementation extends AbstractFileTestCase {
         statisticsServices,
         m_model);
 
-    final RandomStubFactory<Listener> listenerStubFactory =
-      RandomStubFactory.create(Listener.class);
-    sampleModelViews.addListener(listenerStubFactory.getStub());
+    final Listener listener = mock(Listener.class);
+    sampleModelViews.addListener(listener);
 
     sampleModelViews.resetStatisticsViews();
-    listenerStubFactory.assertSuccess("resetStatisticsViews");
+    verify(listener).resetStatisticsViews();
 
     final ExpressionView expressionView =
       statisticsServices.getStatisticExpressionFactory().createExpressionView(
         "My view", "userLong0", false);
 
     sampleModelViews.registerStatisticExpression(expressionView);
-    listenerStubFactory.assertSuccess("newStatisticExpression", expressionView);
+    verify(listener).newStatisticExpression(expressionView);
 
-    listenerStubFactory.assertNoMoreCalls();
+    verifyNoMoreInteractions(listener);
   }
 
-  public void testNumberFormat() throws Exception {
+  @Test public void testNumberFormat() throws Exception {
 
     final SampleModelViews sampleModelViews =
       new SampleModelViewsImplementation(

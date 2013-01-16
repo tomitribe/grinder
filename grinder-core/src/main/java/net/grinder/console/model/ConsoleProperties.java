@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2012 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -153,6 +153,12 @@ public final class ConsoleProperties {
   public static final String SAVE_TOTALS_WITH_RESULTS_PROPERTY =
     "grinder.console.saveTotalsWithResults";
 
+  /**
+   * A singleton, read-only instance which provides the default
+   * values. Mutation operations throw {@link UnsupportedOperationException}.
+   */
+  public static final ConsoleProperties DEFAULTS = new ConsoleProperties();
+
   private final PropertyChangeSupport m_changeSupport =
     new PropertyChangeSupport(this);
 
@@ -229,6 +235,10 @@ public final class ConsoleProperties {
   private final BooleanProperty m_saveTotalsWithResults =
     new BooleanProperty(SAVE_TOTALS_WITH_RESULTS_PROPERTY, false);
 
+  /**
+   * Used to produce pretty exception messages if mutation fails. If
+   * {@code null}, the instance cannot be mutated.
+   */
   private final Resources m_resources;
 
   /**
@@ -256,6 +266,23 @@ public final class ConsoleProperties {
     catch (final GrinderProperties.PersistenceException e) {
       throw new DisplayMessageConsoleException(
         m_resources, "couldNotLoadOptionsError.text", e);
+    }
+  }
+
+
+  /**
+   * Constructor for the read only default properties.
+   */
+  private ConsoleProperties() {
+    // Resources are required only for reporting illegal mutations, and we
+    // can't set anything.
+    m_resources = null;
+    m_backingProperties = new GrinderProperties();
+  }
+
+  private void assertMutationAllowed() {
+    if (m_resources == null) {
+      throw new UnsupportedOperationException("Mutation disallowed");
     }
   }
 
@@ -317,7 +344,7 @@ public final class ConsoleProperties {
     }
     catch (final GrinderProperties.PersistenceException e) {
       throw new DisplayMessageConsoleException(
-          m_resources, "couldNotSaveOptionsError.text", e);
+        m_resources, "couldNotSaveOptionsError.text", e);
     }
   }
 
@@ -969,6 +996,8 @@ public final class ConsoleProperties {
     protected abstract void setToStorage(T value);
 
     public final void set(final T value) {
+      assertMutationAllowed();
+
       final T old = get();
 
       final T defaultValue = getDefaultValue();

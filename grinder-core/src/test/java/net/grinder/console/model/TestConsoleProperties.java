@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,7 @@
 
 package net.grinder.console.model;
 
+import static net.grinder.testutility.AssertUtilities.assertNotEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -47,7 +48,6 @@ import net.grinder.console.common.DisplayMessageConsoleException;
 import net.grinder.console.common.Resources;
 import net.grinder.console.common.ResourcesImplementation;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
-import static net.grinder.testutility.AssertUtilities.*;
 import net.grinder.testutility.FileUtilities;
 import net.grinder.util.Directory;
 
@@ -67,7 +67,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
   private File m_file;
 
-  private Random m_random = new Random();
+  private final Random m_random = new Random();
 
   @Before public void setup() throws Exception {
     m_file = new File(getDirectory(), "properties");
@@ -78,11 +78,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestIntTemplate(ConsoleProperties.COLLECT_SAMPLES_PROPERTY, 0,
       Integer.MAX_VALUE) {
 
-      protected int get(ConsoleProperties properties) {
+      @Override
+      protected Integer get(final ConsoleProperties properties) {
         return properties.getCollectSampleCount();
       }
 
-      protected void set(ConsoleProperties properties, int i)
+      @Override
+      protected void set(final ConsoleProperties properties, final Integer i)
         throws ConsoleException {
         properties.setCollectSampleCount(i);
       }
@@ -94,11 +96,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestIntTemplate(ConsoleProperties.IGNORE_SAMPLES_PROPERTY, 0,
       Integer.MAX_VALUE) {
 
-      protected int get(ConsoleProperties properties) {
+      @Override
+      protected Integer get(final ConsoleProperties properties) {
         return properties.getIgnoreSampleCount();
       }
 
-      protected void set(ConsoleProperties properties, int i)
+      @Override
+      protected void set(final ConsoleProperties properties, final Integer i)
         throws ConsoleException {
         properties.setIgnoreSampleCount(i);
       }
@@ -110,11 +114,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestIntTemplate(ConsoleProperties.SAMPLE_INTERVAL_PROPERTY, 1,
       Integer.MAX_VALUE) {
 
-      protected int get(ConsoleProperties properties) {
+      @Override
+      protected Integer get(final ConsoleProperties properties) {
         return properties.getSampleInterval();
       }
 
-      protected void set(ConsoleProperties properties, int i)
+      @Override
+      protected void set(final ConsoleProperties properties, final Integer i)
         throws ConsoleException {
         properties.setSampleInterval(i);
       }
@@ -126,11 +132,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestIntTemplate(ConsoleProperties.SIG_FIG_PROPERTY, 0,
       Integer.MAX_VALUE) {
 
-      protected int get(ConsoleProperties properties) {
+      @Override
+      protected Integer get(final ConsoleProperties properties) {
         return properties.getSignificantFigures();
       }
 
-      protected void set(ConsoleProperties properties, int i)
+      @Override
+      protected void set(final ConsoleProperties properties, final Integer i)
         throws ConsoleException {
         properties.setSignificantFigures(i);
       }
@@ -182,14 +190,14 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       properties.setConsoleHost("234.12.23.2");
       fail("Expected a DisplayMessageConsoleException for multicast address");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
     }
 
     try {
       properties.setConsoleHost("not a host");
       fail("Expected a DisplayMessageConsoleException for unknown host");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
     }
 
     properties.setConsoleHost("");
@@ -201,11 +209,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestIntTemplate(ConsoleProperties.CONSOLE_PORT_PROPERTY,
       CommunicationDefaults.MIN_PORT, CommunicationDefaults.MAX_PORT) {
 
-      protected int get(ConsoleProperties properties) {
+      @Override
+      protected Integer get(final ConsoleProperties properties) {
         return properties.getConsolePort();
       }
 
-      protected void set(ConsoleProperties properties, int i)
+      @Override
+      protected void set(final ConsoleProperties properties, final Integer i)
         throws ConsoleException {
         properties.setConsolePort(i);
       }
@@ -257,14 +267,14 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       properties.setHttpHost("234.12.23.2");
       fail("Expected a DisplayMessageConsoleException for multicast address");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
     }
 
     try {
       properties.setHttpHost("not a host");
       fail("Expected a DisplayMessageConsoleException for unknown host");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
     }
 
     properties.setHttpHost("");
@@ -276,11 +286,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestIntTemplate(ConsoleProperties.HTTP_PORT_PROPERTY,
       CommunicationDefaults.MIN_PORT, CommunicationDefaults.MAX_PORT) {
 
-      protected int get(ConsoleProperties properties) {
+      @Override
+      protected Integer get(final ConsoleProperties properties) {
         return properties.getHttpPort();
       }
 
-      protected void set(ConsoleProperties properties, int i)
+      @Override
+      protected void set(final ConsoleProperties properties, final Integer i)
         throws ConsoleException {
         properties.setHttpPort(i);
       }
@@ -291,11 +303,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestBooleanTemplate(
       ConsoleProperties.RESET_CONSOLE_WITH_PROCESSES_PROPERTY) {
 
-      protected boolean get(ConsoleProperties properties) {
+      @Override
+      protected Boolean get(final ConsoleProperties properties) {
         return properties.getResetConsoleWithProcesses();
       }
 
-      protected void set(ConsoleProperties properties, boolean b) {
+      @Override
+      protected void set(final ConsoleProperties properties, final Boolean b) {
         properties.setResetConsoleWithProcesses(b);
       }
 
@@ -307,12 +321,14 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestBooleanTemplate(
       ConsoleProperties.RESET_CONSOLE_WITH_PROCESSES_ASK_PROPERTY) {
 
-      protected boolean get(ConsoleProperties properties) {
+      @Override
+      protected Boolean get(final ConsoleProperties properties) {
         return properties.getResetConsoleWithProcessesAsk();
       }
 
-      protected void set(ConsoleProperties properties, boolean b)
-        throws Exception {
+      @Override
+      protected void set(final ConsoleProperties properties, final Boolean b)
+        throws ConsoleException {
         properties.setResetConsoleWithProcessesAsk(b);
       }
     }.doTest();
@@ -322,12 +338,14 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
     new TestBooleanTemplate(ConsoleProperties.PROPERTIES_NOT_SET_ASK_PROPERTY) {
 
-      protected boolean get(ConsoleProperties properties) {
+      @Override
+      protected Boolean get(final ConsoleProperties properties) {
         return properties.getPropertiesNotSetAsk();
       }
 
-      protected void set(ConsoleProperties properties, boolean b)
-        throws Exception {
+      @Override
+      protected void set(final ConsoleProperties properties, final Boolean b)
+        throws ConsoleException {
         properties.setPropertiesNotSetAsk(b);
       }
     }.doTest();
@@ -338,12 +356,14 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestBooleanTemplate(
       ConsoleProperties.START_WITH_UNSAVED_BUFFERS_ASK_PROPERTY) {
 
-      protected boolean get(ConsoleProperties properties) {
+      @Override
+      protected Boolean get(final ConsoleProperties properties) {
         return properties.getStartWithUnsavedBuffersAsk();
       }
 
-      protected void set(ConsoleProperties properties, boolean b)
-        throws Exception {
+      @Override
+      protected void set(final ConsoleProperties properties, final Boolean b)
+        throws ConsoleException {
         properties.setStartWithUnsavedBuffersAsk(b);
       }
     }.doTest();
@@ -353,12 +373,14 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
     new TestBooleanTemplate(ConsoleProperties.STOP_PROCESSES_ASK_PROPERTY) {
 
-      protected boolean get(ConsoleProperties properties) {
+      @Override
+      protected Boolean get(final ConsoleProperties properties) {
         return properties.getStopProcessesAsk();
       }
 
-      protected void set(ConsoleProperties properties, boolean b)
-        throws Exception {
+      @Override
+      protected void set(final ConsoleProperties properties, final Boolean b)
+        throws ConsoleException {
         properties.setStopProcessesAsk(b);
       }
     }.doTest();
@@ -369,12 +391,14 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestBooleanTemplate(
       ConsoleProperties.DISTRIBUTE_ON_START_ASK_PROPERTY) {
 
-      protected boolean get(ConsoleProperties properties) {
+      @Override
+      protected Boolean get(final ConsoleProperties properties) {
         return properties.getDistributeOnStartAsk();
       }
 
-      protected void set(ConsoleProperties properties, boolean b)
-        throws Exception {
+      @Override
+      protected void set(final ConsoleProperties properties, final Boolean b)
+        throws ConsoleException {
         properties.setDistributeOnStartAsk(b);
       }
     }.doTest();
@@ -384,11 +408,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
     new TestFileTemplate(ConsoleProperties.PROPERTIES_FILE_PROPERTY) {
 
-      protected File get(ConsoleProperties properties) {
+      @Override
+      protected File get(final ConsoleProperties properties) {
         return properties.getPropertiesFile();
       }
 
-      protected void set(ConsoleProperties properties, File file)
+      @Override
+      protected void set(final ConsoleProperties properties, final File file)
         throws ConsoleException {
         properties.setAndSavePropertiesFile(file);
       }
@@ -422,12 +448,14 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestDirectoryTemplate(
       ConsoleProperties.DISTRIBUTION_DIRECTORY_PROPERTY) {
 
-      protected Directory getDirectory(ConsoleProperties properties) {
+      @Override
+      protected Directory getDirectory(final ConsoleProperties properties) {
         return properties.getDistributionDirectory();
       }
 
-      protected void setDirectory(ConsoleProperties properties,
-        Directory directory) throws Exception {
+      @Override
+      protected void setDirectory(final ConsoleProperties properties,
+        final Directory directory) throws Exception {
         properties.setAndSaveDistributionDirectory(directory);
       }
     }.doTest();
@@ -467,7 +495,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       properties.setAndSaveDistributionDirectory(directory);
       fail("Expected DisplayMessageConsoleException");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
     }
   }
 
@@ -476,15 +504,19 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestPatternTemplate(
       ConsoleProperties.DISTRIBUTION_FILE_FILTER_EXPRESSION_PROPERTY) {
 
-      @Override protected Pattern get(ConsoleProperties properties) {
+      @Override
+      protected Pattern getPattern(final ConsoleProperties properties) {
         return properties.getDistributionFileFilterPattern();
       }
 
-      @Override protected String getExpression(ConsoleProperties properties) {
+      @Override
+      protected String get(final ConsoleProperties properties) {
         return properties.getDistributionFileFilterExpression();
       }
 
-      @Override protected void set(ConsoleProperties properties, String expression)
+      @Override
+      protected void set(final ConsoleProperties properties,
+                         final String expression)
         throws ConsoleException {
         properties.setDistributionFileFilterExpression(expression);
       }
@@ -497,11 +529,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       ConsoleProperties.SCAN_DISTRIBUTION_FILES_PERIOD_PROPERTY, 0,
       Integer.MAX_VALUE) {
 
-      protected int get(ConsoleProperties properties) {
+      @Override
+      protected Integer get(final ConsoleProperties properties) {
         return properties.getScanDistributionFilesPeriod();
       }
 
-      protected void set(ConsoleProperties properties, int i)
+      @Override
+      protected void set(final ConsoleProperties properties, final Integer i)
         throws ConsoleException {
         properties.setScanDistributionFilesPeriod(i);
       }
@@ -512,11 +546,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
     new TestStringTemplate(ConsoleProperties.LOOK_AND_FEEL_PROPERTY, true) {
 
-      protected String get(ConsoleProperties properties) {
+      @Override
+      protected String get(final ConsoleProperties properties) {
         return properties.getLookAndFeel();
       }
 
-      protected void set(ConsoleProperties properties, String name) {
+      @Override
+      protected void set(final ConsoleProperties properties, final String name) {
         properties.setLookAndFeel(name);
       }
     }.doTest();
@@ -543,11 +579,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestFileTemplate(
       ConsoleProperties.EXTERNAL_EDITOR_COMMAND_PROPERTY) {
 
-      protected File get(ConsoleProperties properties) {
+      @Override
+      protected File get(final ConsoleProperties properties) {
         return properties.getExternalEditorCommand();
       }
 
-      protected void set(ConsoleProperties properties, File file) {
+      @Override
+      protected void set(final ConsoleProperties properties, final File file) {
         properties.setExternalEditorCommand(file);
       }
     }.doTest();
@@ -558,11 +596,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestStringTemplate(
       ConsoleProperties.EXTERNAL_EDITOR_ARGUMENTS_PROPERTY, true) {
 
-      protected String get(ConsoleProperties properties) {
+      @Override
+      protected String get(final ConsoleProperties properties) {
         return properties.getExternalEditorArguments();
       }
 
-      protected void set(ConsoleProperties properties, String name) {
+      @Override
+      protected void set(final ConsoleProperties properties, final String name) {
         properties.setExternalEditorArguments(name);
       }
     }.doTest();
@@ -594,7 +634,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       properties.setAndSaveFrameBounds(rectangle);
       fail("Expected DisplayMessageConsoleException");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
     }
 
     FileUtilities.setCanAccess(m_file, true);
@@ -625,11 +665,13 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     new TestBooleanTemplate(
       ConsoleProperties.SAVE_TOTALS_WITH_RESULTS_PROPERTY) {
 
-      protected boolean get(ConsoleProperties properties) {
+      @Override
+      protected Boolean get(final ConsoleProperties properties) {
         return properties.getSaveTotalsWithResults();
       }
 
-      protected void set(ConsoleProperties properties, boolean b)
+      @Override
+      protected void set(final ConsoleProperties properties, final Boolean b)
         throws ConsoleException {
 
         properties.setSaveTotalsWithResults(b);
@@ -763,7 +805,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       new ConsoleProperties(s_resources, badFile);
       fail("Expected DisplayMessageConsoleException");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
     }
 
     FileUtilities.setCanAccess(badFile, true);
@@ -774,25 +816,56 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       p.save();
       fail("Expected DisplayMessageConsoleException");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
     }
 
     try {
       p.setResetConsoleWithProcessesAsk(false);
       fail("Expected DisplayMessageConsoleException");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
     }
   }
 
-  private abstract class TestIntTemplate {
+  private abstract class AbstractTestTemplate<T> {
+    protected abstract T createInstance();
+
+    protected abstract T get(ConsoleProperties properties);
+
+    protected abstract void set(ConsoleProperties properties, T i)
+      throws Exception;
+
+    private final void testDefaultInstance() throws Exception {
+      final ConsoleProperties defaults = ConsoleProperties.DEFAULTS;
+
+      final ConsoleProperties properties =
+        new ConsoleProperties(s_resources, m_file);
+
+      assertEquals(get(properties), get(defaults));
+
+      try {
+        set(defaults, createInstance());
+        fail();
+      }
+      catch (final UnsupportedOperationException e) {
+      }
+    }
+
+    protected void doTest() throws Exception {
+      testDefaultInstance();
+    }
+  }
+
+  private abstract class TestIntTemplate extends AbstractTestTemplate<Integer> {
     private final String m_propertyName;
 
     private final int m_minimum;
 
     private final int m_maximum;
 
-    public TestIntTemplate(String propertyName, int minimum, int maximum) {
+    public TestIntTemplate(final String propertyName,
+                           final int minimum,
+                           final int maximum) {
       if (maximum <= minimum) {
         throw new IllegalArgumentException("Minimum not less than maximum");
       }
@@ -802,21 +875,25 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       m_maximum = maximum;
     }
 
-    private int getRandomInt() {
+    @Override
+    protected Integer createInstance() {
       return getRandomInt(m_minimum, m_maximum);
     }
 
-    private int getRandomInt(int minimum, int maximum) {
+    private int getRandomInt(final int minimum, final int maximum) {
       // Valid values are in [minimum, maximum], so range is 1
       // more than maximum value.Will not fit in an int, use a
       // long.
-      long range = (long) maximum + 1 - minimum;
+      final long range = (long) maximum + 1 - minimum;
 
       return (int) (minimum + Math.abs(m_random.nextLong()) % range);
     }
 
+    @Override
     public void doTest() throws Exception {
-      final int i1 = getRandomInt();
+      super.doTest();
+
+      final Integer i1 = createInstance();
 
       writePropertyToFile(m_propertyName, Integer.toString(i1));
 
@@ -825,7 +902,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
       assertEquals(i1, get(properties));
 
-      final int i2 = getRandomInt();
+      final Integer i2 = createInstance();
 
       set(properties, i2);
       assertEquals(i2, get(properties));
@@ -840,7 +917,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       int i3;
 
       do {
-        i3 = getRandomInt();
+        i3 = createInstance();
       }
       while (i3 == i2);
 
@@ -860,21 +937,21 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
           set(properties, m_minimum - 1);
           fail("Should not reach");
         }
-        catch (DisplayMessageConsoleException e) {
+        catch (final DisplayMessageConsoleException e) {
         }
 
         try {
           set(properties, Integer.MIN_VALUE);
           fail("Should not reach");
         }
-        catch (DisplayMessageConsoleException e) {
+        catch (final DisplayMessageConsoleException e) {
         }
 
         try {
           set(properties, getRandomInt(Integer.MIN_VALUE, m_minimum - 1));
           fail("Should not reach");
         }
-        catch (DisplayMessageConsoleException e) {
+        catch (final DisplayMessageConsoleException e) {
         }
       }
 
@@ -883,42 +960,46 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
           set(properties, m_maximum + 1);
           fail("Should not reach");
         }
-        catch (DisplayMessageConsoleException e) {
+        catch (final DisplayMessageConsoleException e) {
         }
 
         try {
           set(properties, Integer.MAX_VALUE);
           fail("Should not reach");
         }
-        catch (DisplayMessageConsoleException e) {
+        catch (final DisplayMessageConsoleException e) {
         }
 
         try {
           set(properties, getRandomInt(m_maximum + 1, Integer.MAX_VALUE));
           fail("Should not reach");
         }
-        catch (DisplayMessageConsoleException e) {
+        catch (final DisplayMessageConsoleException e) {
         }
       }
 
       listener.assertCalled();
       listener2.assertCalled();
     }
-
-    protected abstract int get(ConsoleProperties properties);
-
-    protected abstract void set(ConsoleProperties properties, int i)
-      throws ConsoleException;
   }
 
-  private abstract class TestBooleanTemplate {
+  private abstract class TestBooleanTemplate
+    extends AbstractTestTemplate<Boolean> {
+
     private final String m_propertyName;
 
-    public TestBooleanTemplate(String propertyName) {
+    public TestBooleanTemplate(final String propertyName) {
       m_propertyName = propertyName;
     }
 
+    @Override
+    protected Boolean createInstance() {
+      return Boolean.TRUE;
+    }
+
+    @Override
     public void doTest() throws Exception {
+      super.doTest();
 
       writePropertyToFile(m_propertyName, "false");
 
@@ -951,12 +1032,6 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       listener.assertCalledOnce();
       listener2.assertCalledOnce();
     }
-
-    protected abstract boolean get(ConsoleProperties properties)
-      throws Exception;
-
-    protected abstract void set(ConsoleProperties properties, boolean b)
-      throws Exception;
   }
 
   private String getRandomString() {
@@ -970,24 +1045,35 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     return new String(characters);
   }
 
-  private abstract class TestStringTemplate {
+  private abstract class TestStringTemplate
+    extends AbstractTestTemplate<String> {
+
     private final String m_propertyName;
 
     private final boolean m_testNulls;
 
-    public TestStringTemplate(String propertyName, boolean testNulls) {
+    public TestStringTemplate(final String propertyName,
+                              final boolean testNulls) {
       m_propertyName = propertyName;
       m_testNulls = testNulls;
     }
 
+    @Override
+    protected String createInstance() {
+      return getRandomString();
+    }
+
+    @Override
     public void doTest() throws Exception {
+      super.doTest();
+
       if (m_testNulls) {
         final ConsoleProperties properties =
             new ConsoleProperties(s_resources, m_file);
 
         assertNull(get(properties));
 
-        final String s = getRandomString();
+        final String s = createInstance();
         set(properties, s);
         assertNotNull(get(properties));
 
@@ -1002,7 +1088,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
         assertNull(get(properties2));
       }
 
-      final String s1 = getRandomString();
+      final String s1 = createInstance();
 
       writePropertyToFile(m_propertyName, s1);
 
@@ -1011,7 +1097,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
       assertEquals(s1, get(properties));
 
-      final String s2 = getRandomString();
+      final String s2 = createInstance();
 
       set(properties, s2);
       assertEquals(s2, get(properties));
@@ -1023,10 +1109,10 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
       assertEquals(s2, get(properties2));
 
-      String s3 = getRandomString();
+      String s3;
 
       do {
-        s3 = getRandomString();
+        s3 = createInstance();
       }
       while (s3.equals(s2));
 
@@ -1044,28 +1130,26 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       listener.assertCalledOnce();
       listener2.assertCalledOnce();
     }
-
-    protected abstract String get(ConsoleProperties properties);
-
-    protected abstract void set(ConsoleProperties properties, String i)
-      throws ConsoleException;
   }
 
-  private abstract class TestFileTemplate {
+  private abstract class TestFileTemplate extends AbstractTestTemplate<File> {
 
-    private String m_propertyName;
+    private final String m_propertyName;
 
-    public TestFileTemplate(String propertyName) {
+    public TestFileTemplate(final String propertyName) {
       m_propertyName = propertyName;
     }
 
-    private File getRandomFile() {
+    @Override
+    protected File createInstance() {
       return new File(getRandomString());
     }
 
+    @Override
     public void doTest() throws Exception {
+      super.doTest();
 
-      final File f1 = getRandomFile();
+      final File f1 = createInstance();
 
       writePropertyToFile(m_propertyName, f1.getPath());
 
@@ -1074,7 +1158,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
       assertEquals(f1, get(properties));
 
-      final File f2 = getRandomFile();
+      final File f2 = createInstance();
 
       set(properties, f2);
       assertEquals(f2, get(properties));
@@ -1086,10 +1170,10 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
       assertEquals(f2, get(properties2));
 
-      File f3 = getRandomFile();
+      File f3;
 
       do {
-        f3 = getRandomFile();
+        f3 = createInstance();
       }
       while (f3.equals(f2));
 
@@ -1109,36 +1193,36 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     }
 
     protected PropertyChangeEvent createPropertyChangeEvent(
-      ConsoleProperties properties2, File f2, File f3) throws Exception {
+      final ConsoleProperties properties2, final File f2, final File f3)
+          throws Exception {
       return new PropertyChangeEvent(properties2, getPropertyName(), f2, f3);
     }
 
     protected final String getPropertyName() {
       return m_propertyName;
     }
-
-    protected abstract File get(ConsoleProperties properties);
-
-    protected abstract void set(ConsoleProperties properties, File i)
-      throws Exception;
   }
 
   private abstract class TestDirectoryTemplate extends TestFileTemplate {
 
-    public TestDirectoryTemplate(String propertyName) {
+    public TestDirectoryTemplate(final String propertyName) {
       super(propertyName);
     }
 
-    protected File get(ConsoleProperties properties) {
+    @Override
+    protected File get(final ConsoleProperties properties) {
       return getDirectory(properties).getFile();
     }
 
-    protected void set(ConsoleProperties properties, File i) throws Exception {
+    @Override
+    protected void set(final ConsoleProperties properties, final File i)
+        throws Exception {
       setDirectory(properties, new Directory(i));
     }
 
+    @Override
     protected PropertyChangeEvent createPropertyChangeEvent(
-      ConsoleProperties properties, File f2, File f3) throws Exception {
+      final ConsoleProperties properties, final File f2, final File f3) throws Exception {
       return new PropertyChangeEvent(properties, getPropertyName(),
         new Directory(f2), new Directory(f3));
     }
@@ -1149,38 +1233,46 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       Directory i) throws Exception;
   }
 
-  private abstract class TestPatternTemplate {
+  private abstract class TestPatternTemplate
+    extends AbstractTestTemplate<String> {
     private final String m_propertyName;
 
-    public TestPatternTemplate(String propertyName) {
+    public TestPatternTemplate(final String propertyName) {
       m_propertyName = propertyName;
     }
 
-    public void doTest() throws Exception {
+    @Override
+    protected String createInstance() {
+      return "[a-z]*";
+    }
 
-      final String s1 = "[a-z]*";
+    @Override
+    public void doTest() throws Exception {
+      super.doTest();
+
+      final String s1 = createInstance();
 
       writePropertyToFile(m_propertyName, s1);
 
       final ConsoleProperties properties =
         new ConsoleProperties(s_resources, m_file);
 
-      assertEquals(s1, get(properties).pattern());
-      assertEquals(s1, getExpression(properties));
+      assertEquals(s1, getPattern(properties).pattern());
+      assertEquals(s1, get(properties));
 
       final String s2 = "(some|a)\\w*pattern";
 
       set(properties, s2);
-      assertEquals(s2, get(properties).pattern());
-      assertEquals(s2, getExpression(properties));
+      assertEquals(s2, getPattern(properties).pattern());
+      assertEquals(s2, get(properties));
 
       properties.save();
 
       final ConsoleProperties properties2 =
         new ConsoleProperties(s_resources, m_file);
 
-      assertEquals(s2, get(properties2).pattern());
-      assertEquals(s2, getExpression(properties2));
+      assertEquals(s2, getPattern(properties2).pattern());
+      assertEquals(s2, get(properties2));
 
       final String s3 = "^abc$";
 
@@ -1201,34 +1293,27 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       set(properties, null);
       assertEquals(
         ConsoleProperties.DEFAULT_DISTRIBUTION_FILE_FILTER_EXPRESSION,
-        get(properties).pattern());
+        getPattern(properties).pattern());
 
       assertEquals(
         ConsoleProperties.DEFAULT_DISTRIBUTION_FILE_FILTER_EXPRESSION,
-        getExpression(properties));
+        get(properties));
 
       try {
         set(properties, "malformed(((");
         fail("Malformed expression, expected DisplayMessageConsoleException");
       }
-      catch (DisplayMessageConsoleException e) {
+      catch (final DisplayMessageConsoleException e) {
         assertTrue("Nested exception is a PatternSyntaxException",
           e.getCause() instanceof PatternSyntaxException);
       }
 
       assertEquals(
         ConsoleProperties.DEFAULT_DISTRIBUTION_FILE_FILTER_EXPRESSION,
-        get(properties).pattern());
+        getPattern(properties).pattern());
     }
 
-    protected abstract Pattern get(ConsoleProperties properties);
-
-    protected abstract void set(ConsoleProperties properties, String i)
-      throws ConsoleException;
-
-    protected String getExpression(ConsoleProperties properties) {
-      return get(properties).pattern();
-    }
+    protected abstract Pattern getPattern(final ConsoleProperties properties);
   }
 
   private static class ChangeListener implements PropertyChangeListener {
@@ -1236,11 +1321,12 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
     private int m_callCount;
 
-    ChangeListener(PropertyChangeEvent expected) {
+    ChangeListener(final PropertyChangeEvent expected) {
       m_expected = expected;
     }
 
-    public void propertyChange(PropertyChangeEvent event) {
+    @Override
+    public void propertyChange(final PropertyChangeEvent event) {
       ++m_callCount;
       assertAreEqual(m_expected.getOldValue(), event.getOldValue());
       assertEquals(m_expected.getPropertyName(), event.getPropertyName());
@@ -1254,7 +1340,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       assertTrue(m_callCount > 0);
     }
 
-    public void assertAreEqual(Object expected, Object result) {
+    public void assertAreEqual(final Object expected, final Object result) {
       assertEquals(expected, result);
     }
   }
@@ -1265,11 +1351,12 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
      * For convenience, the expectedExpressions object contains old and new
      * attributes as Strings, rather than compiled Patterns.
      */
-    PatternChangeListener(PropertyChangeEvent expectedExpressions) {
+    PatternChangeListener(final PropertyChangeEvent expectedExpressions) {
       super(expectedExpressions);
     }
 
-    public void assertAreEqual(Object expected, Object result) {
+    @Override
+    public void assertAreEqual(final Object expected, final Object result) {
       if (expected == null) {
         assertNull(result);
       }
@@ -1284,7 +1371,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
    * Write a property key/value pair to our temporary file. Use Properties so we
    * get the correct escaping.
    */
-  private final void writePropertyToFile(String name, String value)
+  private final void writePropertyToFile(final String name, final String value)
     throws Exception {
 
     final FileOutputStream outputStream = new FileOutputStream(m_file);

@@ -26,6 +26,17 @@ import static net.grinder.console.model.SampleModel.State.Value.IgnoringInitialS
 import static net.grinder.console.model.SampleModel.State.Value.Recording;
 import static net.grinder.console.model.SampleModel.State.Value.Stopped;
 import static net.grinder.console.model.SampleModel.State.Value.WaitingForFirstReport;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,7 +48,6 @@ import java.util.Set;
 import java.util.TimerTask;
 
 import net.grinder.common.StubTest;
-import net.grinder.common.Test;
 import net.grinder.console.common.ErrorHandler;
 import net.grinder.console.common.Resources;
 import net.grinder.console.common.StubResources;
@@ -50,9 +60,16 @@ import net.grinder.statistics.StatisticsServices;
 import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.TestStatisticsMap;
-import net.grinder.testutility.AbstractFileTestCase;
-import net.grinder.testutility.RandomStubFactory;
+import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.StubTimer;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 
 
 /**
@@ -60,7 +77,7 @@ import net.grinder.testutility.StubTimer;
  *
  * @author Philip Aston
  */
-public class TestSampleModelImplementation extends AbstractFileTestCase {
+public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
 
   private final Resources m_resources = new StubResources<String>(
     new HashMap<String, String>() {{
@@ -78,31 +95,29 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
 
   private StubTimer m_timer;
 
-  private final RandomStubFactory<Listener> m_listenerStubFactory =
-    RandomStubFactory.create(SampleModel.Listener.class);
-  private final SampleModel.Listener m_listener =
-    m_listenerStubFactory.getStub();
+  @Mock private Listener m_listener;
+  @Captor private ArgumentCaptor<Set<net.grinder.common.Test>> m_testSetCaptor;
+  @Captor private ArgumentCaptor<ModelTestIndex> m_modelTestIndexCaptor;
+  @Mock private ErrorHandler m_errorHandler;
+  @Captor private ArgumentCaptor<StatisticsSet> m_statisicsSetCaptor1;
+  @Captor private ArgumentCaptor<StatisticsSet> m_statisicsSetCaptor2;
 
-  final RandomStubFactory<ErrorHandler> m_errorHandlerStubFactory =
-    RandomStubFactory.create(ErrorHandler.class);
-  final ErrorHandler m_errorHandler =
-    m_errorHandlerStubFactory.getStub();
+  @Before
+  public void setUp() throws Exception {
+    initMocks(this);
 
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
     m_timer = new StubTimer();
     m_consoleProperties =
-      new ConsoleProperties(null, new File(getDirectory(), "props"));
+      new ConsoleProperties(m_resources,
+                            new File(getDirectory(), "props"));
   }
 
-  @Override
-  public void tearDown() throws Exception {
-    super.tearDown();
+  @After
+  public void cancelTimer() throws Exception {
     m_timer.cancel();
   }
 
-  public void testConstruction() throws Exception {
+  @Test public void testConstruction() throws Exception {
     final SampleModelImplementation sampleModelImplementation =
       new SampleModelImplementation(m_consoleProperties,
                                     m_statisticsServices,
@@ -140,8 +155,7 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     assertNull(m_timer.getLastScheduledTimerTask());
   }
 
-  @SuppressWarnings("unchecked")
-  public void testRegisterTests() throws Exception {
+  @Test public void testRegisterTests() throws Exception {
     final SampleModelImplementation sampleModelImplementation =
       new SampleModelImplementation(m_consoleProperties,
                                     m_statisticsServices,
@@ -151,16 +165,17 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
 
     sampleModelImplementation.addModelListener(m_listener);
 
-    final Set<Test> emptySet = Collections.emptySet();
+    final Set<net.grinder.common.Test> emptySet = Collections.emptySet();
     sampleModelImplementation.registerTests(emptySet);
-    m_listenerStubFactory.assertNoMoreCalls();
+    verifyNoMoreInteractions(m_listener);
 
-    final Test test1 = new StubTest(1, "test 1");
-    final Test test2 = new StubTest(2, "test 2");
-    final Test test3 = new StubTest(3, "test 3");
-    final Test test4 = new StubTest(4, "test 4");
+    final net.grinder.common.Test test1 = new StubTest(1, "test 1");
+    final net.grinder.common.Test test2 = new StubTest(2, "test 2");
+    final net.grinder.common.Test test3 = new StubTest(3, "test 3");
+    final net.grinder.common.Test test4 = new StubTest(4, "test 4");
 
-    final List<Test> testList = new ArrayList<Test>() { {
+    final List<net.grinder.common.Test> testList =
+        new ArrayList<net.grinder.common.Test>() { {
       add(test2);
       add(test1);
       add(test3);
@@ -168,17 +183,17 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
 
     sampleModelImplementation.registerTests(testList);
 
-    final Object[] callbackParameters = m_listenerStubFactory.assertSuccess(
-      "newTests", Set.class, ModelTestIndex.class).getParameters();
-    m_listenerStubFactory.assertNoMoreCalls();
+    verify(m_listener).newTests(m_testSetCaptor.capture(),
+                                m_modelTestIndexCaptor.capture());
 
     Collections.sort(testList);
 
-    final Set<Test> callbackTestSet = (Set<Test>)callbackParameters[0];
+    final Set<net.grinder.common.Test> callbackTestSet =
+        m_testSetCaptor.getValue();
     assertTrue(testList.containsAll(callbackTestSet));
     assertTrue(callbackTestSet.containsAll(testList));
 
-    final ModelTestIndex modelIndex = (ModelTestIndex)callbackParameters[1];
+    final ModelTestIndex modelIndex = m_modelTestIndexCaptor.getValue();
     assertEquals(testList.size(), modelIndex.getNumberOfTests());
     assertEquals(testList.size(), modelIndex.getAccumulatorArray().length);
 
@@ -186,34 +201,39 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
       assertEquals(testList.get(i), modelIndex.getTest(i));
     }
 
-    final List<Test> testList2 = new ArrayList<Test>() { {
+    final List<net.grinder.common.Test> testList2 =
+        new ArrayList<net.grinder.common.Test>() { {
       add(test2);
       add(test4);
     } };
 
+    Mockito.reset(m_listener);
+
     sampleModelImplementation.registerTests(testList2);
 
-    final Object[] callbackParameters2 = m_listenerStubFactory.assertSuccess(
-      "newTests", Set.class, ModelTestIndex.class).getParameters();
-    m_listenerStubFactory.assertNoMoreCalls();
+    verify(m_listener).newTests(m_testSetCaptor.capture(),
+                                m_modelTestIndexCaptor.capture());
 
-    final Set<Test> expectedNewTests = new HashSet<Test>() { {
+    final Set<net.grinder.common.Test> expectedNewTests =
+        new HashSet<net.grinder.common.Test>() { {
       add(test4);
     } };
 
-    final Set<Test> callbackTestSet2 = (Set<Test>)callbackParameters2[0];
+    final Set<net.grinder.common.Test> callbackTestSet2 =
+        m_testSetCaptor.getValue();
     assertTrue(expectedNewTests.containsAll(callbackTestSet2));
     assertTrue(callbackTestSet2.containsAll(expectedNewTests));
 
-    final ModelTestIndex modelIndex2 = (ModelTestIndex)callbackParameters2[1];
+    final ModelTestIndex modelIndex2 = m_modelTestIndexCaptor.getValue();
     assertEquals(4, modelIndex2.getNumberOfTests());
     assertEquals(4, modelIndex2.getAccumulatorArray().length);
 
     sampleModelImplementation.registerTests(testList2);
-    m_listenerStubFactory.assertNoMoreCalls();
+
+    verifyNoMoreInteractions(m_listener);
   }
 
-  public void testWaitingToStopped() throws Exception {
+  @Test public void testWaitingToStopped() throws Exception {
     final SampleModelImplementation sampleModelImplementation =
       new SampleModelImplementation(m_consoleProperties,
                                     m_statisticsServices,
@@ -227,12 +247,11 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     assertEquals(WaitingForFirstReport, state.getValue());
     assertEquals("waiting, waiting, waiting", state.getDescription());
 
-    m_listenerStubFactory.assertNoMoreCalls();
-
+    verifyNoMoreInteractions(m_listener);
 
     sampleModelImplementation.stop();
 
-    m_listenerStubFactory.assertSuccess("stateChanged");
+    verify(m_listener).stateChanged();
 
     final State stoppedState = sampleModelImplementation.getState();
     assertEquals(Stopped, stoppedState.getValue());
@@ -249,7 +268,9 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     assertNull(m_timer.getLastScheduledTimerTask());
   }
 
-  public void testWaitingToTriggeredToCapturingToStopped() throws Exception {
+  @Test public void testWaitingToTriggeredToCapturingToStopped()
+      throws Exception {
+
     final SampleModelImplementation sampleModelImplementation =
       new SampleModelImplementation(m_consoleProperties,
                                     m_statisticsServices,
@@ -266,7 +287,7 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     assertEquals(WaitingForFirstReport, waitingState.getValue());
     assertEquals("waiting, waiting, waiting", waitingState.getDescription());
 
-    m_listenerStubFactory.assertNoMoreCalls();
+    verifyNoMoreInteractions(m_listener);
 
 
     m_consoleProperties.setIgnoreSampleCount(10);
@@ -305,7 +326,8 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
 
     assertEquals("whatever: 8",
       sampleModelImplementation.getState().getDescription());
-    assertEquals(IgnoringInitialSamples, sampleModelImplementation.getState().getValue());
+    assertEquals(IgnoringInitialSamples,
+                 sampleModelImplementation.getState().getValue());
 
     for (int i = 0; i < 3; ++i) {
       sampleModelImplementation.addTestReport(testStatisticsMap);
@@ -348,7 +370,7 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     assertEquals("done", sampleModelImplementation.getState().getDescription());
   }
 
-  public void testReset() throws Exception {
+  @Test public void testReset() throws Exception {
     final SampleModelImplementation sampleModelImplementation =
       new SampleModelImplementation(m_consoleProperties,
                                     m_statisticsServices,
@@ -359,10 +381,10 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     sampleModelImplementation.addModelListener(m_listener);
     sampleModelImplementation.reset();
 
-    m_listenerStubFactory.assertSuccess("resetTests");
+    verify(m_listener).resetTests();
   }
 
-  public void testSampleListeners() throws Exception {
+  @Test public void testSampleListeners() throws Exception {
     final SampleModelImplementation sampleModelImplementation =
       new SampleModelImplementation(m_consoleProperties,
                                     m_statisticsServices,
@@ -370,26 +392,22 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
                                     m_resources,
                                     m_errorHandler);
 
-    final RandomStubFactory<SampleListener> totalSampleListenerStubFactory =
-      RandomStubFactory.create(SampleListener.class);
-    sampleModelImplementation.addTotalSampleListener(
-      totalSampleListenerStubFactory.getStub());
+    final SampleListener totalSampleListener = mock(SampleListener.class);
+    sampleModelImplementation.addTotalSampleListener(totalSampleListener);
 
-    final Test test1 = new StubTest(1, "test 1");
-    final Test test2 = new StubTest(2, "test 2");
-    final Test test3 = new StubTest(3, "test 3");
-    final Test test4 = new StubTest(4, "test 4");
+    final net.grinder.common.Test test1 = new StubTest(1, "test 1");
+    final net.grinder.common.Test test2 = new StubTest(2, "test 2");
+    final net.grinder.common.Test test3 = new StubTest(3, "test 3");
+    final net.grinder.common.Test test4 = new StubTest(4, "test 4");
 
-    final RandomStubFactory<SampleListener> sampleListenerStubFactory =
-      RandomStubFactory.create(SampleListener.class);
-    final SampleListener sampleListener =
-      sampleListenerStubFactory.getStub();
+    final SampleListener sampleListener = mock(SampleListener.class);
 
     // Adding a listener for a test that isn't registered is a no-op.
     sampleModelImplementation.addSampleListener(test1, sampleListener);
 
 
-    final Set<Test> testSet = new HashSet<Test>() { {
+    final Set<net.grinder.common.Test> testSet =
+        new HashSet<net.grinder.common.Test>() { {
       add(test2);
       add(test4);
     } };
@@ -399,7 +417,7 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
 
 
     sampleModelImplementation.reset();
-    sampleListenerStubFactory.assertNoMoreCalls();
+    verifyNoMoreInteractions(sampleListener);
 
 
     final TestStatisticsMap testReports = new TestStatisticsMap();
@@ -421,47 +439,39 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     sampleModelImplementation.addSampleListener(test2, sampleListener);
     sampleModelImplementation.addTestReport(testReports);
 
-    totalSampleListenerStubFactory.assertNoMoreCalls();
-    sampleListenerStubFactory.assertNoMoreCalls();
+    verifyNoMoreInteractions(totalSampleListener, sampleListener);
 
 
     final TimerTask capturingTask = m_timer.getLastScheduledTimerTask();
     capturingTask.run();
 
-    final Object[] updateParameters =
-      sampleListenerStubFactory.assertSuccess(
-        "update", StatisticsSet.class, StatisticsSet.class).getParameters();
-    sampleListenerStubFactory.assertNoMoreCalls();
+    verify(sampleListener).update(m_statisicsSetCaptor1.capture(),
+                                  m_statisicsSetCaptor2.capture());
 
-    assertEquals(99, ((StatisticsSet)updateParameters[0]).getValue(userLong0));
-    assertEquals(99, ((StatisticsSet)updateParameters[1]).getValue(userLong0));
+    assertEquals(99, m_statisicsSetCaptor1.getValue().getValue(userLong0));
+    assertEquals(99, m_statisicsSetCaptor2.getValue().getValue(userLong0));
 
-    final Object[] totalParameters =
-      totalSampleListenerStubFactory.assertSuccess(
-        "update", StatisticsSet.class, StatisticsSet.class).getParameters();
-    totalSampleListenerStubFactory.assertNoMoreCalls();
+    verify(totalSampleListener).update(m_statisicsSetCaptor1.capture(),
+                                       m_statisicsSetCaptor2.capture());
 
-    assertEquals(99, ((StatisticsSet)totalParameters[0]).getValue(userLong0));
-    assertEquals(99, ((StatisticsSet)totalParameters[1]).getValue(userLong0));
+    assertEquals(99, m_statisicsSetCaptor1.getValue().getValue(userLong0));
+    assertEquals(99, m_statisicsSetCaptor2.getValue().getValue(userLong0));
 
+    reset(totalSampleListener, sampleListener);
 
     capturingTask.run();
 
-    final Object[] updateParameters2 =
-      sampleListenerStubFactory.assertSuccess(
-        "update", StatisticsSet.class, StatisticsSet.class).getParameters();
-    sampleListenerStubFactory.assertNoMoreCalls();
+    verify(sampleListener).update(m_statisicsSetCaptor1.capture(),
+                                  m_statisicsSetCaptor2.capture());
 
-    assertEquals(0, ((StatisticsSet)updateParameters2[0]).getValue(userLong0));
-    assertEquals(99, ((StatisticsSet)updateParameters2[1]).getValue(userLong0));
+    assertEquals(0, m_statisicsSetCaptor1.getValue().getValue(userLong0));
+    assertEquals(99, m_statisicsSetCaptor2.getValue().getValue(userLong0));
 
-    final Object[] totalParameters2 =
-      totalSampleListenerStubFactory.assertSuccess(
-        "update", StatisticsSet.class, StatisticsSet.class).getParameters();
-    totalSampleListenerStubFactory.assertNoMoreCalls();
+    verify(totalSampleListener).update(m_statisicsSetCaptor1.capture(),
+                                       m_statisicsSetCaptor2.capture());
 
-    assertEquals(0, ((StatisticsSet)totalParameters2[0]).getValue(userLong0));
-    assertEquals(99, ((StatisticsSet)totalParameters2[1]).getValue(userLong0));
+    assertEquals(0, m_statisicsSetCaptor1.getValue().getValue(userLong0));
+    assertEquals(99, m_statisicsSetCaptor2.getValue().getValue(userLong0));
 
 
     // Now put into the triggered state.
@@ -469,29 +479,27 @@ public class TestSampleModelImplementation extends AbstractFileTestCase {
     m_consoleProperties.setIgnoreSampleCount(10);
     statistics1.setValue(userLong0, 3);
 
+    reset(totalSampleListener, sampleListener);
+
     sampleModelImplementation.addTestReport(testReports);
 
     final TimerTask triggeredTask = m_timer.getLastScheduledTimerTask();
     triggeredTask.run();
 
-    final Object[] updateParameters3 =
-      sampleListenerStubFactory.assertSuccess(
-        "update", StatisticsSet.class, StatisticsSet.class).getParameters();
-    sampleListenerStubFactory.assertNoMoreCalls();
+    verify(sampleListener).update(m_statisicsSetCaptor1.capture(),
+                                  m_statisicsSetCaptor2.capture());
 
-    assertEquals(3, ((StatisticsSet)updateParameters3[0]).getValue(userLong0));
-    assertEquals(0, ((StatisticsSet)updateParameters3[1]).getValue(userLong0));
+    assertEquals(3, m_statisicsSetCaptor1.getValue().getValue(userLong0));
+    assertEquals(0, m_statisicsSetCaptor2.getValue().getValue(userLong0));
 
-    final Object[] totalParameters3 =
-      totalSampleListenerStubFactory.assertSuccess(
-        "update", StatisticsSet.class, StatisticsSet.class).getParameters();
-    totalSampleListenerStubFactory.assertNoMoreCalls();
+    verify(totalSampleListener).update(m_statisicsSetCaptor1.capture(),
+                                       m_statisicsSetCaptor2.capture());
 
-    assertEquals(3, ((StatisticsSet)totalParameters3[0]).getValue(userLong0));
-    assertEquals(0, ((StatisticsSet)totalParameters3[1]).getValue(userLong0));
+    assertEquals(3, m_statisicsSetCaptor1.getValue().getValue(userLong0));
+    assertEquals(0, m_statisicsSetCaptor2.getValue().getValue(userLong0));
   }
 
-  public void testAbstractListener() {
+  @Test public void testAbstractListener() {
     // An exercise in coverage.
     final AbstractListener listener = new AbstractListener() {};
 
