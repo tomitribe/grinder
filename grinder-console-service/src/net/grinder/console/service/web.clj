@@ -34,6 +34,7 @@
                                [processes :as processes]
                                [properties :as properties]
                                [recording :as recording]])
+  (:import java.awt.Rectangle)
   )
 
 (defelem page [body]
@@ -55,6 +56,30 @@
     (name s))
   )
 
+(defmulti render-property
+  (fn [k v d] (type v)))
+
+(defmethod render-property Boolean
+  [k v d]
+  (check-box k v))
+
+(defmethod render-property Rectangle
+  [k ^Rectangle v ^Rectangle d]
+  [:div {:class "rectangle"}
+    (render-property k (.x v) 0)
+    (render-property k (.y v) 0)
+    (render-property k (.width v) 0)
+    (render-property k (.height v) 0)
+    ])
+
+(defmethod render-property Number
+  [k v d]
+  (text-field {:placeholder (str d) :type "number"} k (properties/coerce-value v)))
+
+(defmethod render-property :default
+  [k v d]
+  (text-field {:placeholder (str d)} k (properties/coerce-value v)))
+
 (defn- render-property-group [legend res properties defaults]
   [:fieldset
    [:legend legend]
@@ -66,7 +91,7 @@
      (let [coerced (properties/coerce-value v)]
        [:div
         (label k d)
-        (text-field {:placeholder (str (defaults k))} k coerced)]))
+        (render-property k v (defaults k))]))
    ])
 
 (defn- render-properties-form [p res]
