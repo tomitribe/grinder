@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; Copyright (C) 2012 Marc Holden
 ; All rights reserved.
 ;
@@ -23,8 +23,11 @@
 (ns net.grinder.test.console.service.rest-tests
   "Unit tests for net.grinder.console.service.rest."
   (:use [clojure.test])
-  (:require [net.grinder.console.service.rest :as rest])
-  )
+  (:require [net.grinder.console.service.rest :as rest]
+    [net.grinder.console.model [files :as files]
+                               [processes :as processes]
+                               [properties :as properties]
+                               [recording :as recording]]))
 
 (defmacro check-route
   ([req]
@@ -68,20 +71,20 @@
                          :uri uri} [fn params])
          ok-status
          is-json)
-       :get "/agents/status" net.grinder.console.model.processes/status [:process-control]
-       :post "/agents/stop" net.grinder.console.model.processes/agents-stop [:process-control]
-       :post "/agents/stop-workers" net.grinder.console.model.processes/workers-stop [:process-control]
-       :post "/files/distribute" net.grinder.console.model.files/start-distribution [:file-distribution]
-       :get "/files/status" net.grinder.console.model.files/status [:file-distribution]
-       :get "/properties" net.grinder.console.model.properties/get-properties [:properties]
-       :post "/properties/save" net.grinder.console.model.properties/save [:properties]
-       :get "/recording/status" net.grinder.console.model.recording/status [:sample-model]
-       :get "/recording/data" net.grinder.console.model.recording/data [:sample-model :sample-model-views]
-       :get "/recording/data-latest" net.grinder.console.model.recording/data-latest [:sample-model :sample-model-views]
-       :post "/recording/start" net.grinder.console.model.recording/start [:sample-model]
-       :post "/recording/stop" net.grinder.console.model.recording/stop [:sample-model]
-       :post "/recording/zero" net.grinder.console.model.recording/zero [:sample-model]
-       :post "/recording/reset" net.grinder.console.model.recording/reset [:sample-model]
+       :get "/agents/status" processes/status [:process-control]
+       :post "/agents/stop" processes/agents-stop [:process-control]
+       :post "/agents/stop-workers" processes/workers-stop [:process-control]
+       :post "/files/distribute" files/start-distribution [:file-distribution]
+       :get "/files/status" files/status [:file-distribution]
+       :get "/properties" properties/get-properties [:properties properties/coerce-value]
+       :post "/properties/save" properties/save [:properties]
+       :get "/recording/status" recording/status [:sample-model]
+       :get "/recording/data" recording/data [:sample-model :sample-model-views]
+       :get "/recording/data-latest" recording/data-latest [:sample-model :sample-model-views]
+       :post "/recording/start" recording/start [:sample-model]
+       :post "/recording/stop" recording/stop [:sample-model]
+       :post "/recording/zero" recording/zero [:sample-model]
+       :post "/recording/reset" recording/reset [:sample-model]
        ))
 
 (deftest start-workers
@@ -89,7 +92,7 @@
        (-> (check-route {:request-method :post
                          :uri "/agents/start-workers"
                          :params input}
-                        [net.grinder.console.model.processes/workers-start
+                        [processes/workers-start
                          [:process-control :properties params]])
          ok-status
          is-json)
@@ -102,8 +105,7 @@
        (-> (check-route {:request-method :put
                          :uri "/properties"
                          :params input}
-                        [net.grinder.console.model.properties/set-properties
-                         [:properties params]])
+                        [properties/set-properties [:properties params]])
          ok-status
          is-json)
     {} {}

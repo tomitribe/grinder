@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -33,7 +33,8 @@
   (with-console-properties cp
     (let [r (properties/set-properties cp properties)]
       (is (= properties r))
-      (diff properties (properties/get-properties cp)))))
+      (diff properties
+        (properties/get-properties cp properties/coerce-value)))))
 
 (deftest test-set-and-get-no-properties
   (let [[only-input only-output both] (roundtrip {})]

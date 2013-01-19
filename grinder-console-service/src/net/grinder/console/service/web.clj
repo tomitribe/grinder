@@ -23,7 +23,6 @@
   "Compojure application that provides the console web UI."
   (:use [compojure [core :only [GET POST PUT context routes]]
                    [route :only [not-found resources]]]
-        ;[net.grinder.console.service [app :only [reinit-app]]]
         hiccup.core
         hiccup.def
         hiccup.element
@@ -56,7 +55,7 @@
     (name s))
   )
 
-(defn- render-property-group [legend res properties]
+(defn- render-property-group [legend res properties defaults]
   [:fieldset
    [:legend legend]
    (for [[d k v]
@@ -64,9 +63,10 @@
            (map
              (fn [[k v]] [(property->description res k) k v])
              properties))]
-     [:div
-      (label k d)
-      (text-field {:placeholder "default"} k v)])
+     (let [coerced (properties/coerce-value v)]
+       [:div
+        (label k d)
+        (text-field {:placeholder (str (defaults k))} k coerced)]))
    ])
 
 (defn- render-properties-form [p res]
@@ -80,6 +80,7 @@
        ]]
 
       (let [properties (properties/get-properties p)
+            defaults (properties/default-properties res)
             groups [["Communication"
                      #{:consoleHost
                        :consolePort
@@ -102,7 +103,7 @@
                      (map second groups))])
             ]
         (for [[l ks] all]
-          (render-property-group l res (select-keys properties ks))))
+          (render-property-group l res (select-keys properties ks) defaults)))
 
       (submit-button {:id "submit"} "Save"))))
 
@@ -144,4 +145,4 @@
       )
     compojure.handler/api))
 
-;(reinit-app)
+

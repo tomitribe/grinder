@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -50,11 +50,18 @@
   [v] v)
 
 (defn get-properties
-  "Return a map representing a ConsoleProperties."
-  [^ConsoleProperties properties]
-  (let [p (dissoc (bean properties) :class :distributionFileFilterPattern)]
-    (into {} (for [[k,v] p] [k (coerce-value v)]))))
+  "Return a map representing a ConsoleProperties.
+   If f is supplied, it is used to transform the values, otherwise
+   the Java property values are returned. A typical value of f is
+   coerce-value."
+  [^ConsoleProperties properties & [f]]
+  (let [p (dissoc (bean properties) :class :distributionFileFilterPattern)
+        t (or f identity)]
+    (into {} (for [[k,v] p] [k (t v)]))))
 
+(defn default-properties
+  [resources & more]
+  (get-properties (ConsoleProperties/DEFAULTS) more))
 
 (def ^:private property-descriptors
   "A map of property names to property descriptors for the ConsoleProperties
