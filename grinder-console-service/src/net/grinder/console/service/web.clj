@@ -56,29 +56,44 @@
     (name s))
   )
 
+(defn- render-text-field
+  [k v d & [attributes]]
+  (text-field
+    (merge {:placeholder (properties/coerce-value d)} attributes)
+    k
+    (properties/coerce-value v)))
+
+(defn- render-number-field
+  [k v d & [attributes]]
+  (render-text-field k v d (merge {:type "number"} attributes)))
+
 (defmulti render-property
-  (fn [k v d] (type v)))
+  (fn [k v d & attributes] (type v)))
 
 (defmethod render-property Boolean
-  [k v d]
-  (check-box k v))
+  [k v d & attributes]
+  [:div {:class "property"}
+   (check-box (merge {} attributes) k v)])
 
 (defmethod render-property Rectangle
-  [k ^Rectangle v ^Rectangle d]
-  [:div {:class "rectangle"}
-    (render-property k (.x v) 0)
-    (render-property k (.y v) 0)
-    (render-property k (.width v) 0)
-    (render-property k (.height v) 0)
+  [k ^Rectangle v ^Rectangle d & [attributes]]
+
+  [:div {:class "property rectangle"}
+    (render-number-field k (.x v) (or d (.x d)))
+    (render-number-field k (.y v) (or d (.y d)))
+    (render-number-field k (.width v) (or d (.width d)))
+    (render-number-field k (.height v) (or d (.height d)))
     ])
 
 (defmethod render-property Number
-  [k v d]
-  (text-field {:placeholder (str d) :type "number"} k (properties/coerce-value v)))
+  [k v d & [attributes]]
+  [:div {:class "property"}
+   (render-number-field k v d attributes)])
 
 (defmethod render-property :default
-  [k v d]
-  (text-field {:placeholder (str d)} k (properties/coerce-value v)))
+  [k v d & [attributes]]
+  [:div {:class "property"}
+   (render-text-field k v d attributes)])
 
 (defn- render-property-group [legend res properties defaults]
   [:fieldset
@@ -88,10 +103,9 @@
            (map
              (fn [[k v]] [(property->description res k) k v])
              properties))]
-     (let [coerced (properties/coerce-value v)]
-       [:div
-        (label k d)
-        (render-property k v (defaults k))]))
+     [:div
+      (label k d)
+      (render-property k v (defaults k))])
    ])
 
 (defn- render-properties-form [p res]

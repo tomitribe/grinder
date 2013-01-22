@@ -100,12 +100,6 @@ body {
 }
 
 #content input {
-	height: 1.5em;
-	width: 60%;
-	float: right;
-}
-
-#content input {
 	border: 1px solid #bfbfbf;
 	padding: 0.2em;
 	font-size: 1.1em;
@@ -131,4 +125,26 @@ body {
 	box-shadow: 5px 5px 5px hsla(0, 0%, 26.6667%, 0.8);
 	border: 2px solid #bfbfbf;
 	background-color: #b01c20;
+}
+
+#content div.property {
+  width: 60%;
+  float: right;
+  margin: 0;
+}
+
+#content .property input:not([type=checkbox]){
+  float: left;
+  height: 1.5em;
+  width: 100%;
+}
+
+#content .property input[type=checkbox] {
+	float: left;
+  margin-left: 0;
+}
+
+#content .rectangle input[type=number] {
+  width: 4em;
+  margin-right: 0.5em;
 }
