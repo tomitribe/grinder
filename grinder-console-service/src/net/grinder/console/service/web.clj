@@ -79,10 +79,10 @@
   [k ^Rectangle v ^Rectangle d & [attributes]]
 
   [:div {:class "property rectangle"}
-    (render-number-field k (.x v) (or d (.x d)))
-    (render-number-field k (.y v) (or d (.y d)))
-    (render-number-field k (.width v) (or d (.width d)))
-    (render-number-field k (.height v) (or d (.height d)))
+    (render-number-field k (.x v) (and d (.x d)))
+    (render-number-field k (.y v) (and d (.y d)))
+    (render-number-field k (.width v) (and d (.width d)))
+    (render-number-field k (.height v) (and d (.height d)))
     ])
 
 (defmethod render-property Number
