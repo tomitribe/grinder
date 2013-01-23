@@ -87,12 +87,22 @@
   (Directory. (File. v)))
 
 (defmethod box [Rectangle java.util.List]
-  [_ [x y w h]]
-  (Rectangle. x y w h))
+  [_ values]
+  (let [[x y w h]
+        (map (partial box Integer/TYPE) values)]
+    (Rectangle. x y w h)))
 
 (defmethod box [Integer/TYPE Number]
   [_ v]
   (int v))
+
+(defmethod box [Integer/TYPE String]
+  [_ v]
+  (Integer/parseInt v))
+
+(defmethod box [Boolean/TYPE String]
+  [_ v]
+  (Boolean/parseBoolean v))
 
 (defmethod box :default
   [w v]
@@ -129,6 +139,17 @@
                      (format "Cannot set '%s' to '%s'" k v)
                      e))))
         (illegal "No property '%s'" k)))))
+
+(defn add-missing-boolean-properties
+  "Assoc a false value for any boolean property not found in the map.
+   This is a workaround for maps received from form submissions. Unchecked
+   checkboxes do not add a property to the form parameters."
+  [m]
+  (let [falsies (into {}
+                  (for [[k v] property-descriptors
+                        :when (= Boolean/TYPE (.getPropertyType v))]
+                    [k false]))]
+    (merge falsies m)))
 
 (defn save
   "Save the properties to disk."

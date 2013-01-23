@@ -146,9 +146,12 @@
 
       (submit-button {:id "submit"} "Save"))))
 
-(defn handle-properties-form [params]
-  (println params)
-  {:body (str "stored" (params :task))})
+(defn handle-properties-form [p params]
+  (let [expanded (properties/add-missing-boolean-properties params)]
+    (properties/set-properties p expanded)
+    (clojure.pprint/pprint expanded)
+    {:body (with-out-str (clojure.pprint/pprint params)
+             (clojure.pprint/pprint expanded))}))
 
 
 (defn- wrap-spy [handler spyname]
@@ -174,12 +177,17 @@
     (routes
       (resources "/resources/" {:root "static"})
       ;(wrap-spy
-        (resources "/core/" {:root "net/grinder/console/common/resources"})
+      (resources "/core/" {:root "net/grinder/console/common/resources"})
       ;  "core")
-      ;(wrap-spy
-        (GET "/properties" [] (render-properties-form properties console-resources))
-      ;  "props")
-      (POST "/properties" {params :params} (handle-properties-form params))
+
+      (GET "/properties" []
+        (render-properties-form properties console-resources))
+
+      (wrap-spy
+        (POST "/properties" {params :form-params}
+          (handle-properties-form properties params))
+        "post")
+
       (not-found "Whoop!!!")
       )
     compojure.handler/api))
