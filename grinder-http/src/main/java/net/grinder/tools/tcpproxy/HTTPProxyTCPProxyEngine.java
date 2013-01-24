@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // Copyright (C) 2000, 2001 Phil Dawes
 // Copyright (C) 2001 Paddy Spencer
 // Copyright (C) 2003 Bertrand Ave
@@ -106,17 +106,20 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
    * @exception PatternSyntaxException If a regular expression
    * error occurs.
    */
-  public HTTPProxyTCPProxyEngine(TCPProxySSLSocketFactory sslSocketFactory,
-                                 TCPProxyFilter requestFilter,
-                                 TCPProxyFilter responseFilter,
-                                 PrintWriter output,
-                                 Logger logger,
-                                 EndPoint localEndPoint,
-                                 boolean useColour,
-                                 int timeout,
-                                 EndPoint chainedHTTPProxy,
-                                 EndPoint chainedHTTPSProxy)
+  // CHECKSTYLE.OFF: ParameterNumber
+  public HTTPProxyTCPProxyEngine(
+                               final TCPProxySSLSocketFactory sslSocketFactory,
+                               final TCPProxyFilter requestFilter,
+                               final TCPProxyFilter responseFilter,
+                               final PrintWriter output,
+                               final Logger logger,
+                               final EndPoint localEndPoint,
+                               final boolean useColour,
+                               final int timeout,
+                               final EndPoint chainedHTTPProxy,
+                               final EndPoint chainedHTTPSProxy)
     throws IOException, PatternSyntaxException {
+  // CHECKSTYLE.ON: ParameterNumber
 
     // We set this engine up for handling plain connections. We
     // delegate HTTPS to a proxy engine.
@@ -161,7 +164,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
       try {
         localSocket = accept();
       }
-      catch (IOException e) {
+      catch (final IOException e) {
         UncheckedInterruptedException.ioException(e);
         logIOException(e);
         continue;
@@ -321,14 +324,14 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
           }
         }
       }
-      catch (IOException e) {
+      catch (final IOException e) {
         UncheckedInterruptedException.ioException(e);
         logIOException(e);
 
         try {
           localSocket.close();
         }
-        catch (IOException closeException) {
+        catch (final IOException closeException) {
           throw new AssertionError(closeException);
         }
       }
@@ -346,13 +349,14 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
     try {
       m_delegateSSLEngineThread.join();
     }
-    catch (InterruptedException e) {
+    catch (final InterruptedException e) {
       throw new UncheckedInterruptedException(e);
     }
   }
 
-  private void sendHTTPErrorResponse(HTMLElement message, String status,
-                                     OutputStream outputStream)
+  private void sendHTTPErrorResponse(final HTMLElement message,
+                                     final String status,
+                                     final OutputStream outputStream)
     throws IOException {
     getLogger().error(message.toText());
 
@@ -363,11 +367,11 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
     outputStream.write(response.toString().getBytes("US-ASCII"));
   }
 
-  private static void sleep(int milliseconds) {
+  private static void sleep(final int milliseconds) {
     try {
       Thread.sleep(milliseconds);
     }
-    catch (InterruptedException e) {
+    catch (final InterruptedException e) {
       throw new UncheckedInterruptedException(e);
     }
   }
@@ -387,8 +391,8 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
       new HashMap<String, OutputStreamFilterTee>();
     private OutputStreamFilterTee m_lastRemoteStream;
 
-    HTTPProxyStreamDemultiplexer(InputStream in, Socket localSocket,
-                                 EndPoint clientEndPoint) {
+    HTTPProxyStreamDemultiplexer(final InputStream in, final Socket localSocket,
+                                 final EndPoint clientEndPoint) {
       m_in = in;
       m_localSocket = localSocket;
       m_clientEndPoint = clientEndPoint;
@@ -428,7 +432,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
             try {
               remotePort = Integer.parseInt(matcher.group(3));
             }
-            catch (NumberFormatException e) {
+            catch (final NumberFormatException e) {
               // remotePort = 80;
             }
 
@@ -500,7 +504,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
           m_lastRemoteStream.handle(buffer, bytesRead);
         }
       }
-      catch (IOException e) {
+      catch (final IOException e) {
         // Perhaps we should decorate the OutputStreamFilterTee's so
         // that we can return exceptions as some simple HTTP error
         // page?
@@ -515,7 +519,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
           sendHTTPErrorResponse(
             message, "502 Bad Gateway", m_localSocket.getOutputStream());
         }
-        catch (IOException e2) {
+        catch (final IOException e2) {
           // Ignore.
           UncheckedInterruptedException.ioException(e2);
         }
@@ -524,7 +528,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
         // When exiting, close all our outgoing streams. This will
         // force all the FilteredStreamThreads we've launched to
         // handle the paired streams to shut down.
-        for (OutputStreamFilterTee s : m_remoteStreamMap.values()) {
+        for (final OutputStreamFilterTee s : m_remoteStreamMap.values()) {
           s.connectionClosed();
         }
 
@@ -535,7 +539,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
         try {
           m_localSocket.close();
         }
-        catch (IOException e) {
+        catch (final IOException e) {
           // Ignore.
           UncheckedInterruptedException.ioException(e);
         }
@@ -558,8 +562,9 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
     private final EndPoint m_remoteEndPoint;
     private final ProxySSLContext m_proxySSLContext;
 
-    public ConnectionState(EndPoint clientEndPoint, EndPoint remoteEndPoint,
-                           ProxySSLContext proxySSLContext) {
+    public ConnectionState(final EndPoint clientEndPoint,
+                           final EndPoint remoteEndPoint,
+                           final ProxySSLContext proxySSLContext) {
        m_clientEndPoint = clientEndPoint;
        m_remoteEndPoint = remoteEndPoint;
        m_proxySSLContext = proxySSLContext;
@@ -587,13 +592,13 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
     private final BlockingQueue<ConnectionState> m_nextConnection =
         new SynchronousQueue<ConnectionState>();
 
-    DelegateSSLEngine(TCPProxySSLSocketFactory sslSocketFactory,
-                      TCPProxyFilter requestFilter,
-                      TCPProxyFilter responseFilter,
-                      PrintWriter output,
-                      Logger logger,
-                      boolean useColour,
-                      EndPoint chainedHTTPSProxy)
+    DelegateSSLEngine(final TCPProxySSLSocketFactory sslSocketFactory,
+                      final TCPProxyFilter requestFilter,
+                      final TCPProxyFilter responseFilter,
+                      final PrintWriter output,
+                      final Logger logger,
+                      final boolean useColour,
+                      final EndPoint chainedHTTPSProxy)
     throws IOException {
       super(sslSocketFactory, requestFilter, responseFilter, output, logger,
             new EndPoint(InetAddress.getByName(null), 0), useColour, 0);
@@ -624,10 +629,10 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
      * multiple delegate engines.
      * </p>
      */
-    public void prepareNewConnection(BufferedInputStream in,
-                                     OutputStream out,
-                                     EndPoint clientEndPoint,
-                                     EndPoint remoteEndPoint)
+    public void prepareNewConnection(final BufferedInputStream in,
+                                     final OutputStream out,
+                                     final EndPoint clientEndPoint,
+                                     final EndPoint remoteEndPoint)
       throws IOException {
 
       getLogger().debug("prepareNewConnection for {} -> {}",
@@ -642,7 +647,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
                                                  remoteEndPoint,
                                                  proxySSLContext));
       }
-      catch (InterruptedException e) {
+      catch (final InterruptedException e) {
         throw new InterruptedIOException(e.getMessage());
       }
     }
@@ -656,7 +661,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
         try {
           connection = m_nextConnection.take();
         }
-        catch (InterruptedException e1) {
+        catch (final InterruptedException e1) {
           throw new UncheckedInterruptedException(e1);
         }
 
@@ -665,7 +670,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
         try {
           localSocket = accept();
         }
-        catch (IOException e) {
+        catch (final IOException e) {
           UncheckedInterruptedException.ioException(e);
 
           if (isStopped()) {
@@ -698,7 +703,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
 
           getLogger().debug("Flushed response to {}", clientEndPoint);
         }
-        catch (IOException e) {
+        catch (final IOException e) {
           UncheckedInterruptedException.ioException(e);
 
           if (isStopped()) {
@@ -710,7 +715,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
           try {
             localSocket.close();
           }
-          catch (IOException closeException) {
+          catch (final IOException closeException) {
             throw new AssertionError(closeException);
           }
         }
@@ -728,7 +733,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
     private final class SimpleContextFactory implements ProxySSLContextFactory {
 
       @Override
-      public ProxySSLContext prepareConnection(BufferedInputStream in,
+      public ProxySSLContext prepareConnection(final BufferedInputStream in,
                                                final OutputStream out)
         throws IOException {
 
@@ -750,7 +755,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
           }
 
           @Override
-          public Socket createProxyClientSocket(EndPoint remoteEndPoint)
+          public Socket createProxyClientSocket(final EndPoint remoteEndPoint)
               throws IOException {
             return getSocketFactory().createClientSocket(remoteEndPoint);
           }
@@ -772,7 +777,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
        * @param chainedHTTPSProxy HTTPS proxy to direct connections
        * through.
        */
-      public HTTPSProxyContextFactory(EndPoint chainedHTTPSProxy) {
+      public HTTPSProxyContextFactory(final EndPoint chainedHTTPSProxy) {
         m_httpsProxy = chainedHTTPSProxy;
       }
 
@@ -802,7 +807,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
        *              If an error occurs.
        */
       @Override
-      public ProxySSLContext prepareConnection(BufferedInputStream in,
+      public ProxySSLContext prepareConnection(final BufferedInputStream in,
                                                final OutputStream out)
         throws IOException {
 
@@ -814,7 +819,7 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
         try {
           socket = new Socket(m_httpsProxy.getHost(), m_httpsProxy.getPort());
         }
-        catch (ConnectException e) {
+        catch (final ConnectException e) {
           throw new VerboseConnectException(e, "HTTPS proxy " + m_httpsProxy);
         }
 
@@ -886,7 +891,8 @@ public final class HTTPProxyTCPProxyEngine extends AbstractTCPProxyEngine {
                 }
 
                 @Override
-                public Socket createProxyClientSocket(EndPoint remoteEndPoint)
+                public Socket createProxyClientSocket(
+                  final EndPoint remoteEndPoint)
                     throws IOException {
                   return m_sslSocketFactory.createClientSocket(socket,
                                                                remoteEndPoint);

@@ -1,4 +1,4 @@
-// Copyright (C) 2006 - 2010 Philip Aston
+// Copyright (C) 2006 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities;
  *
  * @author Philip Aston
  */
+// CHECKSTYLE.OFF: IllegalType - AbstractButton
 final class MnemonicHeuristics {
 
   private final Heuristic[] m_heuristics = {
@@ -398,3 +399,4 @@ final class MnemonicHeuristics {
     return s.replaceAll("_", "");
   }
 }
+// CHECKSTYLE.ON: IllegalType

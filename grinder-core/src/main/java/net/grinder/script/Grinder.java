@@ -38,7 +38,9 @@ public class Grinder {
   /**
    * Object that provides context services to scripts.
    */
+  // CHECKSTYLE.OFF: StaticVariableName|VisibilityModifier
   public static InternalScriptContext grinder;
+  // CHECKSTYLE.ON
 
   /**
    * Scripts can get contextual information and access services

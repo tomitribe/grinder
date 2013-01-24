@@ -95,7 +95,9 @@ import HTTPClient.URI;
  *
  * @author Philip Aston
  */
+// CHECKSTYLE.OFF: MethodName - Non standard method names.
 public class HTTPRequest {
+
   // We delay the initialisation of the HTTPPlugin until a script uses
   // HTTPRequest. Scripts must import HTTPRequest from their initialising
   // thread, otherwise the custom statistics will fail to be added to
@@ -1472,3 +1474,4 @@ public class HTTPRequest {
     return s_httpMethodFilter;
   }
 }
+// CHECKSTYLE.ON: MethodName

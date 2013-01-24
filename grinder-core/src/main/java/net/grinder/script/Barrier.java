@@ -1,4 +1,4 @@
-// Copyright (C) 2011 Philip Aston
+// Copyright (C) 2011 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -99,7 +99,7 @@ public interface Barrier {
    * @throws net.grinder.common.UncheckedInterruptedException
    *           If the current thread is interrupted while waiting.
    */
-  void await() throws GrinderException;
+  void await() throws GrinderException, CancelledBarrierException;
 
   /**
    * Version of {@link #await()} that allows a timeout to be specified.
@@ -126,7 +126,8 @@ public interface Barrier {
    * @throws net.grinder.common.UncheckedInterruptedException
    *           If the current thread is interrupted while waiting.
    */
-  boolean await(long timeout, TimeUnit unit) throws GrinderException;
+  boolean await(long timeout, TimeUnit unit) throws GrinderException,
+                                                    CancelledBarrierException;
 
   /**
    * <p>Equivalent to {@code await(timeout, TimeUnit.MILLISECONDS)}.</p>
@@ -145,7 +146,8 @@ public interface Barrier {
    * @throws net.grinder.common.UncheckedInterruptedException
    *           If the current thread is interrupted while waiting.
    */
-  boolean await(long timeout) throws GrinderException;
+  boolean await(long timeout) throws GrinderException,
+                                     CancelledBarrierException;
 
   /**
    * Cancel this {@code Barrier} and reduce the total number of instances for

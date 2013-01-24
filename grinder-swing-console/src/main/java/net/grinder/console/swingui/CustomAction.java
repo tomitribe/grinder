@@ -1,4 +1,4 @@
-// Copyright (C) 2003 - 2009 Philip Aston
+// Copyright (C) 2003 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -101,7 +101,9 @@ abstract class CustomAction extends AbstractAction {
     return m_key;
   }
 
+  // CHECKSTYLE.OFF: IllegalType - AbstractButton
   public final void registerButton(final AbstractButton button) {
+  // CHECKSTYLE.ON: IllegalType
     if (!m_buttonsWithRegisteredListeners.contains(button)) {
       addPropertyChangeListener(
         new PropertyChangeListener() {

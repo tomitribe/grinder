@@ -61,6 +61,7 @@ final class ScriptContextImplementation implements InternalScriptContext {
   private final BarrierGroups m_barrierGroups;
   private final BarrierIdentity.Factory m_barrierIdentityFactory;
 
+  // CHECKSTYLE.OFF: ParameterNumber
   public ScriptContextImplementation(
      final WorkerIdentity workerIdentity,
      final WorkerIdentity firstWorkerIdentity,
@@ -75,6 +76,7 @@ final class ScriptContextImplementation implements InternalScriptContext {
      final ThreadStopper threadStopper,
      final BarrierGroups barrierGroups,
      final BarrierIdentity.Factory barrierIdentityFactory) {
+  // CHECKSTYLE.ON: ParameterNumber
 
     m_workerIdentity = workerIdentity;
     m_firstWorkerIdentity = firstWorkerIdentity;
