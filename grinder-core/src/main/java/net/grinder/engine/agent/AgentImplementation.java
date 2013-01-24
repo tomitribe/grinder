@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // Copyright (C) 2004 Bertrand Ave
 // Copyright (C) 2008 Pawel Lacinski
 // All rights reserved.
@@ -91,8 +91,8 @@ public final class AgentImplementation implements Agent {
    * Constructor.
    *
    * @param logger Logger.
-   * @param alternateFile Alternative properties file, or <code>null</code>.
-   * @param proceedWithoutConsole <code>true</code> => proceed if a console
+   * @param alternateFile Alternative properties file, or {@code null}.
+   * @param proceedWithoutConsole {@code true} => proceed if a console
    * connection could not be made.
    * @throws GrinderException If an error occurs.
    */
@@ -115,6 +115,7 @@ public final class AgentImplementation implements Agent {
    * @throws GrinderException
    *             If an error occurs.
    */
+  // CHECKSTYLE.OFF: MethodLength
   @Override
   public void run() throws GrinderException {
 
@@ -187,14 +188,20 @@ public final class AgentImplementation implements Agent {
               startMessage.getProperties();
             final Directory fileStoreDirectory = m_fileStore.getDirectory();
 
-            if (messageProperties.getAssociatedFile() != null) {
-              // If the properties is associated with a file in the file store
-              // we rebase it so the script location is calculated relative to
-              // the file.
+            final File messagePropertiesFile =
+                messageProperties.getAssociatedFile();
 
-              messageProperties.setAssociatedFile(
-                fileStoreDirectory.getFile(
-                  messageProperties.getAssociatedFile()));
+            if (messagePropertiesFile != null) {
+              // If the properties has an associated file, we rebase its
+              // script location, relative to the file.
+
+              if (!messagePropertiesFile.isAbsolute()) {
+                // If the properties file is relative, resolve it based
+                // on the file store location. This will be the case with
+                // the standard console, but accept absolute files - bug #232.
+                messageProperties.setAssociatedFile(
+                  fileStoreDirectory.getFile(messagePropertiesFile));
+              }
 
               final File consoleScript =
                   messageProperties.resolveRelativeFile(
@@ -363,6 +370,7 @@ public final class AgentImplementation implements Agent {
       shutdownConsoleCommunication(consoleCommunication);
     }
   }
+  // CHECKSTYLE.ON: MethodLength
 
   private GrinderProperties createAndMergeProperties(
       final GrinderProperties startMessageProperties)

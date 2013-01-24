@@ -25,8 +25,12 @@ The Grinder 3.12 (not yet released)
   Add pauseClock() and resumeClock() to
   Statistics.StatisticsForTest. These methods allow plug-ins and
   advanced scripts to discount the cost of expensive pre or post
-  processing. This feature previouslyy was available to plug-ins
+  processing. This feature previously was available to plug-ins
   through the PluginThreadContext interface, which has been removed.
+
+  Fix bug #232 - Agent should handle message properties with absolute
+  associated file. Thanks to Sebastian Blaziak for the report and
+  suggested fix.
 
 
 The Grinder 3.11
