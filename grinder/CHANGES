@@ -32,6 +32,10 @@ The Grinder 3.12 (not yet released)
   associated file. Thanks to Sebastian Blaziak for the report and
   suggested fix.
 
+  Fix bug #233 - Invoke not callable object in helloworld.py in
+  grinder-3.11/examples. Thanks to Matthias Dillier and Alexander
+  Kamyanskiy for the reports.
+
 
 The Grinder 3.11
 ----------------
