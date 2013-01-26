@@ -79,27 +79,46 @@ body {
 	margin-bottom: 1em;
 }
 
-#content div {
-	width: 100%;
-	margin-bottom: 1em;
-	float: left;
-}
-
 #content legend {
 	font-style: italic;
 	color: #434242;
-	font-size: 0.8em;
+	font-size: 0.9em;
 	margin-bottom: 20px;
 	float: left;
 	width: 100%;
 }
 
-#content label {
-	width: 20%;
-	float: left;
+#content div {
+  margin-bottom: 1em;
+  float: left;
+}
+
+#content div.property-line {
+  width: 95%;
+  height: 2em;
+}
+
+#content div.label {
+  width: 30%;
+  float: left;
+  /* Sigh, seem I have to specify absolute vertical dimensions to get alignment. */
+  margin-top: 0.5em;
+}
+
+
+#content .label label {
+  float: right;
+  color: #101010;
+}
+
+#content div.property {
+  width: 65%;
+  float: right;
+  margin: 0;
 }
 
 #content input {
+	vertical-align: middle;
 	border: 1px solid #bfbfbf;
 	padding: 0.2em;
 	font-size: 1.1em;
@@ -127,10 +146,8 @@ body {
 	background-color: #b01c20;
 }
 
-#content div.property {
-  width: 60%;
-  float: right;
-  margin: 0;
+#content .hidden {
+	visibility: hidden;
 }
 
 #content .property input:not([type=checkbox]){
@@ -147,4 +164,8 @@ body {
 #content .rectangle input[type=number] {
   width: 4em;
   margin-right: 0.5em;
+}
+
+#content .changed {
+	font-weight: bolder;
 }

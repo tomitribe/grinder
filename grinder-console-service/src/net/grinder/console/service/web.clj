@@ -27,7 +27,8 @@
         hiccup.def
         hiccup.element
         hiccup.form
-        hiccup.page)
+        hiccup.page
+        [ring.util [response :only [redirect-after-post]]])
   (:require
     [compojure.handler]
     [net.grinder.console.model [files :as files]
@@ -40,6 +41,7 @@
 (defelem page [body]
   (html5
     (include-css "resources/main.css")
+    (include-js "resources/grinder-console.js")
     [:div {:id :wrapper}
       [:div {:id :header}
        [:div {:id :title} [:h1 "The Grinder"]]
@@ -59,13 +61,15 @@
 (defn- render-text-field
   [k v d & [attributes]]
   (text-field
-    (merge {:placeholder (properties/coerce-value d)} attributes)
+    (merge {:placeholder (properties/coerce-value d)
+            :class "changeable"} attributes)
     k
     (properties/coerce-value v)))
 
 (defn- render-number-field
   [k v d & [attributes]]
-  (render-text-field k v d (merge {:type "number"} attributes)))
+  (render-text-field k v d
+    (merge {:type "number"} attributes)))
 
 (defmulti render-property
   (fn [k v d & attributes] (type v)))
@@ -73,7 +77,7 @@
 (defmethod render-property Boolean
   [k v d & attributes]
   [:div {:class "property"}
-   (check-box (merge {} attributes) k v)])
+   (check-box (merge {:class "changeable"} attributes) k v)])
 
 (defmethod render-property Rectangle
   [k ^Rectangle v ^Rectangle d & [attributes]]
@@ -88,12 +92,12 @@
 (defmethod render-property Number
   [k v d & [attributes]]
   [:div {:class "property"}
-   (render-number-field k v d attributes)])
+   (render-number-field k v d (merge {} attributes))])
 
 (defmethod render-property :default
   [k v d & [attributes]]
   [:div {:class "property"}
-   (render-text-field k v d attributes)])
+   (render-text-field k v d (merge {} attributes))])
 
 (defn- render-property-group [legend res properties defaults]
   [:fieldset
@@ -103,8 +107,9 @@
            (map
              (fn [[k v]] [(property->description res k) k v])
              properties))]
-     [:div
-      (label k d)
+     [:div {:class "property-line"}
+      [:div {:class "label"}
+       (label k d)]
       (render-property k v (defaults k))])
    ])
 
@@ -144,15 +149,13 @@
         (for [[l ks] all]
           (render-property-group l res (select-keys properties ks) defaults)))
 
-      (submit-button {:id "submit"} "Save"))))
+      (submit-button {:id "submit"} "Set"))))
 
 (defn handle-properties-form [p params]
   (let [expanded (properties/add-missing-boolean-properties params)]
     (properties/set-properties p expanded)
-    (clojure.pprint/pprint expanded)
-    {:body (with-out-str (clojure.pprint/pprint params)
-             (clojure.pprint/pprint expanded))}))
-
+    ;(clojure.pprint/pprint expanded)
+    (redirect-after-post "./properties")))
 
 (defn- wrap-spy [handler spyname]
   (fn [request]
