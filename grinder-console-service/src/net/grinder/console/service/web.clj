@@ -126,28 +126,31 @@
 
       (let [properties (properties/get-properties p)
             defaults (properties/default-properties res)
-            groups [["Communication"
-                     #{:consoleHost
-                       :consolePort
-                       :httpHost
-                       :httpPort}]
+            groups [["File Distribution"
+                     #{;:scanDistributionFilesPeriod
+                       :distributionDirectory
+                       :propertiesFile
+                       ; :distributionFileFilterExpression
+                       }]
                     ["Sampling"
                      #{:significantFigures
                        :collectSampleCount
                        :sampleInterval
                        :ignoreSampleCount}]
-                    ["File Distribution"
-                     #{:scanDistributionFilesPeriod
-                       :distributionDirectory
-                       :propertiesFile
-                       :distributionFileFilterExpression}]]
-            all (conj groups
-                  ["Other Settings"
-                   (apply clojure.set/difference
-                     (set (keys properties))
-                     (map second groups))])
+                    ["Communication"
+                     #{:consoleHost
+                       :consolePort
+                       :httpHost
+                       :httpPort}]
+                    ["Swing Console"
+                     #{:externalEditorCommand
+                       :externalEditorArguments
+                       :saveTotalsWithResults
+                       :lookAndFeel
+                       :frameBounds
+                       :resetConsoleWithProcesses}]]
             ]
-        (for [[l ks] all]
+        (for [[l ks] groups]
           (render-property-group l res (select-keys properties ks) defaults)))
 
       (submit-button {:id "submit"} "Set"))))
