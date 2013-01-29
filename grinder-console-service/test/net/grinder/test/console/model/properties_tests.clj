@@ -24,13 +24,11 @@
   (:use [clojure.test]
         [net.grinder.test]
         [clojure.data :only [diff]])
-  (:require [net.grinder.console.model.properties :as properties])
-  (:import [net.grinder.console.model
-            ConsoleProperties]))
+  (:require [net.grinder.console.model.properties :as properties]))
 
 (defn- roundtrip
   [properties]
-  (with-console-properties cp
+  (with-console-properties cp f
     (let [r (properties/set-properties cp properties)]
       (is (= properties r))
       (diff properties
@@ -54,35 +52,35 @@
     (is (= properties both))))
 
 (deftest test-set-with-string-key-and-modified-value
-  (with-console-properties cp
+  (with-console-properties cp f
     (let [properties  {"distributionFileFilterExpression" nil}
           r (properties/set-properties cp properties)
           v (:distributionFileFilterExpression r)]
       (is (not (nil? v))))))
 
 (deftest test-set-with-bad-key
-  (with-console-properties cp
+  (with-console-properties cp f
     (let [properties  {"foo" nil}]
       (is (thrown? IllegalArgumentException
                    (properties/set-properties cp properties))))))
 
 (deftest test-set-with-bad-key2
-  (with-console-properties cp
+  (with-console-properties cp f
     (let [properties  {"class" nil}]
       (is (thrown? IllegalArgumentException
                    (properties/set-properties cp properties))))))
 
 (deftest test-set-with-bad-value
-  (with-console-properties cp
+  (with-console-properties cp f
     (let [properties  {:collectSampleCount "foo"}]
       (is (thrown? IllegalArgumentException
                    (properties/set-properties cp properties))))))
 
+
 (deftest test-save
-  (with-temporary-files [f1]
-    (let [cp (ConsoleProperties. nil f1)
-          r (properties/save cp)]
+  (with-console-properties cp f
+    (let [r (properties/save cp)]
       (.setConsolePort cp 9999)
       (is (= :success (properties/save cp)))
-      (let [saved (slurp f1)]
+      (let [saved (slurp f)]
         (is (re-find #"grinder.console.consolePort=9999" saved))))))

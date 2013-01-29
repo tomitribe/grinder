@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -27,8 +27,6 @@
   (:import [net.grinder.console.communication
             ProcessControl
             ProcessControl$ProcessReports]
-           [net.grinder.console.model
-            ConsoleProperties]
            [net.grinder.messages.console
             AgentAddress
             AgentAndCacheReport
@@ -57,10 +55,9 @@
   [user-properties expected]
   (with-redefs [called (atom false)]
 
-    (with-temporary-files [f1]
+    (with-console-properties cp f
       (let [pc (reify ProcessControl
-                 (startWorkerProcesses [this p] (reset! called p)))
-            cp (ConsoleProperties. nil f1)]
+                 (startWorkerProcesses [this p] (reset! called p)))]
 
         (is (= :success (processes/workers-start pc cp user-properties)))
         (is (= expected @called))
@@ -82,22 +79,22 @@
   [selected-properties user-properties expected]
   (with-redefs [called (atom false)]
 
-    (with-temporary-files [f1 f2]
-      (let [pc (reify ProcessControl
-                 (startWorkerProcessesWithDistributedFiles
-                   [this d p] (reset! called [d p]))
-                 )
-            cp (ConsoleProperties. nil f1)]
+    (with-console-properties cp f
+      (with-temporary-files [f2]
+        (let [pc (reify ProcessControl
+                   (startWorkerProcessesWithDistributedFiles
+                     [this d p] (reset! called [d p]))
+                   )]
 
-      (do
-        (with-open [w (FileWriter. f2)]
-          (doseq [[k v] selected-properties]
-            (.write w (format "%s: %s\n" k v))))
-        (.setPropertiesFile cp f2))
+        (do
+          (with-open [w (FileWriter. f2)]
+            (doseq [[k v] selected-properties]
+              (.write w (format "%s: %s\n" k v))))
+          (.setPropertiesFile cp f2))
 
-        (is (= :success (processes/workers-start pc cp user-properties)))
-        (is (= [(.getDistributionDirectory cp) expected] @called))
-        ))))
+          (is (= :success (processes/workers-start pc cp user-properties)))
+          (is (= [(.getDistributionDirectory cp) expected] @called))
+          )))))
 
 (deftest test-workers-start-distriubted-empty-properties
   (workers-start-selected-properties {} {} {}))
@@ -206,5 +203,4 @@
         pc2 (reify ProcessControl)]
     (processes/initialise pc)
     (is (thrown? IllegalStateException (processes/status pc2)))))
-
 

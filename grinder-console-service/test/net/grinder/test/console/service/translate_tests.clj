@@ -85,4 +85,4 @@
           )
         (is "Hi World" (translate/t :hi "World"))))))
 
-(run-tests)
+;(run-tests)

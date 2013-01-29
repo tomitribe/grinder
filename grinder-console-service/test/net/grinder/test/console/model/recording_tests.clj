@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; Copyright (C) 2012 Marc Holden
 ; All rights reserved.
 ;
@@ -115,7 +115,7 @@
     (is (thrown? IllegalStateException (recording/data sm nil)))))
 
 (deftest test-with-real-sample-model
-  (with-console-properties cp
+  (with-console-properties cp f
     (let [sm (SampleModelImplementation.
                cp
                ss
@@ -153,7 +153,7 @@
         (is (= "[0 0 NaN 0.0 NaN]" (str statistics))))))))
 
 (deftest test-with-real-sample-model-latest
-  (with-console-properties cp
+  (with-console-properties cp f
     (let [sm (SampleModelImplementation.
                cp
                ss

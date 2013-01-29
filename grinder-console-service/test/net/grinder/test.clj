@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -29,7 +29,8 @@
            [net.grinder.common
             AbstractTestSemantics]
            [net.grinder.console.model
-            ConsoleProperties]))
+            ConsoleProperties]
+           net.grinder.console.common.Resources))
 
 
 (defmacro with-temporary-files
@@ -48,10 +49,10 @@
 
 (defmacro with-console-properties
   "Create a temporary ConsoleProperties and bind it to the name given as cp,
-   then execute the body."
-  [cp & body]
-  `(with-temporary-files [f#]
-    (let [~cp (ConsoleProperties. nil f#)]
+   backed by a tempory file bound to the name f, then execute the body."
+  [cp f & body]
+  `(with-temporary-files [~f]
+    (let [~cp (ConsoleProperties. (reify Resources) ~f)]
           (do ~@body))))
 
 (defn make-test
