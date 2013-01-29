@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -81,6 +81,12 @@ public final class ConsoleFoundation {
   private static final String DYNAMIC_COMPONENT_RESOURCE_NAME =
       "META-INF/net.grinder.console";
 
+  /**
+   * Name of the standard console resource bundle.
+   */
+  public static final String RESOURCE_BUNDLE =
+      "net.grinder.console.common.resources.Console";
+
   private final MutablePicoContainer m_container;
   private final Timer m_timer;
 
@@ -93,7 +99,9 @@ public final class ConsoleFoundation {
    *
    * @exception GrinderException If an error occurs.
    */
-  public ConsoleFoundation(Resources resources, Logger logger, boolean headless)
+  public ConsoleFoundation(final Resources resources,
+                           final Logger logger,
+                           final boolean headless)
     throws GrinderException {
 
     this(resources,
@@ -121,11 +129,11 @@ public final class ConsoleFoundation {
    * @exception GrinderException If an error occurs.
    */
   @SuppressWarnings("unchecked")
-  public ConsoleFoundation(Resources resources,
-                           Logger logger,
-                           boolean headless,
-                           Timer timer,
-                           ConsoleProperties properties)
+  public ConsoleFoundation(final Resources resources,
+                           final Logger logger,
+                           final boolean headless,
+                           final Timer timer,
+                           final ConsoleProperties properties)
     throws GrinderException {
 
     m_timer = timer;
@@ -182,7 +190,7 @@ public final class ConsoleFoundation {
 
     Class<? extends UI> uiClass = headless ? TextUI.class : null;
 
-    for (Class<?> implementation :
+    for (final Class<?> implementation :
       loadRegisteredImplementations(DYNAMIC_COMPONENT_RESOURCE_NAME,
                                     classLoader)) {
 
@@ -191,7 +199,7 @@ public final class ConsoleFoundation {
         uiClass = (Class<? extends UI>) implementation;
       }
       else {
-        // Implementations will be instantiated here if they are startable
+        // Implementations will be instantiated if they are startable
         // - see http://picocontainer.org/lifecycle.html. Otherwise, they
         // are lazily created as other components require them.
         m_container.addComponent(implementation);
@@ -272,10 +280,11 @@ public final class ConsoleFoundation {
      * @param sampleModelViews Console sample model views
      * @param dispatchClientCommands Client command dispatcher.
      */
-    public WireMessageDispatch(ConsoleCommunication communication,
-                               final SampleModel model,
-                               final SampleModelViews sampleModelViews,
-                               DispatchClientCommands dispatchClientCommands) {
+    public WireMessageDispatch(
+      final ConsoleCommunication communication,
+      final SampleModel model,
+      final SampleModelViews sampleModelViews,
+      final DispatchClientCommands dispatchClientCommands) {
 
       final MessageDispatchRegistry messageDispatchRegistry =
         communication.getMessageDispatchRegistry();
@@ -283,7 +292,8 @@ public final class ConsoleFoundation {
       messageDispatchRegistry.set(
         RegisterTestsMessage.class,
         new AbstractHandler<RegisterTestsMessage>() {
-          public void handle(RegisterTestsMessage message) {
+          @Override
+          public void handle(final RegisterTestsMessage message) {
             model.registerTests(message.getTests());
           }
         });
@@ -291,7 +301,8 @@ public final class ConsoleFoundation {
       messageDispatchRegistry.set(
         ReportStatisticsMessage.class,
         new AbstractHandler<ReportStatisticsMessage>() {
-          public void handle(ReportStatisticsMessage message) {
+          @Override
+          public void handle(final ReportStatisticsMessage message) {
             model.addTestReport(message.getStatisticsDelta());
           }
         });
@@ -299,7 +310,8 @@ public final class ConsoleFoundation {
       messageDispatchRegistry.set(
         RegisterExpressionViewMessage.class,
         new AbstractHandler<RegisterExpressionViewMessage>() {
-          public void handle(RegisterExpressionViewMessage message) {
+          @Override
+          public void handle(final RegisterExpressionViewMessage message) {
             sampleModelViews.registerStatisticExpression(
               message.getExpressionView());
           }

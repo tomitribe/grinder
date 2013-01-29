@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -46,15 +46,17 @@ public final class Console extends AbstractMainClass {
 
   private final ConsoleFoundation m_consoleFoundation;
 
-  private Console(String[] args, Resources resources, Logger logger)
+  private Console(final String[] args,
+                  final Resources resources,
+                  final Logger logger)
     throws GrinderException {
 
     super(logger, USAGE);
 
     boolean headless = false;
 
-    for (int i = 0; i < args.length; i++) {
-      if ("-headless".equalsIgnoreCase(args[i])) {
+    for (final String arg : args) {
+      if ("-headless".equalsIgnoreCase(arg)) {
         headless = true;
       }
       else {
@@ -74,9 +76,9 @@ public final class Console extends AbstractMainClass {
    *
    * @param args Command line arguments.
    */
-  public static void main(String[] args)  {
-    final Resources resources = new ResourcesImplementation(
-      "net.grinder.console.common.resources.Console");
+  public static void main(final String[] args)  {
+    final Resources resources =
+        new ResourcesImplementation(ConsoleFoundation.RESOURCE_BUNDLE);
 
     final Logger logger =
       LoggerFactory.getLogger(resources.getString("shortTitle"));
@@ -85,10 +87,10 @@ public final class Console extends AbstractMainClass {
       final Console console = new Console(args, resources, logger);
       console.run();
     }
-    catch (LoggedInitialisationException e) {
+    catch (final LoggedInitialisationException e) {
       System.exit(1);
     }
-    catch (GrinderException e) {
+    catch (final GrinderException e) {
       logger.error("Could not initialise", e);
       System.exit(2);
     }

@@ -10,7 +10,8 @@
                  [ring-middleware-format "0.2.0"]
                  [clj-stacktrace "0.2.5"]
                  [net.sf.grinder/grinder-core "3.12-SNAPSHOT" :scope "provided"]
-                 [hiccup "1.0.2"]]
+                 [hiccup "1.0.2"]
+                 [com.taoensso/tower "1.2.0"]]
   :profiles {:dev {:dependencies
                  [[ring/ring-devel "1.1.6"]
                   [org.clojure/tools.trace "0.7.3"]]}}
