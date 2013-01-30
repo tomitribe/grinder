@@ -28,15 +28,19 @@
         hiccup.element
         hiccup.form
         hiccup.page
-        [ring.util [response :only [redirect-after-post]]])
+        [ring.util [response :only [redirect-after-post]]]
+        [net.grinder.console.service
+         [translate :only [t make-wrap-with-translation]]])
   (:require
     [compojure.handler]
     [net.grinder.console.model [files :as files]
                                [processes :as processes]
                                [properties :as properties]
-                               [recording :as recording]])
-  (:import java.awt.Rectangle)
-  )
+                               [recording :as recording]]
+	[taoensso.tower :as tower])
+  (:import
+    java.awt.Rectangle
+    net.grinder.console.ConsoleFoundation))
 
 (defelem page [body]
   (html5
@@ -47,16 +51,10 @@
        [:div {:id :title} [:h1 "The Grinder"]]
        [:div {:id :logo} (image "core/logo.png" "Logo")]]
       [:div {:id :sidebar}
-       (link-to "./properties" "Console Properties")]
+       (link-to "./properties" (t :console-properties))]
       [:div {:id :content}
        (html body)]]
   ))
-
-(defn- property->description [r s]
-  (if-let [label (.getString r (str (name s) ".label") false)]
-    label
-    (name s))
-  )
 
 (defn- render-text-field
   [k v d & [attributes]]
@@ -100,13 +98,13 @@
   [:div {:class "property"}
    (render-text-field k v d (merge {} attributes))])
 
-(defn- render-property-group [legend res properties defaults]
+(defn- render-property-group [legend properties defaults]
   [:fieldset
    [:legend legend]
    (for [[d k v]
          (sort
            (map
-             (fn [[k v]] [(property->description res k) k v])
+             (fn [[k v]] [(t k) k v])
              properties))]
      [:div {:class "property-line"}
       [:div {:class "label"}
@@ -120,29 +118,27 @@
       {:id :properties}
       [:post "./properties" ]
       [:hgroup
-       [:h2
-        "Console Properties"
-       ]]
+       [:h2 (t :console-properties)]]
 
       (let [properties (properties/get-properties p)
             defaults (properties/default-properties res)
-            groups [["File Distribution"
+            groups [[(t :file-distribution)
                      #{;:scanDistributionFilesPeriod
                        :distributionDirectory
                        :propertiesFile
                        ; :distributionFileFilterExpression
                        }]
-                    ["Sampling"
+                    [(t :sampling)
                      #{:significantFigures
                        :collectSampleCount
                        :sampleInterval
                        :ignoreSampleCount}]
-                    ["Communication"
+                    [(t :communication)
                      #{:consoleHost
                        :consolePort
                        :httpHost
                        :httpPort}]
-                    ["Swing Console"
+                    [(t :swing-console)
                      #{:externalEditorCommand
                        :externalEditorArguments
                        :saveTotalsWithResults
@@ -151,9 +147,9 @@
                        :resetConsoleWithProcesses}]]
             ]
         (for [[l ks] groups]
-          (render-property-group l res (select-keys properties ks) defaults)))
+          (render-property-group l (select-keys properties ks) defaults)))
 
-      (submit-button {:id "submit"} "Set"))))
+      (submit-button {:id "submit"} (t :set-button)))))
 
 (defn handle-properties-form [p params]
   (let [expanded (properties/add-missing-boolean-properties params)]
@@ -161,7 +157,7 @@
     ;(clojure.pprint/pprint expanded)
     (redirect-after-post "./properties")))
 
-(defn- wrap-spy [handler spyname]
+(defn- spy [spyname handler]
   (fn [request]
     (println "-------------------------------")
     (println spyname "request:")
@@ -180,23 +176,28 @@
            properties
            file-distribution
            console-resources]}]
-  (->
-    (routes
-      (resources "/resources/" {:root "static"})
-      ;(wrap-spy
-      (resources "/core/" {:root "net/grinder/console/common/resources"})
-      ;  "core")
 
-      (GET "/properties" []
-        (render-properties-form properties console-resources))
+  (tower/load-dictionary-from-map-resource! "translations.clj")
 
-      (wrap-spy
-        (POST "/properties" {params :form-params}
-          (handle-properties-form properties params))
-        "post")
+  (let [translate (make-wrap-with-translation
+                    nil
+                    ConsoleFoundation/RESOURCE_BUNDLE)]
 
-      (not-found "Whoop!!!")
-      )
-    compojure.handler/api))
+    (->
+      (routes
+        (resources "/resources/" {:root "static"})
+        (resources "/core/" {:root "net/grinder/console/common/resources"})
 
+        (translate
+          (routes
+            (GET "/properties" []
+              (render-properties-form properties console-resources))))
+
+        (spy "post"
+          (POST "/properties" {params :form-params}
+            (handle-properties-form properties params)))
+
+        (not-found "Whoop!!!")
+
+      compojure.handler/api))))
 

@@ -94,20 +94,25 @@
              :test
              tb)
         request {}
-        tr-request {:params {:locale "tr"}}]
-    ((mw (fn [r]
-          (is (= r request))
-          (are [x k] (= x (translate/t k))
-          "blah" :foo
-          "Hello World" :hello)
-          ))
-      request)
+        tr-request {:params {:locale "tr"}}
+        response {:some "response"}]
+    (is (= response
+      ((mw (fn [r]
+            (is (= r request))
+            (are [x k] (= x (translate/t k))
+              "blah" :foo
+              "Hello World" :hello)
+            response))
+        request)))
 
-    ((mw (fn [r]
-          (is (= r tr-request))
-          (are [x k] (= x (translate/t k))
-          "blah" :foo
-          "Merhaba Dünya" :hello)
-          ))
-      tr-request)
+    (is (= response
+      ((mw (fn [r]
+            (is (= r tr-request))
+            (are [x k] (= x (translate/t k))
+              "blah" :foo
+              "Merhaba Dünya" :hello)
+            response
+            ))
+        tr-request)))
     ))
+
