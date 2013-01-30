@@ -24,7 +24,8 @@
    around http://dev.clojure.org/jira/browse/CLJ-322. See
    https://groups.google.com/forum/?fromgroups#!topic/clojure/k2_o80sgayk"
   (:require
-    [ring.adapter.jetty :as jetty]
+    ;[ring.adapter.jetty :as jetty]
+    [org.httpkit.server :as httpkit]
     [net.grinder.console.service.app :as app])
   (:import
     net.grinder.console.model.ConsoleProperties
@@ -33,7 +34,7 @@
 
 ; Should support specific listen host.
 
-(defn- stop-jetty
+(defn- stop-http
   [server error-handler]
   (when server
     (try
@@ -42,11 +43,11 @@
       (catch Exception e
         (.handleException error-handler e)))))
 
-(defn- start-jetty
+(defn- start-http
   [server host port error-handler app]
-  (or (stop-jetty server error-handler)
+  (or (stop-http server error-handler)
       (try
-        (jetty/run-jetty app {:host host :port port :join? false})
+        (httpkit/run-server app {:host host :port port :join? false})
         (catch Exception e
           (.handleException
             error-handler
@@ -63,7 +64,7 @@
         app (app/init-app context)
         error-handler (:error-handler context)
         ]
-    (reset! server (start-jetty @server host port error-handler app))))
+    (reset! server (start-http @server host port error-handler app))))
 
 
 (defn bootstrap-init
@@ -107,4 +108,4 @@
   [this]
   "Called by PicoContainer when the Bootstrap component is stopped."
   (let [{:keys [context server]} (.state this)]
-    (reset! server (stop-jetty @server (:error-handler context)))))
+    (reset! server (stop-http @server (:error-handler context)))))
