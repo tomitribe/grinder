@@ -108,6 +108,7 @@ body {
 
 #content .label label {
   float: right;
+  text-align:right;
   color: #101010;
 }
 
