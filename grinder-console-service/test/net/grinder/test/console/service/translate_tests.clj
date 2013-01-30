@@ -66,12 +66,15 @@
     (are [x k] (= x (#'translate/resource-bundle-result k))
       "Hello World" :hello)))
 
-(deftest test-t
+(defn- load-test-tower-config
+  []
   (tower/set-config! [:dictionary] {}) ; Discard any configuration.
   (tower/set-config! [:log-missing-translation!-fn] (fn [x])) ; Don't log.
   (tower/load-dictionary-from-map-resource!
-    "net/grinder/test/console/service/testtranslations.clj")
+    "net/grinder/test/console/service/testtranslations.clj"))
 
+(deftest test-t
+  (load-test-tower-config)
   (translate/with-resource-bundle tb
     (tower/with-locale :en
       (tower/with-scope :test
@@ -85,4 +88,26 @@
           )
         (is "Hi World" (translate/t :hi "World"))))))
 
-;(run-tests)
+(deftest test-make-wrap-with-translation
+  (load-test-tower-config)
+  (let [mw (translate/make-wrap-with-translation
+             :test
+             tb)
+        request {}
+        tr-request {:params {:locale "tr"}}]
+    ((mw (fn [r]
+          (is (= r request))
+          (are [x k] (= x (translate/t k))
+          "blah" :foo
+          "Hello World" :hello)
+          ))
+      request)
+
+    ((mw (fn [r]
+          (is (= r tr-request))
+          (are [x k] (= x (translate/t k))
+          "blah" :foo
+          "Merhaba Dünya" :hello)
+          ))
+      tr-request)
+    ))

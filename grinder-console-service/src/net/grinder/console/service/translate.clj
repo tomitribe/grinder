@@ -23,12 +23,10 @@
   "Internationalisation."
   (:use [taoensso.tower.ring :only [make-wrap-i18n-middleware]])
   (:require [taoensso.tower :as tower])
-  (:import [java.util MissingResourceException ResourceBundle])
-  )
+  (:import [java.util MissingResourceException ResourceBundle]))
 
 
 (def ^:dynamic *resource-bundle-name* nil)
-
 
 (defn- to-resource-bundle-keys
   "Translate tower format keys to a list of potential resource bundle keys"
@@ -78,10 +76,17 @@
         ))))
 
 
+(defn make-wrap-with-translation
+  "Returns Ring middleware that binds the translation context.
+   The optional parameters control the tower scope, and the name of
+   the Java resource bundle to be used if the translation is not
+   found in the tower dictionary."
+  [& [tower-scope resource-bundle-name]]
 
-(defn- make-wrap-with-resource-bundle
-  [resource-bundle-name]
-  (fn [handler]
-    (fn [request]
-      (with-resource-bundle resource-bundle-name
-        (handler request)))))
+  (comp
+    (make-wrap-i18n-middleware)
+    (fn [handler]
+      (fn [request]
+        (with-resource-bundle resource-bundle-name
+          (tower/with-scope tower-scope
+            (handler request)))))))
