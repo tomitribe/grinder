@@ -23,7 +23,8 @@
   "Start and stop the console from the REPL."
   (:import
     net.grinder.common.GrinderBuild
-    org.slf4j.LoggerFactory))
+    org.slf4j.LoggerFactory
+    net.grinder.console.ConsoleFoundation))
 
 (defonce ^:private stopper (atom nil))
 
@@ -35,7 +36,7 @@
   []
   (stop)
   (let [resources (net.grinder.console.common.ResourcesImplementation.
-                    "net.grinder.console.common.resources.Console")
+                    ConsoleFoundation/RESOURCE_BUNDLE)
         logger (LoggerFactory/getLogger "test")
         cf (net.grinder.console.ConsoleFoundation. resources logger true)]
     (reset! stopper

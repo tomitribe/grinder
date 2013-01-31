@@ -23,12 +23,10 @@
   "Compojure application that provides the console web UI."
   (:use [compojure [core :only [GET POST PUT context routes]]
                    [route :only [not-found resources]]]
-        hiccup.core
-        hiccup.def
-        hiccup.element
-        hiccup.form
-        hiccup.page
-        [ring.util [response :only [redirect-after-post]]]
+        [hiccup core def element form page
+         [middleware :only [wrap-base-url]]
+         [util :only [url]]]
+        [ring.util [response :only [redirect redirect-after-post]]]
         [net.grinder.console.service
          [translate :only [t make-wrap-with-translation]]])
   (:require
@@ -42,19 +40,17 @@
     java.awt.Rectangle
     net.grinder.console.ConsoleFoundation))
 
-(defelem page [body]
-  (html5
-    (include-css "resources/main.css")
-    (include-js "resources/grinder-console.js")
-    [:div {:id :wrapper}
-      [:div {:id :header}
-       [:div {:id :title} [:h1 "The Grinder"]]
-       [:div {:id :logo} (image "core/logo.png" "Logo")]]
-      [:div {:id :sidebar}
-       (link-to "./properties" (t :console-properties))]
-      [:div {:id :content}
-       (html body)]]
-  ))
+
+(defn- render-processes [{:keys [process-control]}]
+  (html
+    (processes/status process-control)))
+
+(defn- render-data [{:keys [process-control]}]
+  "data")
+
+(defn- render-files [{:keys [process-control]}]
+  "files")
+
 
 (defn- render-text-field
   [k v d & [attributes]]
@@ -112,50 +108,77 @@
       (render-property k v (defaults k))])
    ])
 
-(defn- render-properties-form [p res]
-  (page
-    (form-to
-      {:id :properties}
-      [:post "./properties" ]
-      [:hgroup
-       [:h2 (t :console-properties)]]
+(defn- render-properties-form [{:keys [properties console-resources]}]
+  (form-to
+    {:id :properties}
+    [:post "./properties" ]
 
-      (let [properties (properties/get-properties p)
-            defaults (properties/default-properties res)
-            groups [[(t :file-distribution)
-                     #{;:scanDistributionFilesPeriod
-                       :distributionDirectory
-                       :propertiesFile
-                       ; :distributionFileFilterExpression
-                       }]
-                    [(t :sampling)
-                     #{:significantFigures
-                       :collectSampleCount
-                       :sampleInterval
-                       :ignoreSampleCount}]
-                    [(t :communication)
-                     #{:consoleHost
-                       :consolePort
-                       :httpHost
-                       :httpPort}]
-                    [(t :swing-console)
-                     #{:externalEditorCommand
-                       :externalEditorArguments
-                       :saveTotalsWithResults
-                       :lookAndFeel
-                       :frameBounds
-                       :resetConsoleWithProcesses}]]
-            ]
-        (for [[l ks] groups]
-          (render-property-group l (select-keys properties ks) defaults)))
+    (let [properties (properties/get-properties properties)
+          defaults (properties/default-properties console-resources)
+          groups [[(t :file-distribution)
+                   #{;:scanDistributionFilesPeriod
+                     :distributionDirectory
+                     :propertiesFile
+                     ; :distributionFileFilterExpression
+                     }]
+                  [(t :sampling)
+                   #{:significantFigures
+                     :collectSampleCount
+                     :sampleInterval
+                     :ignoreSampleCount}]
+                  [(t :communication)
+                   #{:consoleHost
+                     :consolePort
+                     :httpHost
+                     :httpPort}]
+                  [(t :swing-console)
+                   #{:externalEditorCommand
+                     :externalEditorArguments
+                     :saveTotalsWithResults
+                     :lookAndFeel
+                     :frameBounds
+                     :resetConsoleWithProcesses}]]
+          ]
+      (for [[l ks] groups]
+        (render-property-group l (select-keys properties ks) defaults)))
 
-      (submit-button {:id "submit"} (t :set-button)))))
+    (submit-button {:id "submit"} (t :set-button))))
 
 (defn handle-properties-form [p params]
   (let [expanded (properties/add-missing-boolean-properties params)]
     (properties/set-properties p expanded)
     ;(clojure.pprint/pprint expanded)
     (redirect-after-post "./properties")))
+
+
+
+(def ^{:const true} sections [
+  [:processes {:url "/processes"
+               :render-fn render-processes}]
+  [:data {:url "/data"
+          :render-fn render-data}]
+  [:file-distribution {:url "/files"
+                       :render-fn render-files}]
+  [:console-properties {:url "/properties"
+                        :render-fn render-properties-form}]
+  ])
+
+(defelem page [section body]
+  (html5
+    (include-css "resources/main.css")
+    (include-js "resources/grinder-console.js")
+    [:div {:id :wrapper}
+      [:div {:id :header}
+       [:div {:id :title} [:h1 "The Grinder"]]
+       [:div {:id :logo} (image "core/logo.png" "Logo")]]
+
+      [:div {:id :sidebar}
+       (for [[k v] sections]
+         (link-to (str "." (:url v)) (t k)))
+       ]
+      [:div {:id :content}
+       [:h2 (t section)]
+       (html body)]]))
 
 (defn- spy [spyname handler]
   (fn [request]
@@ -175,7 +198,8 @@
            sample-model-views
            properties
            file-distribution
-           console-resources]}]
+           console-resources]
+    :as state}]
 
   (tower/load-dictionary-from-map-resource! "translations.clj")
 
@@ -183,21 +207,24 @@
                     nil
                     ConsoleFoundation/RESOURCE_BUNDLE)]
 
+    (spy "top"
     (->
       (routes
+              ;; TODO wrap-base-url
         (resources "/resources/" {:root "static"})
         (resources "/core/" {:root "net/grinder/console/common/resources"})
 
+        (GET "/" [] (redirect (:url (second (first sections)))))
+
         (translate
-          (routes
-            (GET "/properties" []
-              (render-properties-form properties console-resources))))
+          (apply routes
+            (for [[section {:keys [url render-fn]}] sections :when render-fn]
+              (GET url [] (page section (apply render-fn [state]))))))
 
         (spy "post"
           (POST "/properties" {params :form-params}
             (handle-properties-form properties params)))
 
         (not-found "Whoop!!!")
-
-      compojure.handler/api))))
+      compojure.handler/api)))))
 

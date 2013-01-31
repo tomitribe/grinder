@@ -1,5 +1,7 @@
 {:en
  {:console-properties "Console Properties"
+  :data "Data"
+  :processes "Process Control"
 
   :file-distribution "File Distribution"
   :sampling "Sampling"
