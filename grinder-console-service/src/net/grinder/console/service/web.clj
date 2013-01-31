@@ -25,7 +25,7 @@
                    [route :only [not-found resources]]]
         [hiccup core def element form page
          [middleware :only [wrap-base-url]]
-         [util :only [url]]]
+         [util :only [to-str to-uri]]]
         [ring.util [response :only [redirect redirect-after-post]]]
         [net.grinder.console.service
          [translate :only [t make-wrap-with-translation]]])
@@ -174,13 +174,13 @@
 
       [:div {:id :sidebar}
        (for [[k v] sections]
-         (link-to (str "." (:url v)) (t k)))
+         (link-to (:url v) (t k)))
        ]
       [:div {:id :content}
        [:h2 (t section)]
        (html body)]]))
 
-(defn- spy [spyname handler]
+(defn- spy [handler spyname]
   (fn [request]
     (println "-------------------------------")
     (println spyname "request:")
@@ -190,6 +190,10 @@
       (clojure.pprint/pprint response)
       (println "-------------------------------")
       response)))
+
+(defn- context-url [p]
+  "Force hiccup to add its base-url to the given path"
+  (to-str (to-uri p)))
 
 (defn create-app
   "Create the Ring routes, given a map of the various console components."
@@ -207,24 +211,24 @@
                     nil
                     ConsoleFoundation/RESOURCE_BUNDLE)]
 
-    (spy "top"
     (->
       (routes
-              ;; TODO wrap-base-url
         (resources "/resources/" {:root "static"})
         (resources "/core/" {:root "net/grinder/console/common/resources"})
 
-        (GET "/" [] (redirect (:url (second (first sections)))))
+        (GET "/" [] (redirect (context-url (:url (second (first sections))))))
 
-        (translate
+        (->
           (apply routes
             (for [[section {:keys [url render-fn]}] sections :when render-fn]
-              (GET url [] (page section (apply render-fn [state]))))))
+              (GET url [] (page section (apply render-fn [state])))))
+          (spy "get")
+          translate)
 
-        (spy "post"
-          (POST "/properties" {params :form-params}
-            (handle-properties-form properties params)))
+        (POST "/properties" {params :form-params}
+          (handle-properties-form properties params))
 
-        (not-found "Whoop!!!")
-      compojure.handler/api)))))
+        (not-found "Whoop!!!"))
 
+      wrap-base-url
+      compojure.handler/api)))
