@@ -225,6 +225,7 @@
 (defelem page [section body]
   (html5
     (include-css "resources/main.css")
+    (include-js "resources/jquery-1.9.0.min.js")
     (include-js "resources/grinder-console.js")
     [:div {:id :wrapper}
       [:div {:id :header}

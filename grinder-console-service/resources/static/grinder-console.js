@@ -1,59 +1,60 @@
-window.onload = function() {
+jQuery(function($) {
     function addChangeDetection() {
-        var labels = document.getElementsByTagName("label");
-        for ( var i = 0; i < labels.length; ++i) {
-            var l = labels[i];
+        var changeables = $(".changeable");
 
+        if (!changeables.length) {
+            return;
+        }
+
+        $("label").each(function() {
+            var l = this;
             if (l.htmlFor != '') {
                 var e = document.getElementById(l.htmlFor);
 
                 if (e) {
-                    e.label = l;
+                    e.label = this;
                 } else {
-                    var labeleds = document.getElementsByName(l.htmlFor);
-
-                    for ( var j = 0; j < labeleds.length; ++j) {
-                        labeleds[j].label = l;
-                    }
+                    $(document.getElementsByName(l.htmlFor)).each(function() {
+                        this.label = l;
+                    });
                 }
             }
-        }
+        });
 
-        var saveButton = document.getElementById("submit");
-        saveButton.classList.add("hidden");
-        var changeables = document.getElementsByClassName("changeable");
+        jQuery.fn.visible = function(show) {
+            return this.css("visibility", show ? "visible" : "hidden");
+        };
 
-        for ( var i = 0; i < changeables.length; ++i) {
-            var c = changeables[i];
+        var saveButton = $("#submit");
+        saveButton.visible(false);
 
-            if (c.type === "checkbox") {
-                c.modified = function() {
+        changeables.each(function() {
+
+            if (this.type === "checkbox") {
+                this.modified = function() {
                     return this.checked != this.defaultChecked;
                 };
             } else {
-                c.original = c.value;
-                c.modified = function() {
+                this.original = this.value;
+                this.modified = function() {
                     return this.original != this.value;
                 };
             }
 
-            c.addEventListener("change", function(e) {
+            $(this).change(function(e) {
+                // This is wrong if multiple controls share the same label.
                 if (e.target.modified()) {
-                    e.target.label.classList.add("changed");
+                    $(e.target.label).addClass("changed");
                 } else {
-                    e.target.label.classList.remove("changed");
+                    $(e.target.label).removeClass("changed");
                 }
 
-                if (Array.prototype.some.call(changeables, function(x) {
-                    return x.modified();
-                })) {
-                    saveButton.classList.remove("hidden");
-                } else {
-                    saveButton.classList.add("hidden");
-                }
+                saveButton.visible(changeables.filter(function(x) {
+                    return this.modified();
+                }).length);
             });
-        }
+        });
     }
 
     addChangeDetection();
-};
+});
