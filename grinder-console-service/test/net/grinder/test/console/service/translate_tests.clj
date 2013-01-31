@@ -86,7 +86,9 @@
           "Hello World" [:x :hello :y]
           "missing for en" :not-there
           )
-        (is "Hi World" (translate/t :hi "World"))))))
+        (is "Hi World" (translate/t :hi "World"))
+
+        (is "" (translate/t :empty))))))
 
 (deftest test-make-wrap-with-translation
   (load-test-tower-config)
@@ -115,4 +117,3 @@
             ))
         tr-request)))
     ))
-
