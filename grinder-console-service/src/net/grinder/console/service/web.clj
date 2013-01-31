@@ -31,6 +31,7 @@
          [translate :only [t make-wrap-with-translation]]])
   (:require
     [compojure.handler]
+    [clojure.pprint]
     [net.grinder.console.model [files :as files]
                                [processes :as processes]
                                [properties :as properties]
@@ -40,10 +41,68 @@
     java.awt.Rectangle
     net.grinder.console.ConsoleFoundation))
 
+(defn- state [type p]
+  (let [s (:state p)]
+    [s
+     (t [(keyword (str (name s) "-" (name type))) s])]))
+
+(defmulti render-process-state #(first %&))
+
+(defmethod render-process-state :agent [type p]
+  (let [[s d] (state type p)]
+    (html
+      [:div {:class s} d])))
+
+(defmethod render-process-state :worker [type p]
+  (let [[s d] (state type p)]
+    (html
+      [:div {:class s}
+       (if (= :running s)
+         (str d " " (t :worker-threads
+                      (:running-threads p)
+                      (:maximum-threads p)))
+         d)])))
+
+(defn- render-process-table [processes]
+  (html
+    [:table {:class "process-table"}
+     [:caption (t :running-processes)]
+     [:thead
+      [:tr
+       [:th (t [:agent-name])]
+       [:th (t [:worker-name])]
+       [:th (t [:process-status :status])]]]
+     (if (empty? processes)
+       [:tr [:td (t :no-processes)]]
+       (for [agent processes]
+         [:tr
+          [:td (str (:name agent))]
+          [:td]
+          [:td (render-process-state :agent agent)]
+          (for [worker (:workers agent)]
+            [:tr
+             [:td]
+             [:td (str (:name worker) (:number worker))]
+             [:td (render-process-state :worker worker)]
+             ])
+          ]))
+     ]
+    ))
+
 
 (defn- render-processes [{:keys [process-control]}]
-  (html
-    (processes/status process-control)))
+  (let [buttons [
+          (image {} "core/start-processes.png" (t :start-processes))
+          (image {} "core/reset-processes.png" (t :reset-processes))
+          (image {} "core/stop-processes.png" (t :stop-processes))
+         ]]
+    (html
+      [:div {:class "process-controls"}
+       (for [b buttons] b)
+       ]
+      (let [p (processes/status process-control)]
+        (render-process-table p)
+        ))))
 
 (defn- render-data [{:keys [process-control]}]
   "data")
@@ -154,13 +213,13 @@
 
 (def ^{:const true} sections [
   [:processes {:url "/processes"
-               :render-fn render-processes}]
+               :render-fn #'render-processes}]
   [:data {:url "/data"
-          :render-fn render-data}]
+          :render-fn #'render-data}]
   [:file-distribution {:url "/files"
-                       :render-fn render-files}]
+                       :render-fn #'render-files}]
   [:console-properties {:url "/properties"
-                        :render-fn render-properties-form}]
+                        :render-fn #'render-properties-form}]
   ])
 
 (defelem page [section body]

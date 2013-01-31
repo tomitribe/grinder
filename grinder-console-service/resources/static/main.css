@@ -1,6 +1,7 @@
 body {
 	color: white;
 	background-color: #123456;
+	font-family: Arial, Helvetica, Verdana, sans-serif;
 }
 
 #wrapper {
@@ -36,15 +37,13 @@ body {
 	width: 70%;
 }
 
-#sidebar { /*border-right-color: #e8e8e8;
-	border-right-style: solid;
-	border-right-width: 1px;
-	*/
+#sidebar {
 	margin-top: 7em;
 	padding-right: 1em;
 	margin-right: 1em;
 	float: left;
 	width: 20%;
+	font-weight: bold;
 }
 
 #sidebar a {
@@ -61,7 +60,7 @@ body {
 	text-align: center;
 }
 
-#content fieldset {
+#content fieldset,table {
 	background-color: white;
 	color: black;
 	border-radius: 1em;
@@ -71,7 +70,6 @@ body {
 }
 
 #content {
-	font-family: Arial, Helvetica, Verdana, sans-serif;
 	font-weight: 400;
 }
 
@@ -79,16 +77,18 @@ body {
 	margin-bottom: 1em;
 }
 
-#content legend {
+#content legend,caption {
 	font-style: italic;
 	color: #434242;
 	font-size: 0.9em;
-	margin-bottom: 20px;
-	float: left;
-	width: 100%;
 }
 
-#content div {
+#content legend {
+  margin-bottom: 1em;
+  float: left;
+}
+
+#content form div {
   margin-bottom: 1em;
   float: left;
 }
@@ -169,4 +169,41 @@ body {
 
 #content .changed {
 	font-weight: bolder;
+}
+
+
+.process-table caption {
+  caption-side: bottom;
+}
+
+table.process-table {
+   width: 100%;
+}
+
+.process-table td,th
+{
+  text-align: left;
+}
+
+.process-table th
+{
+  color: #434242;
+}
+
+.process-table .running
+{
+  color: darkgreen;
+}
+
+.process-controls img
+{
+  height: 2em;
+  background-color: #345678;
+  border-radius: 6px;
+  padding: 6px;
+  margin-bottom: 1em;
+  margin-top: 1em;
+  margin-right: 1em;
+  box-shadow: 5px 5px 5px hsla(0, 0%, 26.6667%, 0.8);
+  border: 2px solid #bfbfbf;
 }
