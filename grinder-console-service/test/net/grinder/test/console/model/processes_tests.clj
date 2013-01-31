@@ -187,8 +187,8 @@
                   2
                   22)])]
       (.update l (into-array ProcessControl$ProcessReports [r1]))
-      (is (= [{:id "1" :name "foo" :number 10 :state "RUNNING" :workers
-               [{:id "13" :name "bah" :number 9 :state "STARTED"
+      (is (= [{:id "1" :name "foo" :number 10 :state :running :workers
+               [{:id "13" :name "bah" :number 9 :state :started
                  :running-threads 2 :maximum-threads 22}]}]
              (processes/status pc))))))
 
@@ -203,4 +203,3 @@
         pc2 (reify ProcessControl)]
     (processes/initialise pc)
     (is (thrown? IllegalStateException (processes/status pc2)))))
-

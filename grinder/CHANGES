@@ -36,6 +36,10 @@ The Grinder 3.12 (not yet released)
   grinder-3.11/examples. Thanks to Matthias Dillier and Alexander
   Kamyanskiy for the reports.
 
+  The /agents/status REST service now returns process status as a
+  keyword instead of a string when called with the application/clojure
+  content type. For other content types, the string is now lower case.
+
 
 The Grinder 3.11
 ----------------

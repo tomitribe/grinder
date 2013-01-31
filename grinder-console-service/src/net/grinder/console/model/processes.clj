@@ -61,7 +61,7 @@
     {:id (.getUniqueID i)
      :name (.getName i)
      :number (.getNumber i)
-     :state (str (.getState r))
+     :state (keyword (.toLowerCase (str (.getState r))))
      }))
 
 (defn- worker-report
