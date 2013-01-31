@@ -35,36 +35,34 @@
 ; Should support specific listen host.
 
 (defn- stop-http
-  [server error-handler]
-  (when server
+  [stop-server error-handler]
+  (when stop-server
     (try
-      (.stop server)
-      server
+      (stop-server)
       (catch Exception e
         (.handleException error-handler e)))))
 
 (defn- start-http
-  [server host port error-handler app]
-  (or (stop-http server error-handler)
+  [stop-server host port error-handler app]
+  (or (stop-http stop-server error-handler)
       (try
         (httpkit/run-server app {:host host :port port :join? false})
         (catch Exception e
           (.handleException
             error-handler
             e
-            "Failed to start HTTP server")
-          server))))
+            "Failed to start HTTP server")))))
 
 
 (defn- restart
-  [{:keys [context server]}]
+  [{:keys [context stop-server]}]
   (let [{:keys [properties error-handler]} context
         host (.getHttpHost properties)
         port (.getHttpPort properties)
         app (app/init-app context)
         error-handler (:error-handler context)
         ]
-    (reset! server (start-http @server host port error-handler app))))
+    (reset! stop-server (start-http @stop-server host port error-handler app))))
 
 
 (defn bootstrap-init
@@ -85,7 +83,7 @@
                    :error-handler errorQueue
                    :file-distribution fileDistribution
                    :console-resources resources}
-         :server (atom nil)}]
+         :stop-server (atom nil)}]
 
     (.addPropertyChangeListener
       properties
@@ -107,5 +105,5 @@
 (defn bootstrap-stop
   [this]
   "Called by PicoContainer when the Bootstrap component is stopped."
-  (let [{:keys [context server]} (.state this)]
-    (reset! server (stop-http @server (:error-handler context)))))
+  (let [{:keys [context stop-server]} (.state this)]
+    (reset! stop-server (stop-http @stop-server (:error-handler context)))))
