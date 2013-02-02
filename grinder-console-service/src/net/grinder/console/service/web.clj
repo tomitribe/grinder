@@ -273,7 +273,7 @@
 
 (defn- push-data
   [data-key html-data]
-  (let [cs (dosync (let [cs (@clients data-key)]  ; TODO use keyword as key to map
+  (let [cs (dosync (let [cs (@clients data-key)]
                      (swap! clients dissoc "process-state")
                      cs))]
     (doseq [c cs]
@@ -309,10 +309,10 @@
         (resources "/core/" {:root "net/grinder/console/common/resources"})
 
         (GET "/poll" [k s]
-          (async-response client (register-client client k s)))
+          (async-response client (register-client client (keyword k) s)))
 
         (GET "/test" [m]
-          (push-data "process-state" (render-process-table process-control m))
+          (push-data :process-state (render-process-table process-control m))
           (str "Sent data"))
 
         (->
