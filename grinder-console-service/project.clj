@@ -2,16 +2,17 @@
   :parent [net.sf.grinder/grinder-parent "3.12-SNAPSHOT"]
   :description "REST API to The Grinder console."
   :url "http://grinder.sourceforge.net"
-  :dependencies [[org.clojure/clojure "1.4.0"]
-                 [org.clojure/tools.logging "0.2.3"]
-                 [compojure "1.1.3"]
-                 [ring/ring-core "1.1.6"]
-                 [ring-middleware-format "0.2.0"]
+  :dependencies [[cheshire "4.0.0"]
                  [clj-stacktrace "0.2.5"]
-                 [net.sf.grinder/grinder-core "3.12-SNAPSHOT" :scope "provided"]
-                 [hiccup "1.0.2"]
                  [com.taoensso/tower "1.2.0"]
-                 [http-kit "2.0-rc1"]]
+                 [compojure "1.1.3"]
+                 [http-kit "2.0-rc1"]
+                 [hiccup "1.0.2"]
+                 [net.sf.grinder/grinder-core "3.12-SNAPSHOT" :scope "provided"]
+                 [org.clojure/clojure "1.4.0"]
+                 [org.clojure/tools.logging "0.2.3"]
+                 [ring/ring-core "1.1.6"]
+                 [ring-middleware-format "0.2.0"]]
   :profiles {:dev {:dependencies
                  [[ring/ring-devel "1.1.6"]
                   [org.clojure/tools.trace "0.7.3"]]}}

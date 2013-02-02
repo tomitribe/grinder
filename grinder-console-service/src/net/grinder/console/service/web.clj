@@ -26,10 +26,13 @@
         [hiccup core def element form page
          [middleware :only [wrap-base-url]]
          [util :only [to-str to-uri]]]
-        [ring.util [response :only [redirect redirect-after-post]]]
         [net.grinder.console.service
-         [translate :only [t make-wrap-with-translation]]])
+         [translate :only [t make-wrap-with-translation]]]
+        [org.httpkit.server :only [async-response]]
+        [ring.middleware.format-response :only [wrap-json-response]]
+        [ring.util [response :only [redirect redirect-after-post response]]])
   (:require
+    [cheshire.core :as json]
     [compojure.handler]
     [clojure.pprint]
     [net.grinder.console.model [files :as files]
@@ -63,31 +66,32 @@
                       (:maximum-threads p)))
          d)])))
 
-(defn- render-process-table [processes]
-  (html
-    [:table {:class "process-table"}
-     [:caption (t :running-processes)]
-     [:thead
-      [:tr
-       [:th (t [:agent-name])]
-       [:th (t [:worker-name])]
-       [:th (t [:process-status :status])]]]
-     (if (empty? processes)
-       [:tr [:td (t :no-processes)]]
-       (for [agent processes]
-         [:tr
-          [:td (str (:name agent))]
-          [:td]
-          [:td (render-process-state :agent agent)]
-          (for [worker (:workers agent)]
-            [:tr
-             [:td]
-             [:td (str (:name worker) (:number worker))]
-             [:td (render-process-state :worker worker)]
-             ])
-          ]))
-     ]
-    ))
+(defn- render-process-table [process-control & [test]]
+  (let [processes (processes/status process-control)]
+    (html
+      [:table {:id :process-state :class "process-table live-data"}
+       [:caption (or test (t :running-processes))]
+       [:thead
+        [:tr
+         [:th (t [:agent-name])]
+         [:th (t [:worker-name])]
+         [:th (t [:process-status :status])]]]
+       (if (empty? processes)
+         [:tr [:td (t :no-processes)]]
+         (for [agent processes]
+           [:tr
+            [:td (str (:name agent))]
+            [:td]
+            [:td (render-process-state :agent agent)]
+            (for [worker (:workers agent)]
+              [:tr
+               [:td]
+               [:td (str (:name worker) (:number worker))]
+               [:td (render-process-state :worker worker)]
+               ])
+            ]))
+       ]
+      )))
 
 
 (defn- render-processes [{:keys [process-control]}]
@@ -100,9 +104,8 @@
       [:div {:class "process-controls"}
        (for [b buttons] b)
        ]
-      (let [p (processes/status process-control)]
-        (render-process-table p)
-        ))))
+      (render-process-table process-control))))
+
 
 (defn- render-data [{:keys [process-control]}]
   "data")
@@ -201,7 +204,7 @@
       (for [[l ks] groups]
         (render-property-group l (select-keys properties ks) defaults)))
 
-    (submit-button {:id "submit"} (t :set-button))))
+    (submit-button {:id :submit} (t :set-button))))
 
 (defn handle-properties-form [p params]
   (let [expanded (properties/add-missing-boolean-properties params)]
@@ -225,7 +228,8 @@
 (defelem page [section body]
   (html5
     (include-css "resources/main.css")
-    (include-js "resources/jquery-1.9.0.min.js")
+    ;(include-js "resources/jquery-1.9.0.min.js")
+    (include-js "resources/jquery-1.9.0.js")
     (include-js "resources/grinder-console.js")
     [:div {:id :wrapper}
       [:div {:id :header}
@@ -255,6 +259,9 @@
   "Force hiccup to add its base-url to the given path"
   (to-str (to-uri p)))
 
+; Live-data-id -> client handle
+(def clients (atom {}))
+
 (defn create-app
   "Create the Ring routes, given a map of the various console components."
   [{:keys [process-control
@@ -276,7 +283,26 @@
         (resources "/resources/" {:root "static"})
         (resources "/core/" {:root "net/grinder/console/common/resources"})
 
-        (GET "/" [] (redirect (context-url (:url (second (first sections))))))
+        (GET "/poll" [k s]
+          (async-response respond
+            (swap! clients assoc k
+              {:seq s :callback respond})))
+
+        (GET "/test" [m]
+          (dosync
+            ; TODO handle multiple clients
+            (when-let [c (@clients "process-state")]
+              (let [r (
+                        ; Ring middleware is incompatible with httpkit callback API.
+                        json/generate-string
+
+                        ; TODO Use some global seq instead
+                        {:html (render-process-table process-control m) :seq 99})]
+              (println "Responding to " c " with" r)
+                ((:callback c) (response r))))
+            (swap! clients dissoc "process-state")
+            )
+          (str "Sent " m))
 
         (->
           (apply routes
@@ -287,6 +313,8 @@
 
         (POST "/properties" {params :form-params}
           (handle-properties-form properties params))
+
+        (GET "/" [] (redirect (context-url (:url (second (first sections))))))
 
         (not-found "Whoop!!!"))
 
