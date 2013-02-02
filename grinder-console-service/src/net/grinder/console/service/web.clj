@@ -80,13 +80,13 @@
          [:tr [:td (t :no-processes)]]
          (for [agent processes]
            [:tr
-            [:td (str (:name agent))]
+            [:td (:name agent)]
             [:td]
             [:td (render-process-state :agent agent)]
             (for [worker (:workers agent)]
               [:tr
                [:td]
-               [:td (str (:name worker) (:number worker))]
+               [:td (:name worker)]
                [:td (render-process-state :worker worker)]
                ])
             ]))
