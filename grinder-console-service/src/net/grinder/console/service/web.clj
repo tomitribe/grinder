@@ -30,7 +30,10 @@
          [translate :only [t make-wrap-with-translation]]]
         [org.httpkit.server :only [async-response]]
         [ring.middleware.format-response :only [wrap-json-response]]
-        [ring.util [response :only [redirect redirect-after-post response]]])
+        [ring.util [response :only [redirect
+                                    redirect-after-post
+                                    response
+                                    content-type]]])
   (:require
     [cheshire.core :as json]
     [compojure.handler]
@@ -282,13 +285,12 @@
                      cs))
         s (next-sequence)]
     (doseq [c cs]
-      (let [r (
-                ; Ring middleware is incompatible with httpkit callback API.
-                json/generate-string
-
-                {:html html-data :sequence s})]
-        (println "Responding to " c " with" r)
-        ((:client c) (response r))))))
+      (let [result {:html html-data
+                    :sequence s}
+            r (-> (response (json/generate-string result))
+                  (content-type "application/json"))]
+        (log/debugf "Responding to %s with %s" c r)
+        ((:client c) r)))))
 
 
 (defn create-app
