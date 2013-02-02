@@ -259,7 +259,7 @@
   "Force hiccup to add its base-url to the given path"
   (to-str (to-uri p)))
 
-; Live-data-id -> client handle
+; Live-data-id -> set of {:callback, :seq}
 (def clients (atom {}))
 
 (defn create-app
@@ -285,20 +285,23 @@
 
         (GET "/poll" [k s]
           (async-response respond
-            (swap! clients assoc k
-              {:seq s :callback respond})))
+            (println "before: " @clients)
+            (swap! clients
+              #(merge-with clojure.set/union %
+                 {k #{{:seq s :callback respond}}}))
+            (println "after: " @clients)))
 
         (GET "/test" [m]
           (dosync
-            ; TODO handle multiple clients
-            (when-let [c (@clients "process-state")]
+            ; TODO use keyword as key to map
+            (doseq [c (@clients "process-state")]
               (let [r (
                         ; Ring middleware is incompatible with httpkit callback API.
                         json/generate-string
 
                         ; TODO Use some global seq instead
                         {:html (render-process-table process-control m) :seq 99})]
-              (println "Responding to " c " with" r)
+              ;(println "Responding to " c " with" r)
                 ((:callback c) (response r))))
             (swap! clients dissoc "process-state")
             )
@@ -308,7 +311,7 @@
           (apply routes
             (for [[section {:keys [url render-fn]}] sections :when render-fn]
               (GET url [] (page section (apply render-fn [state])))))
-          (spy "get")
+          ;(spy "get")
           translate)
 
         (POST "/properties" {params :form-params}

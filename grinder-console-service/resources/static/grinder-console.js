@@ -66,7 +66,7 @@ jQuery(function($) {
             function poll(e) {
                 console.log("Polling " + e);
                 $.get("/ui/poll", {k : e.id, s: seq}, function(x) {
-
+                    console.log("Update " + x);
                     $(e).stop()
                     .animate({opacity: 0.5},
                     function() {
@@ -75,12 +75,10 @@ jQuery(function($) {
                     });
 
 
-
-
                     seq = x.seq;
-                    // Direct call to poll() causes FF to spin?
-                    poll(e);
-                    //setTimeout(function() {poll(e);}, 1);
+                    // Dispatch in timer - directly calling poll()
+                    // causes FF to spin sometimes.
+                    setTimeout(function() {poll(e);}, 1);
                 },
                 "json");
             }
