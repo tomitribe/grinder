@@ -67,12 +67,14 @@ jQuery(function($) {
                 console.log("Polling " + e);
                 $.get("/ui/poll", {k : e.id, s: seq}, function(x) {
                     console.log("Update " + x);
+
                     $(e).stop()
                     .animate({opacity: 0.5},
-                    function() {
-                      $(this).html(x.html);
-                      $(this).animate({opacity: 1}, "fast");
-                    });
+                            "fast",
+                            function() {
+                                $(this).html(x.html);
+                                $(this).animate({opacity: 1}, "fast");
+                            });
 
 
                     seq = x.seq;

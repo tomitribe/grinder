@@ -34,12 +34,12 @@
   (:require
     [cheshire.core :as json]
     [compojure.handler]
-    [clojure.pprint]
+    [clojure.tools [logging :as log]]
     [net.grinder.console.model [files :as files]
                                [processes :as processes]
                                [properties :as properties]
                                [recording :as recording]]
-	[taoensso.tower :as tower])
+    [taoensso.tower :as tower])
   (:import
     java.awt.Rectangle
     net.grinder.console.ConsoleFoundation))
@@ -209,9 +209,7 @@
 (defn handle-properties-form [p params]
   (let [expanded (properties/add-missing-boolean-properties params)]
     (properties/set-properties p expanded)
-    ;(clojure.pprint/pprint expanded)
     (redirect-after-post "./properties")))
-
 
 
 (def ^{:const true} sections [
@@ -246,21 +244,48 @@
 
 (defn- spy [handler spyname]
   (fn [request]
-    (println "-------------------------------")
-    (println spyname "request:")
-    (clojure.pprint/pprint request)
     (let [response (handler request)]
-      (println spyname "response:")
-      (clojure.pprint/pprint response)
-      (println "-------------------------------")
+      (log/debugf
+        (str "--------------> %s >----------------%n"
+          "request: %s\nresponse:%s%n"
+          "--------------< %s <-----------------%n")
+        spyname request response spyname)
       response)))
 
 (defn- context-url [p]
   "Force hiccup to add its base-url to the given path"
   (to-str (to-uri p)))
 
-; Live-data-id -> set of {:callback, :seq}
+; Live-data-id -> set of {:client, :seq}
 (def clients (atom {}))
+
+(defn- register-client
+  [client data-key sequence]
+  (dosync
+    (swap! clients
+      #(merge-with clojure.set/union %
+         {data-key #{{:seq sequence :client client}}})))
+  (log/debugf "poll: %s %s %s -> %s"
+               data-key
+               sequence
+               client
+               @clients))
+
+(defn- push-data
+  [data-key html-data]
+  (let [cs (dosync (let [cs (@clients data-key)]  ; TODO use keyword as key to map
+                     (swap! clients dissoc "process-state")
+                     cs))]
+    (doseq [c cs]
+      (let [r (
+                ; Ring middleware is incompatible with httpkit callback API.
+                json/generate-string
+
+                ; TODO Use some global seq instead
+                {:html html-data :seq 99})]
+        (println "Responding to " c " with" r)
+        ((:client c) (response r))))))
+
 
 (defn create-app
   "Create the Ring routes, given a map of the various console components."
@@ -284,34 +309,17 @@
         (resources "/core/" {:root "net/grinder/console/common/resources"})
 
         (GET "/poll" [k s]
-          (async-response respond
-            (println "before: " @clients)
-            (swap! clients
-              #(merge-with clojure.set/union %
-                 {k #{{:seq s :callback respond}}}))
-            (println "after: " @clients)))
+          (async-response client (register-client client k s)))
 
         (GET "/test" [m]
-          (dosync
-            ; TODO use keyword as key to map
-            (doseq [c (@clients "process-state")]
-              (let [r (
-                        ; Ring middleware is incompatible with httpkit callback API.
-                        json/generate-string
-
-                        ; TODO Use some global seq instead
-                        {:html (render-process-table process-control m) :seq 99})]
-              ;(println "Responding to " c " with" r)
-                ((:callback c) (response r))))
-            (swap! clients dissoc "process-state")
-            )
-          (str "Sent " m))
+          (push-data "process-state" (render-process-table process-control m))
+          (str "Sent data"))
 
         (->
           (apply routes
             (for [[section {:keys [url render-fn]}] sections :when render-fn]
               (GET url [] (page section (apply render-fn [state])))))
-          ;(spy "get")
+          ; (spy "get")
           translate)
 
         (POST "/properties" {params :form-params}
