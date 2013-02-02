@@ -256,15 +256,19 @@
   "Force hiccup to add its base-url to the given path"
   (to-str (to-uri p)))
 
-; Live-data-id -> set of {:client, :seq}
+; Live-data-id -> set of {:client, :sequence}
 (def clients (atom {}))
+
+(let [sequence (atom 0)]
+  (defn next-sequence []
+    (swap! sequence inc)))
 
 (defn- register-client
   [client data-key sequence]
   (dosync
     (swap! clients
       #(merge-with clojure.set/union %
-         {data-key #{{:seq sequence :client client}}})))
+         {data-key #{{:sequence sequence :client client}}})))
   (log/debugf "poll: %s %s %s -> %s"
                data-key
                sequence
@@ -275,14 +279,14 @@
   [data-key html-data]
   (let [cs (dosync (let [cs (@clients data-key)]
                      (swap! clients dissoc "process-state")
-                     cs))]
+                     cs))
+        s (next-sequence)]
     (doseq [c cs]
       (let [r (
                 ; Ring middleware is incompatible with httpkit callback API.
                 json/generate-string
 
-                ; TODO Use some global seq instead
-                {:html html-data :seq 99})]
+                {:html html-data :sequence s})]
         (println "Responding to " c " with" r)
         ((:client c) (response r))))))
 

@@ -76,8 +76,8 @@ jQuery(function($) {
                                 $(this).animate({opacity: 1}, "fast");
                             });
 
+                    seq = x.sequence;
 
-                    seq = x.seq;
                     // Dispatch in timer - directly calling poll()
                     // causes FF to spin sometimes.
                     setTimeout(function() {poll(e);}, 1);
