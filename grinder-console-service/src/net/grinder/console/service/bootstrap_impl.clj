@@ -24,6 +24,7 @@
    around http://dev.clojure.org/jira/browse/CLJ-322. See
    https://groups.google.com/forum/?fromgroups#!topic/clojure/k2_o80sgayk"
   (:require
+    [clojure.tools [logging :as log]]
     ;[ring.adapter.jetty :as jetty]
     [org.httpkit.server :as httpkit]
     [net.grinder.console.service.app :as app])
@@ -38,6 +39,7 @@
   [stop-server error-handler]
   (when stop-server
     (try
+      (log/debugf "Stopping HTTP server")
       (stop-server)
       (catch Exception e
         (.handleException error-handler e)))))
@@ -46,6 +48,7 @@
   [stop-server host port error-handler app]
   (or (stop-http stop-server error-handler)
       (try
+        (log/debugf "Starting HTTP server at %s:%s" host port)
         (httpkit/run-server app {:host host :port port :join? false})
         (catch Exception e
           (.handleException
