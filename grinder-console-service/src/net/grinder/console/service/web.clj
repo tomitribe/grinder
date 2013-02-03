@@ -67,11 +67,11 @@
                       (:maximum-threads p)))
          d)])))
 
-(defn- render-process-table [process-control & [test]]
+(defn- render-process-table [process-control]
   (let [processes (processes/status process-control)]
     (html
       [:table {:id :process-state :class "process-table live-data"}
-       [:caption (or test (t :running-processes))]
+       [:caption (t :running-processes)]
        [:thead
         [:tr
          [:th (t [:agent-name])]
@@ -281,9 +281,9 @@
         (GET "/poll" [k s]
           (livedata/poll k s))
 
-        (GET "/test" [m]
+        (GET "/test" []
           (livedata/push :process-state
-            (render-process-table process-control m))
+            (render-process-table process-control))
           (str "Sent data"))
 
         (->

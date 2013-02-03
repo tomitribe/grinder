@@ -31,21 +31,25 @@
     [clojure.tools [logging :as log]]))
 
 
-; {data-key #{client}}
-(def ^:private clients (ref {}))
-
 (let [default 0
       values (atom {})]
+
   (defn- get-value
     "Get the value for key `k`."
     [k]
-    (@values k default))
+    (->
+      k
+      (@values default)
+      str))
+
   (defn- next-value
     "Return a new value for key `k`."
     [k]
-    ((swap! values
-       (fn [vs] (assoc vs k (inc (vs k default)))))
-      k)))
+    (->
+      k
+      ((swap! values
+         (fn [vs] (assoc vs k (inc (vs k default))))))
+      str)))
 
 (defn- json-response
   "Format a clojure structure as a Ring JSON response."
@@ -55,33 +59,56 @@
     response
     (content-type "application/json")))
 
-(defn- register-client
-  "Register http-kit callback `client` for `data-key`."
-  [client data-key]
-  (dosync
-    (commute clients
-      #(merge-with clojure.set/union % {data-key #{client}})))
-  (log/debugf "poll: %s %s -> %s"
-               data-key
-               client
-               @clients))
+(let [ ; {data-key #{client}}
+      clients (ref {})]
 
-(defn poll
-  "Respond to a client poll for `data-key` and `sequence`
-   and appropriate synchrnous or asynchronous Ring response."
-  [data-key sequence]
-  (async-response client
-    (register-client client (keyword data-key))))
+  (defn- register-client
+    "Register http-kit callback `client` for `data-key`."
+    [client data-key]
+    (dosync
+      (commute clients
+        #(merge-with clojure.set/union % {data-key #{client}})))
+    (log/debugf "register-client: %s %s -> %s"
+                 data-key
+                 client
+                 @clients))
 
-(defn push
-  "Send `html-data` to all clients listening to `data-key`."
-  [data-key html-data]
-  (let [cs (dosync (let [old (@clients data-key)]
-                     (commute clients dissoc data-key)
-                     old))
-        r (json-response {:html html-data
-                          :sequence (next-value data-key)})]
-    (doseq [c cs]
-      (log/debugf "Responding to %s with %s" c r)
-      (c r))))
+  (defn- remove-clients
+    "Remove and return the registered clients for `data-key`."
+    [data-key]
+    (dosync (let [cs (@clients data-key)]
+              (commute clients dissoc data-key)
+              cs))))
+
+(let [last-value (atom {})]
+  (defn poll
+    "Respond to a client poll for `data-key` and `sequence`
+     with a synchronous or asynchronous Ring response."
+    [data-key sequence]
+
+    (let [k (keyword data-key)
+          v (@last-value k)]
+
+      (if (and v (not= sequence (get-value k)))
+        ; Client has stale value => give them the current value.
+        (do
+          (log/debugf "sync response %s/%s %s" sequence (get-value k) v)
+          v)
+
+        ; Client has current value, or there is none => long poll.
+        (async-response client
+          (register-client client k)))))
+
+  (defn push
+    "Send `html-data` to all clients listening to `data-key`."
+    [data-key html-data]
+    (let [k (keyword data-key)
+          r (json-response {:html html-data
+                            :sequence (next-value k)})]
+
+      (swap! last-value assoc k r)
+
+      (doseq [c (remove-clients k)]
+        (log/debugf "async response to %s with %s" c r)
+        (c r)))))
 
