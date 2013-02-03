@@ -32,11 +32,20 @@
 
 
 ; {data-key #{client}}
-(def ^:private clients (atom {}))
+(def ^:private clients (ref {}))
 
-(let [sequence (atom 0)]
-  (defn- next-sequence []
-    (swap! sequence inc)))
+(let [default 0
+      values (atom {})]
+  (defn- get-value
+    "Get the value for key `k`."
+    [k]
+    (@values k default))
+  (defn- next-value
+    "Return a new value for key `k`."
+    [k]
+    ((swap! values
+       (fn [vs] (assoc vs k (inc (vs k default)))))
+      k)))
 
 (defn- json-response
   "Format a clojure structure as a Ring JSON response."
@@ -50,7 +59,7 @@
   "Register http-kit callback `client` for `data-key`."
   [client data-key]
   (dosync
-    (swap! clients
+    (commute clients
       #(merge-with clojure.set/union % {data-key #{client}})))
   (log/debugf "poll: %s %s -> %s"
                data-key
@@ -67,11 +76,11 @@
 (defn push
   "Send `html-data` to all clients listening to `data-key`."
   [data-key html-data]
-  (let [cs (dosync (let [cs (@clients data-key)]
-                     (swap! clients dissoc "process-state")
-                     cs))
+  (let [cs (dosync (let [old (@clients data-key)]
+                     (commute clients dissoc data-key)
+                     old))
         r (json-response {:html html-data
-                          :sequence (next-sequence)})]
+                          :sequence (next-value data-key)})]
     (doseq [c cs]
       (log/debugf "Responding to %s with %s" c r)
       (c r))))
