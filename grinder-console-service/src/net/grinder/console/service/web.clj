@@ -21,27 +21,25 @@
 
 (ns net.grinder.console.service.web
   "Compojure application that provides the console web UI."
-  (:use [compojure [core :only [GET POST PUT context routes]]
-                   [route :only [not-found resources]]]
-        [hiccup core def element form page
-         [middleware :only [wrap-base-url]]
-         [util :only [to-str to-uri]]]
-        [net.grinder.console.service
-         [translate :only [t make-wrap-with-translation]]]
-        [org.httpkit.server :only [async-response]]
-        [ring.middleware.format-response :only [wrap-json-response]]
-        [ring.util [response :only [redirect
-                                    redirect-after-post
-                                    response
-                                    content-type]]])
+  (:use
+    [compojure [core :only [GET POST PUT context routes]]
+     [route :only [not-found resources]]]
+    [hiccup core def element form page
+     [middleware :only [wrap-base-url]]
+     [util :only [to-str to-uri]]]
+    [net.grinder.console.service
+     [translate :only [t make-wrap-with-translation]]]
+    [ring.util [response :only [redirect
+                                redirect-after-post
+                                response]]])
   (:require
-    [cheshire.core :as json]
     [compojure.handler]
     [clojure.tools [logging :as log]]
     [net.grinder.console.model [files :as files]
                                [processes :as processes]
                                [properties :as properties]
                                [recording :as recording]]
+    [net.grinder.console.web [livedata :as livedata]]
     [taoensso.tower :as tower])
   (:import
     java.awt.Rectangle
@@ -259,40 +257,6 @@
   "Force hiccup to add its base-url to the given path"
   (to-str (to-uri p)))
 
-; Live-data-id -> set of {:client, :sequence}
-(def clients (atom {}))
-
-(let [sequence (atom 0)]
-  (defn next-sequence []
-    (swap! sequence inc)))
-
-(defn- register-client
-  [client data-key sequence]
-  (dosync
-    (swap! clients
-      #(merge-with clojure.set/union %
-         {data-key #{{:sequence sequence :client client}}})))
-  (log/debugf "poll: %s %s %s -> %s"
-               data-key
-               sequence
-               client
-               @clients))
-
-(defn- push-data
-  [data-key html-data]
-  (let [cs (dosync (let [cs (@clients data-key)]
-                     (swap! clients dissoc "process-state")
-                     cs))
-        s (next-sequence)]
-    (doseq [c cs]
-      (let [result {:html html-data
-                    :sequence s}
-            r (-> (response (json/generate-string result))
-                  (content-type "application/json"))]
-        (log/debugf "Responding to %s with %s" c r)
-        ((:client c) r)))))
-
-
 (defn create-app
   "Create the Ring routes, given a map of the various console components."
   [{:keys [process-control
@@ -315,10 +279,11 @@
         (resources "/core/" {:root "net/grinder/console/common/resources"})
 
         (GET "/poll" [k s]
-          (async-response client (register-client client (keyword k) s)))
+          (livedata/poll k s))
 
         (GET "/test" [m]
-          (push-data :process-state (render-process-table process-control m))
+          (livedata/push :process-state
+            (render-process-table process-control m))
           (str "Sent data"))
 
         (->
