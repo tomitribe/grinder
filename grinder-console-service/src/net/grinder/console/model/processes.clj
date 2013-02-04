@@ -88,6 +88,15 @@
   (for [r @last-reports]
     (agent-and-workers r)))
 
+(defn add-listener
+  [key callback]
+  (add-watch
+    last-reports
+    key
+    (fn [k _ - new]
+      (let [new-reports (for [r new] (agent-and-workers r))]
+        (callback k new-reports)))))
+
 (defn- into-grinder-properties
   [^GrinderProperties p source]
   (doseq [[k v] source] (.setProperty p (name k) (str v)))

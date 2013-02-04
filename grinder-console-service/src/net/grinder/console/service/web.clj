@@ -267,6 +267,11 @@
            console-resources]
     :as state}]
 
+  (processes/add-listener :key
+    (fn [k _]
+      (livedata/push :process-state
+        (render-process-table process-control))))
+
   (tower/load-dictionary-from-map-resource! "translations.clj")
 
   (let [translate (make-wrap-with-translation

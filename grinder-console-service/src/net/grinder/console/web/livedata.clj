@@ -89,26 +89,30 @@
     (let [k (keyword data-key)
           v (@last-value k)]
 
-      (if (and v (not= sequence (get-value k)))
-        ; Client has stale value => give them the current value.
-        (do
-          (log/debugf "sync response %s/%s %s" sequence (get-value k) v)
-          v)
+      (let [s (get-value k)]
+        (if (and v (not= sequence s))
+          ; Client has stale value => give them the current value.
+          (do
+            (log/debugf "sync response %s/%s %s" sequence (get-value k) v)
+            (json-response {:html v
+                            :sequence s}))
 
-        ; Client has current value, or there is none => long poll.
-        (async-response client
-          (register-client client k)))))
+          ; Client has current value, or there is none => long poll.
+          (async-response client
+            (register-client client k))))))
 
   (defn push
     "Send `html-data` to all clients listening to `data-key`."
     [data-key html-data]
-    (let [k (keyword data-key)
-          r (json-response {:html html-data
-                            :sequence (next-value k)})]
+    (let [k (keyword data-key)]
+      (if (not= html-data (@last-value k))
 
-      (swap! last-value assoc k r)
+        (let [r (json-response {:html html-data
+                                :sequence (next-value k)})]
+          (swap! last-value assoc k html-data)
+          (doseq [c (remove-clients k)]
+            (log/debugf "async response to %s with %s" c r)
+            (c r)))
 
-      (doseq [c (remove-clients k)]
-        (log/debugf "async response to %s with %s" c r)
-        (c r)))))
+        (log/debugf "ignoring push of same value %s" html-data)))))
 
