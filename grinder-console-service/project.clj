@@ -1,6 +1,6 @@
 (defproject net.sf.grinder/grinder-console-service "3.12-SNAPSHOT"
   :parent [net.sf.grinder/grinder-parent "3.12-SNAPSHOT"]
-  :description "REST API to The Grinder console."
+  :description "Web and REST API to The Grinder console."
   :url "http://grinder.sourceforge.net"
   :dependencies [[cheshire "4.0.0"]
                  [clj-stacktrace "0.2.5"]
