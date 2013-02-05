@@ -759,7 +759,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
         action.registerButton(button);
       }
       else {
-        System.err.println("Action '" + actionKey + "' not found");
+        // System.err.println("Action '" + actionKey + "' not found");
         button.setEnabled(false);
       }
     }

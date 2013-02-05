@@ -266,6 +266,12 @@
 
         <!-- <module name="RedundantThrows"/> -->
 
+        <module name="Regexp">
+          <property name="format" value="System\....\.println"/>
+          <property name="illegalPattern" value="true"/>
+          <property name="ignoreComments" value="true"/>
+        </module>
+
         <!-- There are currently problems with multi-line headers and
         RegexpHeader. -->
         <!-- <module name="RegexpHeader"> -->

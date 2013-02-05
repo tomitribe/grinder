@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2011 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -25,8 +25,8 @@ import java.io.InputStream;
 
 import net.grinder.communication.StreamReceiver;
 
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -50,6 +50,7 @@ public class WorkerProcessEntryPoint {
    * @param args
    *          Command line arguments.
    */
+  // CHECKSTYLE.OFF: Regexp - System.err
   public static void main(final String[] args) {
     if (args.length > 1) {
       System.err.println("Usage: java " + GrinderProcess.class.getName());
@@ -60,6 +61,7 @@ public class WorkerProcessEntryPoint {
 
     System.exit(exitCode);
   }
+  // CHECKSTYLE.ON: Regexp
 
   /**
    * Create and run a process.
@@ -67,7 +69,7 @@ public class WorkerProcessEntryPoint {
    * @param agentCommunicationStream The agent communication stream.
    * @return Process exit code.
    */
-  public int run(InputStream agentCommunicationStream) {
+  public int run(final InputStream agentCommunicationStream) {
 
     final Logger logger = LoggerFactory.getLogger("worker-bootstrap");
 
@@ -77,7 +79,7 @@ public class WorkerProcessEntryPoint {
       grinderProcess =
         new GrinderProcess(new StreamReceiver(agentCommunicationStream));
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       logger.error("Error initialising worker process", e);
       return -2;
     }
@@ -86,11 +88,11 @@ public class WorkerProcessEntryPoint {
       grinderProcess.run();
       return 0;
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       logger.error("Error running worker process", e);
       return -3;
     }
-    catch (Error t) {
+    catch (final Error t) {
       logger.error("Error running worker process", t);
       throw t;
     }
