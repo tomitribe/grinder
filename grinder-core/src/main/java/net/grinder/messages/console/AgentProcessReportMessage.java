@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2012 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -52,8 +52,9 @@ public final class AgentProcessReportMessage
    * @param cacheHighWaterMark
    *          The current cache status.
    */
-  public AgentProcessReportMessage(State state,
-                                   CacheHighWaterMark cacheHighWaterMark) {
+  public AgentProcessReportMessage(
+           final State state,
+           final CacheHighWaterMark cacheHighWaterMark) {
     m_state = state;
     m_cacheHighWaterMark = cacheHighWaterMark;
   }
@@ -61,13 +62,13 @@ public final class AgentProcessReportMessage
   /**
    * {@inheritDoc}
    */
-  @Override public void setAddress(Address address)
+  @Override public void setAddress(final Address address)
     throws CommunicationException {
 
     try {
       m_processAddress = (AgentAddress)address;
     }
-    catch (ClassCastException e) {
+    catch (final ClassCastException e) {
       throw new CommunicationException("Not an agent process address", e);
     }
   }
@@ -77,6 +78,7 @@ public final class AgentProcessReportMessage
    *
    * @return The process identity.
    */
+  @Override
   public AgentAddress getProcessAddress() {
     return m_processAddress;
   }
@@ -86,6 +88,7 @@ public final class AgentProcessReportMessage
    *
    * @return The process identity.
    */
+  @Override
   public AgentIdentity getAgentIdentity() {
     return m_processAddress.getIdentity();
   }
@@ -95,6 +98,7 @@ public final class AgentProcessReportMessage
    *
    * @return The process state.
    */
+  @Override
   public State getState() {
     return m_state;
   }
@@ -104,7 +108,48 @@ public final class AgentProcessReportMessage
    *
    * @return The cache status.
    */
+  @Override
   public CacheHighWaterMark getCacheHighWaterMark() {
     return m_cacheHighWaterMark;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = m_cacheHighWaterMark.hashCode();
+    result = prime * result + m_state.hashCode();
+    return result;
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    final AgentProcessReportMessage other = (AgentProcessReportMessage) o;
+
+    return
+        m_state == other.m_state &&
+        m_cacheHighWaterMark.equals(other.m_cacheHighWaterMark);
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String toString() {
+    return "AgentProcessReportMessage(" +
+        m_state + ", " + m_cacheHighWaterMark + ")";
   }
 }

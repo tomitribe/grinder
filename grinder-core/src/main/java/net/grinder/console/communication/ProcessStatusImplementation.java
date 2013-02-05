@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2012 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // Copyright (C) 2001, 2002 Dirk Feufel
 // All rights reserved.
 //
@@ -25,10 +25,10 @@ package net.grinder.console.communication;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.Map.Entry;
 
 import net.grinder.common.processidentity.AgentIdentity;
 import net.grinder.common.processidentity.ProcessIdentity;
@@ -92,17 +92,21 @@ final class ProcessStatusImplementation {
    * @param timer Timer which can be used to schedule housekeeping tasks.
    * @param agentNumberMap Map of {@link AgentIdentity}s to integers.
    */
-  public ProcessStatusImplementation(Timer timer,
-                                     AllocateLowestNumber agentNumberMap) {
+  public ProcessStatusImplementation(
+     final Timer timer,
+     final AllocateLowestNumber agentNumberMap) {
+
     m_agentNumberMap = agentNumberMap;
     timer.schedule(
       new TimerTask() {
+        @Override
         public void run() { update(); }
       },
       0, UPDATE_PERIOD);
 
     timer.schedule(
       new TimerTask() {
+        @Override
         public void run() {
           synchronized (m_agentIdentityToAgentAndWorkers) {
             purge(m_agentIdentityToAgentAndWorkers);
@@ -117,7 +121,7 @@ final class ProcessStatusImplementation {
    *
    * @param listener A listener.
    */
-  public void addListener(Listener listener) {
+  public void addListener(final Listener listener) {
     m_listeners.add(listener);
   }
 
@@ -149,11 +153,13 @@ final class ProcessStatusImplementation {
 
     m_listeners.apply(
       new ListenerSupport.Informer<Listener>() {
-        public void inform(Listener l) { l.update(processStatuses); }
+        @Override
+        public void inform(final Listener l) { l.update(processStatuses); }
       });
   }
 
-  private AgentAndWorkers getAgentAndWorkers(AgentIdentity agentIdentity) {
+  private AgentAndWorkers getAgentAndWorkers(
+    final AgentIdentity agentIdentity) {
 
     synchronized (m_agentIdentityToAgentAndWorkers) {
       final AgentAndWorkers existing =
@@ -177,14 +183,13 @@ final class ProcessStatusImplementation {
    *
    * @param agentProcessStatus Process status.
    */
-  public void addAgentStatusReport(AgentAndCacheReport agentProcessStatus) {
+  public void addAgentStatusReport(
+    final AgentAndCacheReport agentProcessStatus) {
 
     final AgentAndWorkers agentAndWorkers =
       getAgentAndWorkers(agentProcessStatus.getAgentIdentity());
 
-    agentAndWorkers.setAgentProcessStatus(agentProcessStatus);
-
-    m_newData = true;
+    m_newData |= agentAndWorkers.setAgentProcessStatus(agentProcessStatus);
   }
 
   /**
@@ -192,26 +197,25 @@ final class ProcessStatusImplementation {
    *
    * @param workerProcessStatus Process status.
    */
-  public void addWorkerStatusReport(WorkerProcessReport workerProcessStatus) {
+  public void addWorkerStatusReport(
+    final WorkerProcessReport workerProcessStatus) {
 
     final AgentIdentity agentIdentity =
       workerProcessStatus.getWorkerIdentity().getAgentIdentity();
 
-    getAgentAndWorkers(agentIdentity).setWorkerProcessStatus(
+    m_newData |= getAgentAndWorkers(agentIdentity).setWorkerProcessStatus(
       workerProcessStatus);
-
-    m_newData = true;
   }
 
   /**
    * Callers are responsible for synchronisation.
    */
-  private void purge(Map<? extends ProcessIdentity,
+  private void purge(final Map<? extends ProcessIdentity,
                      ? extends Purgable> purgableMap) {
 
     final Set<ProcessIdentity> zombies = new HashSet<ProcessIdentity>();
 
-    for (Entry<? extends ProcessIdentity, ? extends Purgable> entry :
+    for (final Entry<? extends ProcessIdentity, ? extends Purgable> entry :
          purgableMap.entrySet()) {
 
       if (entry.getValue().shouldPurge()) {
@@ -219,10 +223,7 @@ final class ProcessStatusImplementation {
       }
     }
 
-    if (zombies.size() > 0) {
-      purgableMap.keySet().removeAll(zombies);
-      m_newData = true;
-    }
+    m_newData |= purgableMap.keySet().removeAll(zombies);
   }
 
   private interface Purgable {
@@ -232,6 +233,7 @@ final class ProcessStatusImplementation {
   private abstract class AbstractTimedReference implements Purgable {
     private int m_purgeDelayCount;
 
+    @Override
     public boolean shouldPurge() {
       // Processes have a short time to report - see the javadoc for
       // FLUSH_PERIOD.
@@ -248,7 +250,7 @@ final class ProcessStatusImplementation {
   private final class AgentReference extends AbstractTimedReference {
     private final AgentAndCacheReport m_agentProcessReport;
 
-    AgentReference(AgentAndCacheReport agentProcessReport) {
+    AgentReference(final AgentAndCacheReport agentProcessReport) {
       m_agentProcessReport = agentProcessReport;
     }
 
@@ -273,7 +275,7 @@ final class ProcessStatusImplementation {
   private final class WorkerReference extends AbstractTimedReference {
     private final WorkerProcessReport m_workerProcessReport;
 
-    WorkerReference(WorkerProcessReport workerProcessReport) {
+    WorkerReference(final WorkerProcessReport workerProcessReport) {
       m_workerProcessReport = workerProcessReport;
     }
 
@@ -287,22 +289,26 @@ final class ProcessStatusImplementation {
 
     private final AgentAddress m_address;
 
-    public UnknownAgentProcessReport(AgentAddress address) {
+    public UnknownAgentProcessReport(final AgentAddress address) {
       m_address = address;
     }
 
+    @Override
     public AgentAddress getProcessAddress() {
       return m_address;
     }
 
+    @Override
     public AgentIdentity getAgentIdentity() {
       return m_address.getIdentity();
     }
 
+    @Override
     public State getState() {
       return State.UNKNOWN;
     }
 
+    @Override
     public CacheHighWaterMark getCacheHighWaterMark() {
       return null;
     }
@@ -316,42 +322,62 @@ final class ProcessStatusImplementation {
   final class AgentAndWorkers
     implements ProcessControl.ProcessReports, Purgable {
 
-    private volatile AgentReference m_agentReportReference;
+    // Guarded by this.
+    private AgentReference m_agentReportReference;
 
-    // Synchronise on map before accessing.
+    //Guarded by this.
     private final Map<WorkerIdentity, WorkerReference>
       m_workerReportReferences = new HashMap<WorkerIdentity, WorkerReference>();
 
-    AgentAndWorkers(AgentIdentity agentIdentity) {
+    AgentAndWorkers(final AgentIdentity agentIdentity) {
       setAgentProcessStatus(
         new UnknownAgentProcessReport(new AgentAddress(agentIdentity)));
     }
 
-    void setAgentProcessStatus(AgentAndCacheReport agentProcessStatus) {
-      m_agentReportReference = new AgentReference(agentProcessStatus);
+    boolean setAgentProcessStatus(
+      final AgentAndCacheReport agentProcessStatus) {
+
+      synchronized (this) {
+        final AgentAndCacheReport old =
+            m_agentReportReference != null ?
+                m_agentReportReference.getAgentProcessReport() : null;
+
+        m_agentReportReference = new AgentReference(agentProcessStatus);
+
+        return !agentProcessStatus.equals(old);
+      }
     }
 
+    @Override
     public AgentAndCacheReport getAgentProcessReport() {
       return m_agentReportReference.getAgentProcessReport();
     }
 
-    void setWorkerProcessStatus(WorkerProcessReport workerProcessStatus) {
+    boolean setWorkerProcessStatus(
+      final WorkerProcessReport workerProcessStatus) {
 
-      synchronized (m_workerReportReferences) {
-        m_workerReportReferences.put(workerProcessStatus.getWorkerIdentity(),
-                                     new WorkerReference(workerProcessStatus));
+      synchronized (this) {
+        final WorkerReference old =
+            m_workerReportReferences.put(
+              workerProcessStatus.getWorkerIdentity(),
+              new WorkerReference(workerProcessStatus));
+
+        return
+            old == null ||
+            !workerProcessStatus.equals(old.getWorkerProcessReport());
       }
     }
 
+    @Override
     public WorkerProcessReport[] getWorkerProcessReports() {
 
-      synchronized (m_workerReportReferences) {
+      synchronized (this) {
         final WorkerProcessReport[] result =
           new WorkerProcessReport[m_workerReportReferences.size()];
 
         int i = 0;
 
-        for (WorkerReference worker : m_workerReportReferences.values()) {
+        for (final WorkerReference worker : m_workerReportReferences.values()) {
           result[i++] = worker.getWorkerProcessReport();
         }
 
@@ -359,8 +385,9 @@ final class ProcessStatusImplementation {
       }
     }
 
+    @Override
     public boolean shouldPurge() {
-      synchronized (m_workerReportReferences) {
+      synchronized (this) {
         purge(m_workerReportReferences);
       }
 

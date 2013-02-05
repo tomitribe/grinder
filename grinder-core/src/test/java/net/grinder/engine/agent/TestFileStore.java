@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,7 @@
 
 package net.grinder.engine.agent;
 
+import static net.grinder.testutility.AssertUtilities.assertNotEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -90,7 +91,7 @@ public class TestFileStore extends AbstractJUnit4FileTestCase {
       new FileStore(file1, null);
       fail("Expected FileStoreException");
     }
-    catch (FileStore.FileStoreException e) {
+    catch (final FileStore.FileStoreException e) {
     }
 
     // Nor a directory that contains a plain file clashing with one
@@ -103,7 +104,7 @@ public class TestFileStore extends AbstractJUnit4FileTestCase {
       new FileStore(file1, null);
       fail("Expected FileStoreException");
     }
-    catch (FileStore.FileStoreException e) {
+    catch (final FileStore.FileStoreException e) {
     }
 
     // Can't use a read-only directory.
@@ -115,7 +116,7 @@ public class TestFileStore extends AbstractJUnit4FileTestCase {
       new FileStore(readOnlyDirectory, null);
       fail("Expected FileStoreException");
     }
-    catch (FileStore.FileStoreException e) {
+    catch (final FileStore.FileStoreException e) {
     }
 
     // Perfectly fine to create a FileStore around a directory that
@@ -176,7 +177,7 @@ public class TestFileStore extends AbstractJUnit4FileTestCase {
       messageDispatcher.send(message1);
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
 
     FileUtilities.setCanAccess(getDirectory(), true);
@@ -213,7 +214,7 @@ public class TestFileStore extends AbstractJUnit4FileTestCase {
       fileStore.getDirectory();
       fail("Expected FileStoreException");
     }
-    catch (FileStore.FileStoreException e) {
+    catch (final FileStore.FileStoreException e) {
     }
 
     // Put things back again.
@@ -227,7 +228,7 @@ public class TestFileStore extends AbstractJUnit4FileTestCase {
       messageDispatcher.send(message1);
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
 
     verify(logger, times(2)).info(contains("Updating file store"),
@@ -245,7 +246,7 @@ public class TestFileStore extends AbstractJUnit4FileTestCase {
       messageDispatcher.send(message2);
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
 
     FileUtilities.setCanAccess(targetFile.getParentFile(), true);
@@ -291,5 +292,21 @@ public class TestFileStore extends AbstractJUnit4FileTestCase {
     messageDispatcher.send(message);
 
     assertEquals(cacheHighWaterMark, fileStore.getCacheHighWaterMark());
+  }
+
+  @Test
+  public void testOutOfDataCachetHighWaterMark() throws Exception {
+    final CacheHighWaterMark hwm =
+        new FileStore(getDirectory(), null).getCacheHighWaterMark();
+    assertEquals(hwm, hwm);
+    assertEquals(hwm.hashCode(), hwm.hashCode());
+    assertNotEquals(hwm, this);
+    assertNotEquals(hwm, null);
+
+    final CacheHighWaterMark hwm2 =
+        new FileStore(getDirectory(), null).getCacheHighWaterMark();
+    assertEquals(hwm, hwm2);
+    assertEquals(hwm.hashCode(), hwm2.hashCode());
+    assertEquals(hwm.toString(), hwm2.toString());
   }
 }

@@ -1,5 +1,5 @@
 // Copyright (C) 2001, 2002 Dirk Feufel
-// Copyright (C) 2001 - 2012 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -57,9 +57,9 @@ public final class WorkerProcessReportMessage
    * @param runningThreads
    *          The number of threads that are still running.
    */
-  public WorkerProcessReportMessage(State finished,
-                                    short runningThreads,
-                                    short totalThreads) {
+  public WorkerProcessReportMessage(final State finished,
+                                    final short runningThreads,
+                                    final short totalThreads) {
     m_state = finished;
     m_numberOfRunningThreads = runningThreads;
     m_totalNumberOfThreads = totalThreads;
@@ -68,13 +68,13 @@ public final class WorkerProcessReportMessage
   /**
    * {@inheritDoc}
    */
-  @Override public void setAddress(Address address)
+  @Override public void setAddress(final Address address)
     throws CommunicationException {
 
     try {
       m_processAddress = (WorkerAddress) address;
     }
-    catch (ClassCastException e) {
+    catch (final ClassCastException e) {
       throw new CommunicationException("Not a worker process address", e);
     }
   }
@@ -84,6 +84,7 @@ public final class WorkerProcessReportMessage
    *
    * @return The process identity.
    */
+  @Override
   public WorkerAddress getProcessAddress() {
     return m_processAddress;
   }
@@ -93,6 +94,7 @@ public final class WorkerProcessReportMessage
    *
    * @return The process identity.
    */
+  @Override
   public WorkerIdentity getWorkerIdentity() {
     return m_processAddress.getIdentity();
   }
@@ -102,6 +104,7 @@ public final class WorkerProcessReportMessage
    *
    * @return The process state.
    */
+  @Override
   public State getState() {
     return m_state;
   }
@@ -111,6 +114,7 @@ public final class WorkerProcessReportMessage
    *
    * @return The number of running threads.
    */
+  @Override
   public short getNumberOfRunningThreads() {
     return m_numberOfRunningThreads;
   }
@@ -120,7 +124,34 @@ public final class WorkerProcessReportMessage
    *
    * @return The maximum number of threads for the process.
    */
+  @Override
   public short getMaximumNumberOfThreads() {
     return m_totalNumberOfThreads;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = m_state.hashCode();
+    result = prime * result + m_numberOfRunningThreads;
+    result = prime * result + m_totalNumberOfThreads;
+    return result;
+  }
+
+  @Override
+  public boolean equals(final Object o) {
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    final WorkerProcessReportMessage other = (WorkerProcessReportMessage) o;
+      return
+          m_state == other.m_state &&
+          m_numberOfRunningThreads == other.m_numberOfRunningThreads &&
+          m_totalNumberOfThreads == other.m_totalNumberOfThreads;
   }
 }

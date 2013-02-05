@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -32,13 +32,13 @@ import java.io.Serializable;
 public interface CacheHighWaterMark extends Serializable {
 
   /**
-   * Return whether this <code>CacheHighWaterMark</code> was generated for the
-   * same cache as the given <code>CacheHighWaterMark</code>.
+   * Return whether this {code CacheHighWaterMark} was generated for the
+   * same cache as {@code other}.
    *
    *
    * @param other
-   *            The <code>CacheHighWaterMark</code> to compare.
-   * @return <code>true</code> if and only if this cache state is for the same
+   *            The {@code CacheHighWaterMark} to compare.
+   * @return {@code true} if and only if this cache state is for the same
    *         cache.
    */
   boolean isForSameCache(CacheHighWaterMark other);

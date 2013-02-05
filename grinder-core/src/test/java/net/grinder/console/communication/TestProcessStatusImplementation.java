@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2012 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,14 @@
 
 package net.grinder.console.communication;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -28,7 +36,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import junit.framework.TestCase;
 import net.grinder.common.processidentity.ProcessIdentity;
 import net.grinder.common.processidentity.ProcessReport;
 import net.grinder.common.processidentity.WorkerIdentity;
@@ -40,9 +47,15 @@ import net.grinder.console.communication.ProcessStatusImplementation.AgentAndWor
 import net.grinder.engine.agent.StubAgentIdentity;
 import net.grinder.messages.console.AgentAndCacheReport;
 import net.grinder.testutility.AssertUtilities;
-import net.grinder.testutility.CallData;
-import net.grinder.testutility.RandomStubFactory;
 import net.grinder.util.AllocateLowestNumber;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 
 /**
@@ -50,7 +63,7 @@ import net.grinder.util.AllocateLowestNumber;
  *
  * @author Philip Aston
  */
-public class TestProcessStatusImplementation extends TestCase {
+public class TestProcessStatusImplementation {
   private final ProcessReportComparator m_processReportComparator =
     new ProcessReportComparator();
 
@@ -59,43 +72,45 @@ public class TestProcessStatusImplementation extends TestCase {
 
   private final MyTimer m_timer = new MyTimer();
 
-  private final RandomStubFactory<AllocateLowestNumber>
-    m_allocateLowestNumberStubFactory =
-      RandomStubFactory.create(AllocateLowestNumber.class);
-  private final AllocateLowestNumber m_allocateLowestNumber =
-    m_allocateLowestNumberStubFactory.getStub();
+  @Mock
+  private AllocateLowestNumber m_allocateLowestNumber;
 
-  protected void tearDown() {
+  @Mock
+  private ProcessControl.Listener m_listener;
+
+  @Captor
+  private ArgumentCaptor<ProcessControl.ProcessReports[]> m_reportsCaptor;
+
+  @Before
+  public void setUp() {
+    MockitoAnnotations.initMocks(this);
+  }
+
+  @After
+  public void tearDown() {
     m_timer.cancel();
   }
 
-  public void testConstruction() throws Exception {
+  @Test public void testConstruction() throws Exception {
     new ProcessStatusImplementation(m_timer, m_allocateLowestNumber);
 
     assertEquals(2, m_timer.getNumberOfScheduledTasks());
 
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
+    verifyNoMoreInteractions(m_allocateLowestNumber);
   }
 
-  public void testUpdate() throws Exception {
-
-    final RandomStubFactory<ProcessControl.Listener> listenerStubFactory =
-      RandomStubFactory.create(ProcessControl.Listener.class);
+  @Test public void testUpdate() throws Exception {
 
     final ProcessStatusImplementation processStatusSet =
       new ProcessStatusImplementation(m_timer, m_allocateLowestNumber);
 
     final TimerTask updateTask = m_timer.getTaskByPeriod(500L);
 
-    processStatusSet.addListener(listenerStubFactory.getStub());
+    processStatusSet.addListener(m_listener);
 
     updateTask.run();
-    listenerStubFactory.assertNoMoreCalls();
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
 
     updateTask.run();
-    listenerStubFactory.assertNoMoreCalls();
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
 
     final StubAgentIdentity agentIdentity = new StubAgentIdentity("agent");
     final WorkerIdentity workerIdentity =
@@ -108,17 +123,14 @@ public class TestProcessStatusImplementation extends TestCase {
                                   5);
 
     processStatusSet.addWorkerStatusReport(workerProcessReport);
-    m_allocateLowestNumberStubFactory.assertSuccess("add", Object.class);
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
+    verify(m_allocateLowestNumber).add(any());
 
     updateTask.run();
-    final CallData callData =
-      listenerStubFactory.assertSuccess(
-        "update",
-        new ProcessControl.ProcessReports[0].getClass());
+
+    verify(m_listener).update(m_reportsCaptor.capture());
 
     final ProcessControl.ProcessReports[] processReportsArray =
-      (ProcessControl.ProcessReports[])callData.getParameters()[0];
+      m_reportsCaptor.getValue();
 
     assertEquals(1, processReportsArray.length);
     final WorkerProcessReport[] workerProcessReports =
@@ -127,25 +139,21 @@ public class TestProcessStatusImplementation extends TestCase {
     assertEquals(workerProcessReport, workerProcessReports[0]);
 
     updateTask.run();
-    listenerStubFactory.assertNoMoreCalls();
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
+
+    verifyNoMoreInteractions(m_listener, m_allocateLowestNumber);
   }
 
+  @Test
   public void testUpdateWithManyProcessStatusesAndFlush() throws Exception {
-    final RandomStubFactory<ProcessControl.Listener> listenerStubFactory =
-      RandomStubFactory.create(ProcessControl.Listener.class);
-
     final ProcessStatusImplementation processStatus =
       new ProcessStatusImplementation(m_timer, m_allocateLowestNumber);
 
     final TimerTask updateTask = m_timer.getTaskByPeriod(500L);
     final TimerTask flushTask = m_timer.getTaskByPeriod(2000L);
 
-    processStatus.addListener(listenerStubFactory.getStub());
+    processStatus.addListener(m_listener);
 
     updateTask.run();
-    listenerStubFactory.assertNoMoreCalls();
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
 
     final StubAgentIdentity agentIdentityA =
       new StubAgentIdentity("Agent A");
@@ -180,24 +188,19 @@ public class TestProcessStatusImplementation extends TestCase {
         workerIdentityA1, ProcessReport.State.FINISHED, 3, 10),
     };
 
-    for (int i = 0; i < workerProcessReportArray.length; ++i) {
-      processStatus.addWorkerStatusReport(workerProcessReportArray[i]);
+    for (final WorkerProcessReport element : workerProcessReportArray) {
+      processStatus.addWorkerStatusReport(element);
     }
 
     assertEquals(2, processStatus.getNumberOfLiveAgents());
-    m_allocateLowestNumberStubFactory.assertSuccess("add", Object.class);
-    m_allocateLowestNumberStubFactory.assertSuccess("add", Object.class);
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
+    verify(m_allocateLowestNumber, times(2)).add(any());
 
     updateTask.run();
 
-    final CallData callData =
-      listenerStubFactory.assertSuccess(
-        "update",
-        new ProcessControl.ProcessReports[0].getClass());
+    verify(m_listener).update(m_reportsCaptor.capture());
 
     final ProcessControl.ProcessReports[] processReports =
-      (ProcessControl.ProcessReports[])callData.getParameters()[0];
+      m_reportsCaptor.getValue();
     Arrays.sort(processReports, m_processReportsComparator);
 
     assertEquals(2, processReports.length);
@@ -233,13 +236,10 @@ public class TestProcessStatusImplementation extends TestCase {
                                       agent2WorkerReports);
 
     updateTask.run();
-    listenerStubFactory.assertNoMoreCalls();
 
     // Nothing's changed, reports are new, first flush should do nothing.
     flushTask.run();
     updateTask.run();
-    listenerStubFactory.assertNoMoreCalls();
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
 
     final StubAgentIdentity agentIdentityC =
       new StubAgentIdentity("Agent C");
@@ -255,13 +255,12 @@ public class TestProcessStatusImplementation extends TestCase {
         workerIdentityC1, ProcessReport.State.FINISHED, 1, 1),
     };
 
-    for (int i = 0; i < processStatusArray2.length; ++i) {
-      processStatus.addWorkerStatusReport(processStatusArray2[i]);
+    for (final WorkerProcessReport element : processStatusArray2) {
+      processStatus.addWorkerStatusReport(element);
     }
 
     assertEquals(3, processStatus.getNumberOfLiveAgents());
-    m_allocateLowestNumberStubFactory.assertSuccess("add", Object.class);
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
+    verify(m_allocateLowestNumber, times(3)).add(any());
 
     processStatus.addAgentStatusReport(
       new StubAgentProcessReport(agentIdentityA,
@@ -271,7 +270,9 @@ public class TestProcessStatusImplementation extends TestCase {
                                  ProcessReport.State.RUNNING));
 
     assertEquals(3, processStatus.getNumberOfLiveAgents());
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
+
+    verifyNoMoreInteractions(m_listener);
+    reset(m_listener);
 
     // Second flush will remove processes that haven't reported.
     // It won't remove any agents, because there's been at least one
@@ -279,17 +280,13 @@ public class TestProcessStatusImplementation extends TestCase {
     flushTask.run();
     updateTask.run();
 
-    final CallData callData2 =
-      listenerStubFactory.assertSuccess(
-        "update",
-        new ProcessControl.ProcessReports[0].getClass());
+    verify(m_listener).update(m_reportsCaptor.capture());
 
     final ProcessControl.ProcessReports[] processReports2 =
-      (ProcessControl.ProcessReports[])callData2.getParameters()[0];
+      m_reportsCaptor.getValue();
     Arrays.sort(processReports2, m_processReportsComparator);
 
     assertEquals(3, processReports2.length);
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
 
     final WorkerProcessReport[] expectedAgent1WorkerProcessReports2 = {
       new StubWorkerProcessReport(
@@ -319,19 +316,16 @@ public class TestProcessStatusImplementation extends TestCase {
       processReports2[2].getWorkerProcessReports());
 
     updateTask.run();
-    listenerStubFactory.assertNoMoreCalls();
 
     // Third flush.
     flushTask.run();
 
     assertEquals(0, processStatus.getNumberOfLiveAgents());
-    m_allocateLowestNumberStubFactory.assertSuccess("remove", Object.class);
-    m_allocateLowestNumberStubFactory.assertSuccess("remove", Object.class);
-    m_allocateLowestNumberStubFactory.assertSuccess("remove", Object.class);
-    m_allocateLowestNumberStubFactory.assertNoMoreCalls();
+    verify(m_allocateLowestNumber, times(3)).remove(any());
+    verifyNoMoreInteractions(m_listener, m_allocateLowestNumber);
   }
 
-  public void testAgentAndWorkers() throws Exception {
+  @Test public void testAgentAndWorkers() throws Exception {
     final ProcessStatusImplementation processStatusSet =
       new ProcessStatusImplementation(m_timer, m_allocateLowestNumber);
 
@@ -359,14 +353,17 @@ public class TestProcessStatusImplementation extends TestCase {
       super(true);
     }
 
-    public void schedule(TimerTask timerTask, long delay, long period) {
+    @Override
+    public void schedule(final TimerTask timerTask,
+                         final long delay,
+                         final long period) {
       assertEquals(0, delay);
 
       m_taskByPeriod.put(new Long(period), timerTask);
       ++m_numberOfScheduledTasks;
     }
 
-    public TimerTask getTaskByPeriod(long period) {
+    public TimerTask getTaskByPeriod(final long period) {
       return m_taskByPeriod.get(new Long(period));
     }
 
@@ -379,8 +376,9 @@ public class TestProcessStatusImplementation extends TestCase {
   private static final class ProcessReportComparator
     implements Comparator<ProcessReport> {
 
-    public int compare(ProcessReport processReport1,
-                       ProcessReport processReport2) {
+    @Override
+    public int compare(final ProcessReport processReport1,
+                       final ProcessReport processReport2) {
       final int compareState =
         processReport1.getState().compareTo(processReport2.getState());
 
@@ -401,7 +399,8 @@ public class TestProcessStatusImplementation extends TestCase {
   private final class ProcessReportsComparator
     implements Comparator<ProcessReports> {
 
-    public int compare(ProcessReports o1, ProcessReports o2) {
+    @Override
+    public int compare(final ProcessReports o1, final ProcessReports o2) {
       return m_processReportComparator.compare(o1.getAgentProcessReport(),
                                                o2.getAgentProcessReport());
     }

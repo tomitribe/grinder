@@ -1,4 +1,4 @@
-// Copyright (C) 2008 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,13 +21,20 @@
 
 package net.grinder.console.distribution;
 
+import static net.grinder.testutility.AssertUtilities.assertNotEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.regex.Pattern;
 
-import junit.framework.TestCase;
 import net.grinder.messages.agent.CacheHighWaterMark;
 import net.grinder.util.Directory;
 import net.grinder.util.Directory.DirectoryException;
+
+import org.junit.Before;
+import org.junit.Test;
 
 
 /**
@@ -35,20 +42,22 @@ import net.grinder.util.Directory.DirectoryException;
  *
  * @author Philip Aston
  */
-public class TestCacheParametersImplementation extends TestCase {
+public class TestCacheParametersImplementation {
 
   private Directory m_directory1;
   private Directory m_directory2;
   private Pattern m_pattern1;
   private Pattern m_pattern2;
 
-  protected void setUp() throws DirectoryException {
+  @Before
+  public void setUp() throws DirectoryException {
     m_directory1 = new Directory(new File("blah"));
     m_directory2 = new Directory(new File("blurghah"));
     m_pattern1 = Pattern.compile(".*");
     m_pattern2 = Pattern.compile(".?");
   }
 
+  @Test
   public void testBasics() throws Exception {
     final CacheParameters cacheParameters1 =
       new CacheParametersImplementation(m_directory1, m_pattern1);
@@ -79,6 +88,7 @@ public class TestCacheParametersImplementation extends TestCase {
 
   }
 
+  @Test
   public void testCreateCacheHighWaterMark() throws Exception {
     final CacheParameters cache1 =
       new CacheParametersImplementation(m_directory1, m_pattern1);
@@ -100,14 +110,41 @@ public class TestCacheParametersImplementation extends TestCase {
     assertFalse(c.isForSameCache(a));
     assertFalse(c.isForSameCache(
       new CacheHighWaterMark() {
+        @Override
         public long getTime() {
           return 120;
         }
 
-        public boolean isForSameCache(CacheHighWaterMark other) {
+        @Override
+        public boolean isForSameCache(final CacheHighWaterMark other) {
           return true;
         }
       }
     ));
+  }
+
+  @Test
+  public void testCacheHighWaterMarkEquality() throws Exception {
+    final CacheParameters cache1 =
+        new CacheParametersImplementation(m_directory1, m_pattern1);
+
+    final CacheHighWaterMark a = cache1.createHighWaterMark(100);
+    assertEquals(a, a);
+    assertEquals(a.hashCode(), a.hashCode());
+    assertNotEquals(a, null);
+    assertNotEquals(a, this);
+
+    final CacheHighWaterMark b = cache1.createHighWaterMark(100);
+    assertEquals(a, b);
+    assertEquals(a.hashCode(), b.hashCode());
+
+    final CacheHighWaterMark c = cache1.createHighWaterMark(101);
+    assertNotEquals(a, c);
+
+    final CacheParameters cache2 =
+        new CacheParametersImplementation(m_directory1, m_pattern2);
+
+    final CacheHighWaterMark d = cache2.createHighWaterMark(100);
+    assertNotEquals(a, d);
   }
 }

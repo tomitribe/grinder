@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -25,8 +25,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.slf4j.Logger;
-
 import net.grinder.common.UncheckedInterruptedException;
 import net.grinder.communication.CommunicationException;
 import net.grinder.communication.MessageDispatchRegistry;
@@ -39,6 +37,8 @@ import net.grinder.messages.agent.DistributionCacheCheckpointMessage;
 import net.grinder.util.Directory;
 import net.grinder.util.FileContents;
 import net.grinder.util.StreamCopier;
+
+import org.slf4j.Logger;
 
 
 /**
@@ -63,7 +63,8 @@ final class FileStore {
   private volatile CacheHighWaterMark m_cacheHighWaterMark =
     new OutOfDateCacheHighWaterMark();
 
-  public FileStore(File directory, Logger logger) throws FileStoreException {
+  public FileStore(final File directory, final Logger logger)
+      throws FileStoreException {
 
     final File rootDirectory = directory.getAbsoluteFile();
     m_logger = logger;
@@ -87,7 +88,7 @@ final class FileStore {
       m_incomingDirectory = new Directory(new File(rootDirectory, "incoming"));
       m_currentDirectory = new Directory(new File(rootDirectory, "current"));
     }
-    catch (Directory.DirectoryException e) {
+    catch (final Directory.DirectoryException e) {
       throw new FileStoreException(e.getMessage(), e);
     }
 
@@ -106,7 +107,7 @@ final class FileStore {
 
       return m_currentDirectory;
     }
-    catch (IOException e) {
+    catch (final IOException e) {
       UncheckedInterruptedException.ioException(e);
       throw new FileStoreException("Could not create file store directory", e);
     }
@@ -123,12 +124,13 @@ final class FileStore {
    */
 
   public void registerMessageHandlers(
-    MessageDispatchRegistry messageDispatcher) {
+    final MessageDispatchRegistry messageDispatcher) {
 
     messageDispatcher.set(
       ClearCacheMessage.class,
       new AbstractHandler<ClearCacheMessage>() {
-        public void handle(ClearCacheMessage message)
+        @Override
+        public void handle(final ClearCacheMessage message)
           throws CommunicationException {
 
           m_logger.info("Clearing file store");
@@ -139,7 +141,7 @@ final class FileStore {
               m_incremental = false;
             }
           }
-          catch (Directory.DirectoryException e) {
+          catch (final Directory.DirectoryException e) {
             m_logger.error(e.getMessage());
             throw new CommunicationException(e.getMessage(), e);
           }
@@ -149,7 +151,8 @@ final class FileStore {
     messageDispatcher.set(
       DistributeFileMessage.class,
       new AbstractHandler<DistributeFileMessage>() {
-        public void handle(DistributeFileMessage message)
+        @Override
+        public void handle(final DistributeFileMessage message)
           throws CommunicationException {
           try {
             synchronized (m_incomingDirectory) {
@@ -163,11 +166,11 @@ final class FileStore {
               fileContents.create(m_incomingDirectory);
             }
           }
-          catch (FileContents.FileContentsException e) {
+          catch (final FileContents.FileContentsException e) {
             m_logger.error(e.getMessage());
             throw new CommunicationException(e.getMessage(), e);
           }
-          catch (Directory.DirectoryException e) {
+          catch (final Directory.DirectoryException e) {
             m_logger.error(e.getMessage());
             throw new CommunicationException(e.getMessage(), e);
           }
@@ -177,7 +180,8 @@ final class FileStore {
     messageDispatcher.set(
       DistributionCacheCheckpointMessage.class,
       new AbstractHandler<DistributionCacheCheckpointMessage>() {
-        public void handle(DistributionCacheCheckpointMessage message) {
+        @Override
+        public void handle(final DistributionCacheCheckpointMessage message) {
           m_cacheHighWaterMark = message.getCacheHighWaterMark();
         }
       });
@@ -192,7 +196,7 @@ final class FileStore {
               "resources/FileStoreReadme.txt"),
             new FileOutputStream(m_readmeFile));
       }
-      catch (IOException e) {
+      catch (final IOException e) {
         UncheckedInterruptedException.ioException(e);
         m_logger.error(e.getMessage());
         throw new CommunicationException(e.getMessage(), e);
@@ -205,11 +209,11 @@ final class FileStore {
    * problem.
    */
   public static final class FileStoreException extends EngineException {
-    FileStoreException(String message) {
+    FileStoreException(final String message) {
       super(message);
     }
 
-    FileStoreException(String message, Throwable e) {
+    FileStoreException(final String message, final Throwable e) {
       super(message, e);
     }
   }
@@ -219,12 +223,30 @@ final class FileStore {
 
     private static final long serialVersionUID = 1L;
 
+    @Override
     public long getTime() {
       return -1;
     }
 
-    public boolean isForSameCache(CacheHighWaterMark other) {
+    @Override
+    public boolean isForSameCache(final CacheHighWaterMark other) {
       return false;
+    }
+
+    @Override
+    public int hashCode() {
+      return 5;
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+      return o != null &&
+             o.getClass().equals(OutOfDateCacheHighWaterMark.class);
+    }
+
+    @Override
+    public String toString() {
+      return "Stale cache";
     }
   }
 }

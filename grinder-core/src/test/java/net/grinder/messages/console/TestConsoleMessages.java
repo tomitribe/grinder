@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,7 @@
 
 package net.grinder.messages.console;
 
+import static net.grinder.testutility.AssertUtilities.assertNotEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -32,8 +33,8 @@ import java.io.ObjectOutputStream;
 import java.util.Collection;
 import java.util.HashSet;
 
-import net.grinder.common.processidentity.WorkerIdentity;
 import net.grinder.common.processidentity.ProcessReport.State;
+import net.grinder.common.processidentity.WorkerIdentity;
 import net.grinder.communication.Address;
 import net.grinder.communication.CommunicationException;
 import net.grinder.engine.agent.StubAgentIdentity;
@@ -83,7 +84,7 @@ public class TestConsoleMessages {
       Serializer.serialize(new RegisterExpressionViewMessage(view2));
       fail("Expected IOException");
     }
-    catch (IOException e) {
+    catch (final IOException e) {
     }
 
     final ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
@@ -102,7 +103,7 @@ public class TestConsoleMessages {
         new ObjectInputStream(new ByteArrayInputStream(bytes)));
 
       fail("Expected IOException");
-    } catch (IOException e) {
+    } catch (final IOException e) {
     }
   }
 
@@ -164,6 +165,44 @@ public class TestConsoleMessages {
     assertEquals(3, received.getMaximumNumberOfThreads());
   }
 
+  @Test public void testWorkerReportMessageEquality() throws Exception {
+
+    final StubAgentIdentity agentIdentity =
+      new StubAgentIdentity("Agent");
+    final WorkerIdentity workerIdentity = agentIdentity.createWorkerIdentity();
+
+    final WorkerProcessReportMessage m1 =
+      new WorkerProcessReportMessage(State.RUNNING, (short)2, (short)3);
+
+    assertEquals(m1, m1);
+    assertEquals(m1.hashCode(), m1.hashCode());
+    assertNotEquals(m1, null);
+    assertNotEquals(m1, this);
+
+    final WorkerProcessReportMessage m2 =
+        new WorkerProcessReportMessage(State.RUNNING, (short)2, (short)3);
+
+    m2.setAddress(new WorkerAddress(workerIdentity));
+
+    assertEquals(m1, m2);
+    assertEquals(m2.hashCode(), m2.hashCode());
+
+    assertNotEquals(m1,
+                    new WorkerProcessReportMessage(State.STARTED,
+                                                   (short)2,
+                                                   (short)3));
+
+    assertNotEquals(m1,
+                    new WorkerProcessReportMessage(State.RUNNING,
+                                                   (short)1,
+                                                   (short)3));
+    assertNotEquals(m1,
+                    new WorkerProcessReportMessage(State.RUNNING,
+                                                   (short)2,
+                                                   (short)2));
+
+  }
+
   @Test public void testWorkerReportMessageBadAddress() throws Exception {
 
     final WorkerProcessReportMessage message =
@@ -176,7 +215,7 @@ public class TestConsoleMessages {
       message.setAddress(badAddress);
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
   }
 
@@ -207,6 +246,40 @@ public class TestConsoleMessages {
     assertEquals(cacheHighWaterMark, received.getCacheHighWaterMark());
   }
 
+  @Test public void testAgentReportMessageEquality() throws Exception {
+
+    final StubAgentIdentity agentIdentity =
+        new StubAgentIdentity("Agent");
+
+    final CacheHighWaterMark cacheHighWaterMark =
+      new StubCacheHighWaterMark("", 100);
+
+    final AgentProcessReportMessage m1 =
+      new AgentProcessReportMessage(State.RUNNING, cacheHighWaterMark);
+
+    assertEquals(m1, m1);
+    assertEquals(m1.hashCode(), m1.hashCode());
+    assertNotEquals(m1, null);
+    assertNotEquals(m1, this);
+
+    final AgentProcessReportMessage m2 =
+        new AgentProcessReportMessage(State.RUNNING, cacheHighWaterMark);
+
+    m2.setAddress(new AgentAddress(agentIdentity));
+
+    assertEquals(m1, m2);
+    assertEquals(m2.hashCode(), m2.hashCode());
+
+    assertNotEquals(m1,
+                    new AgentProcessReportMessage(State.UNKNOWN,
+                                                  cacheHighWaterMark));
+
+    assertNotEquals(m1,
+                    new AgentProcessReportMessage(
+                      State.RUNNING,
+                      new StubCacheHighWaterMark("", 101)));
+  }
+
   @Test public void testAgentReportMessageBadAddress() throws Exception {
 
     final AgentProcessReportMessage message =
@@ -219,7 +292,7 @@ public class TestConsoleMessages {
       message.setAddress(badAddress);
       fail("Expected CommunicationException");
     }
-    catch (CommunicationException e) {
+    catch (final CommunicationException e) {
     }
   }
 }
