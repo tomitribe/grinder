@@ -7,7 +7,7 @@
                  [com.taoensso/tower "1.2.0"]
                  [compojure "1.1.3"]
                  ;[http-kit "2.0-rc1"]
-                 [http-kit "2.0-0-SNAPSHOT"]
+                 [http-kit "2.0.0-SNAPSHOT"]
                  [hiccup "1.0.2"]
                  [net.sf.grinder/grinder-core "3.12-SNAPSHOT" :scope "provided"]
                  [org.clojure/clojure "1.4.0"]

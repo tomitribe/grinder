@@ -21,16 +21,20 @@
 
 (ns net.grinder.test
   "Unit tests utilities."
-  (:import [java.io
-            File]
-           [java.util
-            Timer
-            TimerTask]
-           [net.grinder.common
-            AbstractTestSemantics]
-           [net.grinder.console.model
-            ConsoleProperties]
-           net.grinder.console.common.Resources))
+  (:require
+    [clojure.tools.logging :as logging]
+    [clojure.tools.logging.impl :as logging-impl])
+  (:import
+    [java.io
+     File]
+    [java.util
+     Timer
+     TimerTask]
+    [net.grinder.common
+     AbstractTestSemantics]
+    [net.grinder.console.model
+     ConsoleProperties]
+    net.grinder.console.common.Resources))
 
 
 (defmacro with-temporary-files
@@ -54,6 +58,21 @@
   `(with-temporary-files [~f]
     (let [~cp (ConsoleProperties. (reify Resources) ~f)]
           (do ~@body))))
+
+(def ^:private null-logger-factory
+  (reify logging-impl/LoggerFactory
+    (name [_this]
+      "Disable logging")
+    (get-logger [_this _namespace]
+      (reify logging-impl/Logger
+        (enabled? [_this _level] false)))))
+
+(defmacro with-no-logging
+  "Disable logging."
+  [& body]
+  `(binding
+     [logging/*logger-factory* @#'null-logger-factory]
+     (do ~@body)))
 
 (defn make-test
   [n d]

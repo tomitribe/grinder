@@ -35,7 +35,7 @@
       values (atom {})]
 
   (defn- get-value
-    "Get the value for key `k`."
+    "Get the current value for key `k`."
     [k]
     (->
       k
@@ -59,12 +59,12 @@
     response
     (content-type "application/json")))
 
-(let [ ; {data-key #{client}}
+(let [ ; Holds {data-key #{client}}
       clients (ref {})]
 
   (defn- register-client
     "Register http-kit callback `client` for `data-key`."
-    [client data-key]
+    [data-key client]
     (dosync
       (commute clients
         #(merge-with clojure.set/union % {data-key #{client}})))
@@ -99,7 +99,7 @@
 
           ; Client has current value, or there is none => long poll.
           (async-response client
-            (register-client client k))))))
+            (register-client k client))))))
 
   (defn push
     "Send `html-data` to all clients listening to `data-key`."
