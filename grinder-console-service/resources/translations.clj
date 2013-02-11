@@ -22,6 +22,9 @@
   :running-agent "Connected"
   :finished-agent "Disconnected"
   :worker-threads "({0}/{1} {1,choice,0#threads|1#thread|1<{0,number} threads})"
+  :start-processes "Start workers"
+  :reset-processes "Stop workers"
+  :stop-processes "Stop agents"
 
 
   ; Properties

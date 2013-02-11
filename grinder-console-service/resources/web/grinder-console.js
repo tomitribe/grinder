@@ -64,11 +64,12 @@ jQuery(function($) {
             var seq = -1;
 
             function poll(e) {
-                console.log("Polling " + e);
+                // console.log("Polling " + e);
                 $.get("/ui/poll", {k : e.id, s: seq}, function(x) {
-                    console.log("Update " + x);
+                    // console.log("Update " + x);
 
-                    $(e).stop()
+                    $(e)
+                    .stop()
                     .animate({opacity: 0.5},
                             "fast",
                             function() {
@@ -89,6 +90,34 @@ jQuery(function($) {
         });
     }
 
+    function buttons() {
+        $(".grinder-button").each(function() {
+            if (this.id) {
+
+                var buttonOptions;
+
+                if (this.classList.contains("grinder-button-icon")) {
+                    buttonOptions = {
+                            icons: { primary: this.id }
+                    };
+                }
+                else {
+                    buttonOptions = {};
+                }
+
+                $(this)
+                .button(buttonOptions)
+                .click(function() {
+                    $.post("/ui/action/" + this.id);
+                });
+            }
+            else {
+                $(this).button();
+            }
+        });
+    }
+
+    buttons();
     addChangeDetection();
     pollLiveData();
 });

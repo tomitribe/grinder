@@ -97,9 +97,15 @@
 
 (defn- render-processes [{:keys [process-control]}]
   (let [buttons [
-          (image {} "core/start-processes.png" (t :start-processes))
-          (image {} "core/reset-processes.png" (t :reset-processes))
-          (image {} "core/stop-processes.png" (t :stop-processes))
+          [:button {:class "grinder-button grinder-button-icon"
+                    :id :start-processes
+                    } (t :start-processes)]
+          [:button {:class "grinder-button grinder-button-icon"
+                    :id :reset-processes
+                    } (t :reset-processes)]
+          [:button {:class "grinder-button grinder-button-icon"
+                    :id :stop-processes
+                    } (t :stop-processes)]
          ]]
     (html
       [:div {:class "process-controls"}
@@ -226,10 +232,14 @@
 
 (defelem page [section body]
   (html5
-    (include-css "resources/main.css")
     ;(include-js "lib/jquery-1.9.0.min.js")
     (include-js "lib/jquery-1.9.0.js")
+    (include-js "lib/jquery-ui-1.10.0.custom.js")
+    (include-css "lib/jquery-ui-1.10.0.custom.css")
+
+    (include-css "resources/main.css")
     (include-js "resources/grinder-console.js")
+
     [:div {:id :wrapper}
       [:div {:id :header}
        [:div {:id :title} [:h1 "The Grinder"]]
@@ -237,7 +247,7 @@
 
       [:div {:id :sidebar}
        (for [[k v] sections]
-         (link-to (:url v) (t k)))
+         (link-to {:class "grinder-button"} (:url v) (t k)))
        ]
       [:div {:id :content}
        [:h2 (t section)]
@@ -301,6 +311,22 @@
 
         (POST "/properties" {params :form-params}
           (handle-properties-form properties params))
+
+        (context "/action" []
+          (POST "/start-processes" []
+            (response
+              (str
+                (processes/workers-start process-control properties {}))))
+
+          (POST "/reset-processes" []
+            (response
+              (str
+                (processes/workers-stop process-control))))
+
+          (POST "/stop-processes" []
+            (response
+              (str
+                (processes/agents-stop process-control)))))
 
         (GET "/" [] (redirect (context-url (:url (second (first sections))))))
 
