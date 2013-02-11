@@ -1,21 +1,21 @@
 jQuery(function($) {
-    function addChangeDetection() {
-        var changeables = $(".changeable");
+    function addChangeDetection(scope) {
+        var changeables = $(".changeable", scope);
 
         if (!changeables.length) {
             return;
         }
 
-        $("label").each(function() {
+        $("label", scope).each(function() {
             var l = this;
 
             if (l.htmlFor != '') {
-                var e = $("#" + l.htmlFor)[0];
+                var e = $("#" + l.htmlFor, scope)[0];
 
                 if (e) {
                     e.label = this;
                 } else {
-                    $("[name='" + l.htmlFor + "']").each(function() {
+                    $("[name='" + l.htmlFor + "']", scope).each(function() {
                         this.label = l;
                     });
                 }
@@ -26,7 +26,7 @@ jQuery(function($) {
             return this.css("visibility", show ? "visible" : "hidden");
         };
 
-        var submit = $("#submit");
+        var submit = $("#submit", scope);
         submit.visible(false);
 
         changeables.each(function() {
@@ -57,9 +57,9 @@ jQuery(function($) {
         });
     }
 
-    function pollLiveData() {
+    function pollLiveData(scope) {
 
-        $(".live-data").each(function() {
+        $(".live-data", scope).each(function() {
             console.log("Registering " + this);
             var seq = -1;
 
@@ -119,7 +119,7 @@ jQuery(function($) {
                                     "fast",
                                     function() {
                                         content.html(x);
-                                        addButtons(content);
+                                        addDynamicBehaviour(content);
                                         content.animate({opacity: 1}, "fast");
                                     });
                            });
@@ -136,7 +136,11 @@ jQuery(function($) {
         });
     }
 
-    addButtons(document);
-    addChangeDetection();
-    pollLiveData();
+    function addDynamicBehaviour(scope) {
+        addButtons(scope);
+        addChangeDetection(scope);
+        pollLiveData(scope);
+    }
+
+    addDynamicBehaviour(document);
 });
