@@ -1,4 +1,6 @@
 jQuery(function($) {
+    var ld_xhrs = [];
+
     function addChangeDetection(scope) {
         var changeables = $(".changeable", scope);
 
@@ -60,12 +62,12 @@ jQuery(function($) {
     function pollLiveData(scope) {
 
         $(".live-data", scope).each(function() {
-            console.log("Registering " + this);
+            // console.log("Registering " + this);
             var seq = -1;
 
             function poll(e) {
                 // console.log("Polling " + e);
-                $.get("/ui/poll", {k : e.id, s: seq}, function(x) {
+                xhr = $.get("/ui/poll", {k : e.id, s: seq}, function(x) {
                     // console.log("Update " + x);
 
                     $(e)
@@ -84,10 +86,17 @@ jQuery(function($) {
                     setTimeout(function() {poll(e);}, 1);
                 },
                 "json");
+
+                ld_xhrs.push(xhr);
             }
 
             poll(this);
         });
+    }
+
+    function stopLiveDataPolls() {
+        // Maybe scope ld_xhrs so we don't stop them all.
+        $(ld_xhrs).each(function() { this.abort(); });
     }
 
     function addButtons(scope) {
@@ -137,6 +146,7 @@ jQuery(function($) {
     }
 
     function addDynamicBehaviour(scope) {
+        stopLiveDataPolls();
         addButtons(scope);
         addChangeDetection(scope);
         pollLiveData(scope);
