@@ -90,8 +90,11 @@ jQuery(function($) {
         });
     }
 
-    function buttons() {
-        $(".grinder-button").each(function() {
+    function addButtons(scope) {
+        content = $("div#content");
+
+
+        $(".grinder-button", scope).each(function() {
             if (this.id) {
 
                 var buttonOptions;
@@ -105,19 +108,35 @@ jQuery(function($) {
                     buttonOptions = {};
                 }
 
-                $(this)
-                .button(buttonOptions)
-                .click(function() {
-                    $.post("/ui/action/" + this.id);
-                });
-            }
-            else {
+                $(this).button(buttonOptions);
+
+                if (this.classList.contains("replace-content")) {
+                    $(this).click(function() {
+                        $.get("/ui/content/" + this.id,
+                           function(x) {
+                                content.animate(
+                                    {opacity: 0},
+                                    "fast",
+                                    function() {
+                                        content.html(x);
+                                        addButtons(content);
+                                        content.animate({opacity: 1}, "fast");
+                                    });
+                           });
+                        });
+                }
+                else {
+                    $(this).click(function() {
+                        $.post("/ui/action/" + this.id);
+                    });
+                }
+            } else {
                 $(this).button();
-            }
+            };
         });
     }
 
-    buttons();
+    addButtons(document);
     addChangeDetection();
     pollLiveData();
 });

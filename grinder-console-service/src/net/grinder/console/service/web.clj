@@ -220,17 +220,20 @@
 
 
 (def ^{:const true} sections [
-  [:processes {:url "/processes"
-               :render-fn #'render-processes}]
-  [:data {:url "/data"
-          :render-fn #'render-data}]
-  [:file-distribution {:url "/files"
-                       :render-fn #'render-files}]
-  [:console-properties {:url "/properties"
-                        :render-fn #'render-properties-form}]
-  ])
+  [:processes {:render-fn #'render-processes}]
+  [:data {:render-fn #'render-data}]
+  [:file-distribution {:render-fn #'render-files}]
+  [:console-properties {:render-fn #'render-properties-form}]])
 
-(defelem page [section body]
+(defn- section-url [section]
+  (str "/" (name section)))
+
+(defelem content [section body]
+  (html
+     [:h2 (t section)]
+     body))
+
+(defelem page [body]
   (html5
     ;(include-js "lib/jquery-1.9.0.min.js")
     (include-js "lib/jquery-1.9.0.js")
@@ -247,11 +250,11 @@
 
       [:div {:id :sidebar}
        (for [[k v] sections]
-         (link-to {:class "grinder-button"} (:url v) (t k)))
+         [:button {:class "grinder-button replace-content"
+                   :id k} (t k)])
        ]
       [:div {:id :content}
-       [:h2 (t section)]
-       (html body)]]))
+       body]]))
 
 (defn- spy [handler spyname]
   (fn [request]
@@ -304,10 +307,19 @@
 
         (->
           (apply routes
-            (for [[section {:keys [url render-fn]}] sections :when render-fn]
-              (GET url [] (page section (apply render-fn [state])))))
+            (for [[section {:keys [render-fn]}] sections :when render-fn]
+              (GET (section-url section) []
+                (page (content section (apply render-fn [state]))))))
           ; (spy "get")
           translate)
+
+        (context "/content" []
+          (->
+            (apply routes
+              (for [[section {:keys [render-fn]}] sections :when render-fn]
+                (GET (section-url section) []
+                  (content section (apply render-fn [state])))))
+            translate))
 
         (POST "/properties" {params :form-params}
           (handle-properties-form properties params))
@@ -328,7 +340,9 @@
               (str
                 (processes/agents-stop process-control)))))
 
-        (GET "/" [] (redirect (context-url (:url (second (first sections))))))
+        (GET "/" []
+          (page (content (t "about")
+                  (.getStringFromFile console-resources "about.text" true))))
 
         (not-found "Whoop!!!"))
 

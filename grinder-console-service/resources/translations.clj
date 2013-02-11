@@ -5,6 +5,7 @@
   :status "Status"
 
   ; Sections
+  :about "About The Grinder"
   :console-properties "Console Properties"
   :data "Data"
   :processes "Process Control"
