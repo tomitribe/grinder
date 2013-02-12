@@ -58,24 +58,13 @@ jQuery(function($) {
         });
     }
 
-    // When an element is removed from the DOM, JQuery will call the
-    // remove special event method for all registered "destroyed" handlers.
-    // We use this to abort up pending queries.
-    $.event.special.destroyed = {
-            remove: function( o ) {
-                if (o.handler) {
-                    o.handler.apply(this, arguments);
-                }
-
-                return false;
-            }
-        };
-
     function pollLiveData(scope) {
 
         $(".live-data", scope).each(function() {
             // console.log("Registering " + this);
             var seq = -1;
+
+            var xhr = null;
 
             function poll(e) {
                 // console.log("Polling " + e);
@@ -89,8 +78,7 @@ jQuery(function($) {
                             function() {
                                 $(this).html(x.html);
                                 $(this).animate({opacity: 1}, "fast");
-                            })
-                    .unbind('destroyed');
+                            });
 
                     seq = x.sequence;
 
@@ -99,11 +87,17 @@ jQuery(function($) {
                     setTimeout(function() {poll(e);}, 1);
                 },
                 "json");
-
-                $(e).bind('destroyed', xhr, function(x) {
-                    x.data.abort();
-                });
             }
+
+            var thisElement = this;
+
+            $(document).bind("DOMNodeRemoved", function(e) {
+                if (e.target == thisElement) {
+                    if (xhr != null)  {
+                        xhr.abort();
+                    }
+                }
+            });
 
             poll(this);
         });
