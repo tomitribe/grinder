@@ -1,5 +1,4 @@
 jQuery(function($) {
-    var ld_xhrs = [];
 
     function addChangeDetection(scope) {
         var changeables = $(".changeable", scope);
@@ -59,6 +58,19 @@ jQuery(function($) {
         });
     }
 
+    // When an element is removed from the DOM, JQuery will call the
+    // remove special event method for all registered "destroyed" handlers.
+    // We use this to abort up pending queries.
+    $.event.special.destroyed = {
+            remove: function( o ) {
+                if (o.handler) {
+                    o.handler.apply(this, arguments);
+                }
+
+                return false;
+            }
+        };
+
     function pollLiveData(scope) {
 
         $(".live-data", scope).each(function() {
@@ -77,7 +89,8 @@ jQuery(function($) {
                             function() {
                                 $(this).html(x.html);
                                 $(this).animate({opacity: 1}, "fast");
-                            });
+                            })
+                    .unbind('destroyed');
 
                     seq = x.sequence;
 
@@ -87,16 +100,13 @@ jQuery(function($) {
                 },
                 "json");
 
-                ld_xhrs.push(xhr);
+                $(e).bind('destroyed', xhr, function(x) {
+                    x.data.abort();
+                });
             }
 
             poll(this);
         });
-    }
-
-    function stopLiveDataPolls() {
-        // Maybe scope ld_xhrs so we don't stop them all.
-        $(ld_xhrs).each(function() { this.abort(); });
     }
 
     function addButtons(scope) {
@@ -146,7 +156,6 @@ jQuery(function($) {
     }
 
     function addDynamicBehaviour(scope) {
-        stopLiveDataPolls();
         addButtons(scope);
         addChangeDetection(scope);
         pollLiveData(scope);
