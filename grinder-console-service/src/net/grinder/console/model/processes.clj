@@ -93,7 +93,7 @@
   (add-watch
     last-reports
     key
-    (fn [k _ - new]
+    (fn [k _ _ new]
       (let [new-reports (for [r new] (agent-and-workers r))]
         (callback k new-reports)))))
 

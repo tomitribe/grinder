@@ -61,24 +61,32 @@ jQuery(function($) {
     function pollLiveData(scope) {
 
         $(".live-data", scope).each(function() {
-            // console.log("Registering " + this);
+            console.log("Registering " + this);
             var seq = -1;
 
             var xhr = null;
 
             function poll(e) {
-                // console.log("Polling " + e);
+                console.log("Polling " + e);
                 xhr = $.get("/ui/poll", {k : e.id, s: seq}, function(x) {
-                    // console.log("Update " + x);
+                    console.log("Update " + x);
 
-                    $(e)
-                    .stop()
-                    .animate({opacity: 0.5},
-                            "fast",
-                            function() {
-                                $(this).html(x.html);
-                                $(this).animate({opacity: 1}, "fast");
-                            });
+                    var ee = $(e);
+
+                    if (ee.hasClass("live-data-animation")) {
+                        ee
+                        .stop()
+                        .animate({opacity: 0.5},
+                                "fast",
+                                function() {
+                                    $(this)
+                                    .html(x.html)
+                                    .animate({opacity: 1}, "fast");
+                                });
+                    }
+                    else {
+                        ee.html(x.html);
+                    }
 
                     seq = x.sequence;
 

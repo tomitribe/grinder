@@ -27,6 +27,10 @@
   :reset-processes "Stop workers"
   :stop-processes "Stop agents"
 
+  ; Data
+  :test-number "Test"
+  :test-description ""
+  :totals "Totals"
 
   ; Properties
   :sampling "Sampling"

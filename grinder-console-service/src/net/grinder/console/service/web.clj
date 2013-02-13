@@ -70,7 +70,9 @@
 (defn- render-process-table [process-control]
   (let [processes (processes/status process-control)]
     (html
-      [:table {:id :process-state :class "process-table live-data"}
+      [:table {:id :process-state
+               :class
+               "grinder-table process-table live-data live-data-animation"}
        [:caption (t :running-processes)]
        [:thead
         [:tr
@@ -94,7 +96,6 @@
        ]
       )))
 
-
 (defn- render-processes [{:keys [process-control]}]
   (let [buttons [
           [:button {:class "grinder-button grinder-button-icon"
@@ -113,9 +114,38 @@
        ]
       (render-process-table process-control))))
 
+(defn- render-data-table [sample-model sample-model-views]
+  (let [{:keys [status columns tests totals] :as data}
+        (recording/data sample-model sample-model-views :as-text true)]
+    ; Maybe we should track and highlight changed values?
+    (html
+      [:div {:id :data :class "grinder-table data-table live-data"}
+       [:table
+        [:caption (t :data)]
+        [:thead
+         [:tr
+          [:th (t :test-number)]
+          [:th (t :test-description)]
+          (for [c columns] [:th c])]]
+        (for [{:keys [test description statistics]} tests]
+          [:tr
+           [:th test]
+           [:th description]
+           (for [s statistics] [:td s])
+           ])
+        [:tr {:class "total-row"}
+         [:th (t :totals)]
+         [:th]
+         (for [c totals] [:td c])]]
 
-(defn- render-data [{:keys [process-control]}]
-  "data")
+       [:pre (str status)]
+       [:pre (str tests)]])))
+
+
+(defn- render-data [{:keys [sample-model
+                            sample-model-views]}]
+
+  (render-data-table sample-model sample-model-views))
 
 (defn- render-files [{:keys [process-control]}]
   "files")
@@ -285,6 +315,11 @@
       (livedata/push :process-state
         (render-process-table process-control))))
 
+  (recording/add-sample-listener :key
+    (fn [k]
+      (livedata/push :data
+        (render-data-table sample-model sample-model-views))))
+
   (tower/load-dictionary-from-map-resource! "translations.clj")
 
   (let [translate (make-wrap-with-translation
@@ -299,11 +334,6 @@
 
         (GET "/poll" [k s]
           (livedata/poll k s))
-
-        (GET "/test" []
-          (livedata/push :process-state
-            (render-process-table process-control))
-          (str "Sent data"))
 
         (->
           (apply routes
@@ -341,7 +371,7 @@
                 (processes/agents-stop process-control)))))
 
         (GET "/" []
-          (page (content (t "about")
+          (page (content (t :about)
                   (.getStringFromFile console-resources "about.text" true))))
 
         (not-found "Whoop!!!"))

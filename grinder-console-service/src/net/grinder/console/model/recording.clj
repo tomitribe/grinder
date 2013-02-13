@@ -23,6 +23,7 @@
 (ns net.grinder.console.model.recording
   (:import [net.grinder.console.model
             ModelTestIndex
+            SampleListener
             SampleModel
             SampleModel$Listener
             SampleModel$State$Value
@@ -30,7 +31,9 @@
            [net.grinder.statistics ExpressionView]
            [java.text Format]))
 
-(defonce latest-test-index(atom [nil nil]))
+(defonce ^:private latest-test-index (atom [nil nil]))
+
+(defonce ^:private latest-data (atom {}))
 
 (defn- get-test-index
   [expected-sm]
@@ -57,11 +60,20 @@
 
       (newTests
         [this tests index]
-        (swap! latest-test-index #(assoc % 1 %2) index))
+        (swap! latest-test-index assoc 1 index))
 
       (resetTests
         [this]
-        (.newTests this nil (ModelTestIndex.))))))
+        (.newTests this nil (ModelTestIndex.)))))
+
+    (.addTotalSampleListener model
+      (reify SampleListener
+        (update
+          [this interval cumulative]
+          (swap! latest-data assoc
+            :totals-sample interval
+            :totals cumulative)
+          ))))
 
 (defn status
   "Return a map summarising the state of the provided SampleModel.
@@ -193,3 +205,14 @@
                           formatter)
             })))
      :totals (process-statistics views totals formatter)}))
+
+
+(defn add-sample-listener
+  [key callback]
+  (add-watch
+    latest-data
+    key
+    ; We're not tracking changes at the test level.
+    ; For now, we'll not pass the data. The client can call us back.
+    (fn [k _ _ _]
+      (callback k))))

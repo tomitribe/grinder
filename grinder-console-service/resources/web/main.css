@@ -165,20 +165,21 @@ body {
 }
 
 
-.process-table caption {
+.grinder-table caption {
   caption-side: bottom;
 }
 
-table.process-table {
+table.grinder-table {
    width: 100%;
 }
 
-.process-table td,th {
-  text-align: left;
+.grinder-table th {
+  color: #434242;
 }
 
-.process-table th {
-  color: #434242;
+
+.process-table td,th {
+  text-align: left;
 }
 
 .process-table .running {
@@ -196,6 +197,18 @@ table.process-table {
   box-shadow: 5px 5px 5px hsla(0, 0%, 26.6667%, 0.8);
   border: 2px solid #bfbfbf;
 }
+
+.data-table th {
+  text-align: left;
+  margin-left: 0.1 em;
+  margin-right: 0.1 em;
+}
+
+.data-table td {
+  text-align: right;
+  margin-left: 0.1 em;
+}
+
 
 .live-data {
 	/* border: 4px solid red;*/
