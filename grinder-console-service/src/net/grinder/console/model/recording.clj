@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; Copyright (C) 2012 Marc Holden
 ; All rights reserved.
 ;
@@ -27,7 +27,8 @@
             SampleModel$Listener
             SampleModel$State$Value
             SampleModelViews]
-           [net.grinder.statistics ExpressionView]))
+           [net.grinder.statistics ExpressionView]
+           [java.text Format]))
 
 (defonce latest-test-index(atom [nil nil]))
 
@@ -109,40 +110,40 @@
   (.reset model)
   (status model))
 
+(defprotocol StatisticsFormatter
+  (format-double [this v])
+  (format-long [this v]))
+
 (defn- process-statistics
-  [views statistics]
+  [views statistics formatter]
   (vec
     (for [^ExpressionView v views]
       (let [e (.getExpression v)]
         (if (.isDouble e)
-          (.getDoubleValue e statistics)
-          (.getLongValue e statistics))))))
+          (format-double formatter (.getDoubleValue e statistics))
+          (format-long formatter (.getLongValue e statistics))
+          )))))
 
-(defn- getdata
-  "Common implementation for (data) and (data-latest)."
-  [^SampleModel sample-model
-   ^ModelTestIndex test-index
-   view
-   totals
-   statistics-for-test]
-  (let [views (.getExpressionViews view)]
-    {:status (status sample-model)
-     :columns (vec (for [^ExpressionView v views] (.getDisplayName v)))
-     :tests
-     (vec
-       (for [i (range (.getNumberOfTests test-index))]
-         (let [test (.getTest test-index i)]
-           {
-            :test (.getNumber test)
-            :description (.getDescription test)
-            :statistics
-            (process-statistics views (statistics-for-test test-index i)) })))
-     :totals (process-statistics views totals)}))
+(extend-protocol StatisticsFormatter Format
+  (format-double [this v]
+    (if (Double/isNaN v)
+      ""
+      (.format this v)))
+
+  (format-long [this v]
+    (str v)))
+
 
 (defn data
   "Return a map containing the current recording data.
 
-   The map has the following keys:
+   Accepts the following optional arguments:
+     :as-text If true, return statistics as formatted text rather than
+              numbers.
+     :sample  If true, return the latest sample, rather than the accumulated
+              statistics.
+
+   The result has the following keys:
      :status The sample model status as a map, see 'status'.
      :columns Vector of column names, in same order as statistics vectors.
      :tests Vector of test data maps, one per test.
@@ -154,24 +155,41 @@
      :statistics Vector of statistics.
 "
   [^SampleModel sample-model
-   ^SampleModelViews statistics-view]
-  (getdata
-    sample-model
-    (get-test-index sample-model)
-    (.getCumulativeStatisticsView statistics-view)
-    (.getTotalCumulativeStatistics sample-model)
-    #(.getCumulativeStatistics %1 %2)))
+   ^SampleModelViews statistics-view &
+   {:keys [as-text sample]}]
 
-(defn data-latest
-  "Get the latest sample data.
+  (let [test-index (get-test-index sample-model)
 
-   The result has the same structure as that of (data).
-"
-  [^SampleModel sample-model
-   ^SampleModelViews statistics-view]
-  (getdata
-    sample-model
-    (get-test-index sample-model)
-    (.getIntervalStatisticsView statistics-view)
-    (.getTotalLatestStatistics sample-model)
-    #(.getLastSampleStatistics %1 %2)))
+        formatter (if as-text
+                    (.getNumberFormat statistics-view)
+                    (reify StatisticsFormatter
+                      (format-double [this v] v)
+                      (format-long [this v] v)))
+        [view
+         totals
+         statistics-for-test]
+        (if sample
+          [(.getIntervalStatisticsView statistics-view)
+           (.getTotalLatestStatistics sample-model)
+           #(.getLastSampleStatistics %1 %2)]
+
+          [(.getCumulativeStatisticsView statistics-view)
+           (.getTotalCumulativeStatistics sample-model)
+           #(.getCumulativeStatistics %1 %2)])
+
+        views (.getExpressionViews view)]
+
+    {:status (status sample-model)
+     :columns (vec (for [^ExpressionView v views] (.getDisplayName v)))
+     :tests
+     (vec
+       (for [i (range (.getNumberOfTests test-index))]
+         (let [test (.getTest test-index i)]
+           {
+            :test (.getNumber test)
+            :description (.getDescription test)
+            :statistics (process-statistics views
+                          (statistics-for-test test-index i)
+                          formatter)
+            })))
+     :totals (process-statistics views totals formatter)}))

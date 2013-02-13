@@ -37,6 +37,8 @@
            [net.grinder.statistics
             StatisticsServices
             StatisticsServicesImplementation]
+           [net.grinder.util
+            SignificantFigureFormat]
            [java.util
             Timer]))
 
@@ -90,16 +92,28 @@
 (def ^StatisticsServices ss (StatisticsServicesImplementation/getInstance))
 (def s1 (-> ss .getStatisticsSetFactory .create))
 
+(defn- make-smv
+  [sf]
+  (reify SampleModelViews
+    (getCumulativeStatisticsView
+      [this]
+      (.getSummaryStatisticsView ss))
+
+    (getIntervalStatisticsView
+      [this]
+      (.getDetailStatisticsView ss))
+
+    (getNumberFormat
+      [this]
+      (SignificantFigureFormat. sf))))
+
 (deftest test-data
   (let [ti (ModelTestIndex.)
         sm (reify SampleModel
              (getState [this] (MockState. "Recording" "blah" 99))
              (getTotalCumulativeStatistics [this] s1)
              (addModelListener [this l]))
-        sv (reify SampleModelViews
-             (getCumulativeStatisticsView
-               [this]
-               (.getSummaryStatisticsView ss)))]
+        sv (make-smv 3)]
 
     (recording/initialise sm)
 
@@ -123,10 +137,7 @@
                (reify Resources
                  (getString [this s] s))
                nil)
-          sv (reify SampleModelViews
-             (getCumulativeStatisticsView
-               [this]
-               (.getSummaryStatisticsView ss)))]
+          sv (make-smv 3)]
 
       (recording/initialise sm)
       (recording/start sm)
@@ -150,33 +161,10 @@
       (let [{:keys [test description statistics]} (second tests)]
         (is (= 2 test))
         (is (= "test two" description))
-        (is (= "[0 0 NaN 0.0 NaN]" (str statistics))))))))
+        (is (= "[0 0 NaN 0.0 NaN]" (str statistics)))))
 
-(deftest test-with-real-sample-model-latest
-  (with-console-properties cp f
-    (let [sm (SampleModelImplementation.
-               cp
-               ss
-               (make-null-timer)
-               (reify Resources
-                 (getString [this s] s))
-               nil)
-          sv (reify SampleModelViews
-             (getIntervalStatisticsView
-               [this]
-               (.getDetailStatisticsView ss)))]
-
-      (recording/initialise sm)
-      (recording/start sm)
-
-      (is (= {:state :WaitingForFirstReport
-              :description "state.waiting.label"}
-             (recording/status sm)))
-
-      (.registerTests sm [(make-test 1 "test one")
-                          (make-test 2 "test two")])
-
-    (let [{:keys [tests columns status totals]} (recording/data-latest sm sv)]
+    (let [{:keys [tests columns status totals]}
+          (recording/data sm sv :sample true)]
       (is (= "[0 0]" (str (doall totals))))
       (is (= ["Test time" "Errors"] columns))
       (is (= 2 (count tests)))
@@ -187,4 +175,22 @@
       (let [{:keys [test description statistics]} (second tests)]
         (is (= 2 test))
         (is (= "test two" description))
-        (is (= "[0 0]" (str statistics))))))))
+        (is (= "[0 0]" (str statistics)))))
+
+    (let [{:keys [tests columns status totals]}
+          (recording/data sm sv :as-text true
+            )]
+      (is (= ["0" "0" "" "0.00" ""] (doall totals)))
+      (is (= ["Tests" "Errors" "Mean Test Time (ms)"
+              "Test Time Standard Deviation (ms)" "TPS"] columns))
+      (is (= 2 (count tests)))
+      (let [{:keys [test description statistics]} (first tests)]
+        (is (= 1 test))
+        (is (= "test one" description))
+        (is (= ["0" "0" "" "0.00" ""] statistics)))
+      (let [{:keys [test description statistics]} (second tests)]
+        (is (= 2 test))
+        (is (= "test two" description))
+        (is (= ["0" "0" "" "0.00" ""] statistics))))
+
+    )))

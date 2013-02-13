@@ -80,7 +80,7 @@
        :post "/properties/save" properties/save [:properties]
        :get "/recording/status" recording/status [:sample-model]
        :get "/recording/data" recording/data [:sample-model :sample-model-views]
-       :get "/recording/data-latest" recording/data-latest [:sample-model :sample-model-views]
+       :get "/recording/data-latest" recording/data [:sample-model :sample-model-views :sample true]
        :post "/recording/start" recording/start [:sample-model]
        :post "/recording/stop" recording/stop [:sample-model]
        :post "/recording/zero" recording/zero [:sample-model]

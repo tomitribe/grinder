@@ -70,7 +70,7 @@
   (routes
     (GET "/status" [] (to-body (recording/status sm)))
     (GET "/data" [] (to-body (recording/data sm smv)))
-    (GET "/data-latest" [] (to-body (recording/data-latest sm smv)))
+    (GET "/data-latest" [] (to-body (recording/data sm smv :sample true)))
     (POST "/start" [] (to-body (recording/start sm)))
     (POST "/stop" [] (to-body (recording/stop sm)))
     (POST "/zero" [] (to-body (recording/zero sm)))
