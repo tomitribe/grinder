@@ -33,7 +33,7 @@
 
 (defonce ^:private latest-test-index (atom [nil nil]))
 
-(defonce ^:private latest-data (atom {}))
+(defonce ^:private new-data (atom 0))
 
 (defn- get-test-index
   [expected-sm]
@@ -47,33 +47,29 @@
   [^SampleModel model]
   (reset! latest-test-index [model (ModelTestIndex.)])
 
-  (.addModelListener model
-    (reify SampleModel$Listener
+  (letfn
+    [(notify [] (swap! new-data inc))]
 
-      (stateChanged
-        [this]
-        nil)
+    (.addModelListener model
+      (reify SampleModel$Listener
 
-      (newSample
-        [this]
-        nil)
+        (stateChanged
+          [this]
+          (notify))
 
-      (newTests
-        [this tests index]
-        (swap! latest-test-index assoc 1 index))
+        (newSample
+          [this]
+          (notify))
 
-      (resetTests
-        [this]
-        (.newTests this nil (ModelTestIndex.)))))
+        (newTests
+          [this tests index]
+          (swap! latest-test-index assoc 1 index)
+          (notify))
 
-    (.addTotalSampleListener model
-      (reify SampleListener
-        (update
-          [this interval cumulative]
-          (swap! latest-data assoc
-            :totals-sample interval
-            :totals cumulative)
-          ))))
+        (resetTests
+          [this]
+          (.newTests this nil (ModelTestIndex.))
+          (notify))))))
 
 (defn status
   "Return a map summarising the state of the provided SampleModel.
@@ -207,12 +203,11 @@
      :totals (process-statistics views totals formatter)}))
 
 
-(defn add-sample-listener
+(defn add-listener
   [key callback]
   (add-watch
-    latest-data
+    new-data
     key
-    ; We're not tracking changes at the test level.
-    ; For now, we'll not pass the data. The client can call us back.
+    ; For now, we'll not pass any data. The client can call us back.
     (fn [k _ _ _]
       (callback k))))

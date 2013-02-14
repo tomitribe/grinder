@@ -274,3 +274,19 @@ button.ui-button {
 .ui-state-hover .ui-icon.stop-processes {
   background-image: url(/ui/core/stop-processes-rollover.png);
 }
+
+.ui-icon.start-recording {
+  background-image: url(/ui/core/start.png);
+}
+
+.ui-state-hover .ui-icon.start-recording {
+  background-image: url(/ui/core/start-rollover.png);
+}
+
+.ui-icon.stop-recording {
+  background-image: url(/ui/core/stop.png);
+}
+
+.ui-state-hover .ui-icon.stop-recording {
+  background-image: url(/ui/core/stop-rollover.png);
+}

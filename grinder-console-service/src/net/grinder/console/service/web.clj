@@ -96,22 +96,17 @@
        ]
       )))
 
+(defn- make-button
+  [id]
+  (html
+    [:button {:class "grinder-button grinder-button-icon" :id id } (t id)]))
+
 (defn- render-processes [{:keys [process-control]}]
-  (let [buttons [
-          [:button {:class "grinder-button grinder-button-icon"
-                    :id :start-processes
-                    } (t :start-processes)]
-          [:button {:class "grinder-button grinder-button-icon"
-                    :id :reset-processes
-                    } (t :reset-processes)]
-          [:button {:class "grinder-button grinder-button-icon"
-                    :id :stop-processes
-                    } (t :stop-processes)]
-         ]]
+  (let [buttons [(make-button :start-processes)
+                 (make-button :reset-processes)
+                 (make-button :stop-processes)]]
     (html
-      [:div {:class "process-controls"}
-       (for [b buttons] b)
-       ]
+      [:div {:class "process-controls"} (for [b buttons] b) ]
       (render-process-table process-control))))
 
 (defn- render-data-table [sample-model sample-model-views]
@@ -138,14 +133,17 @@
          [:th]
          (for [c totals] [:td c])]]
 
-       [:pre (str status)]
-       [:pre (str tests)]])))
+       [:pre (str status)]])))
 
 
 (defn- render-data [{:keys [sample-model
                             sample-model-views]}]
-
-  (render-data-table sample-model sample-model-views))
+  (let [buttons [(make-button :start-recording)
+                 (make-button :stop-recording)
+                 (make-button :reset-recording)]]
+    (html
+      [:div {:class "recording-controls"} (for [b buttons] b) ]
+      (render-data-table sample-model sample-model-views))))
 
 (defn- render-files [{:keys [process-control]}]
   "files")
@@ -315,7 +313,7 @@
       (livedata/push :process-state
         (render-process-table process-control))))
 
-  (recording/add-sample-listener :key
+  (recording/add-listener :key
     (fn [k]
       (livedata/push :data
         (render-data-table sample-model sample-model-views))))
@@ -368,7 +366,22 @@
           (POST "/stop-processes" []
             (response
               (str
-                (processes/agents-stop process-control)))))
+                (processes/agents-stop process-control))))
+
+          (POST "/start-recording" []
+            (response
+              (str
+                (recording/start sample-model))))
+
+          (POST "/stop-recording" []
+            (response
+              (str
+                (recording/stop sample-model))))
+
+          (POST "/reset-recording" []
+            (response
+              (str
+                (recording/zero sample-model)))))
 
         (GET "/" []
           (page (content (t :about)

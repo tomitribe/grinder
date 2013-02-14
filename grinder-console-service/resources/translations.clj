@@ -31,6 +31,9 @@
   :test-number "Test"
   :test-description ""
   :totals "Totals"
+  :start-recording "Start recording"
+  :stop-recording "Stop recording"
+  :reset-recording "Reset recording"
 
   ; Properties
   :sampling "Sampling"
