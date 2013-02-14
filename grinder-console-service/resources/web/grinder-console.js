@@ -61,15 +61,15 @@ jQuery(function($) {
     function pollLiveData(scope) {
 
         $(".live-data", scope).each(function() {
-            console.log("Registering " + this);
-            var seq = -1;
+            //console.log("Registering ", this);
+            var seq = $(this).data("live-data");
 
             var xhr = null;
 
             function poll(e) {
-                console.log("Polling " + e);
+                //console.log("Polling ", e);
                 xhr = $.get("/ui/poll", {k : e.id, s: seq}, function(x) {
-                    console.log("Update " + x);
+                    //console.log("Update ", x);
 
                     var ee = $(e);
 
@@ -88,7 +88,7 @@ jQuery(function($) {
                         ee.html(x.html);
                     }
 
-                    seq = x.sequence;
+                    seq = x.next;
 
                     // Dispatch in timer - directly calling poll()
                     // causes FF to spin sometimes.

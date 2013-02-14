@@ -23,8 +23,9 @@
   "Long polling support."
   (:use
     [org.httpkit.server :only [async-response]]
-    [ring.util [response :only [response
-                                content-type]]]
+    [ring.util [response :only [content-type
+                                header
+                                response]]]
     )
   (:require
     [cheshire.core :as json]
@@ -34,7 +35,7 @@
 (let [default 0
       values (atom {})]
 
-  (defn- get-value
+  (defn get-value
     "Get the current value for key `k`."
     [k]
     (->
@@ -57,7 +58,9 @@
   (-> c
     json/generate-string
     response
-    (content-type "application/json")))
+    (content-type "application/json")
+    (header "Cache-Control" "no-cache, must-revalidate")
+    (header "Pragma" "no-cache")))
 
 (let [ ; Holds {data-key #{client}}
       clients (ref {})]
@@ -93,9 +96,9 @@
         (if (and v (not= sequence s))
           ; Client has stale value => give them the current value.
           (do
-            (log/debugf "sync response %s/%s %s" sequence (get-value k) v)
+            (log/debugf "sync response %s %s/%s %s" k sequence s v)
             (json-response {:html v
-                            :sequence s}))
+                            :next s}))
 
           ; Client has current value, or there is none => long poll.
           (async-response client
@@ -108,7 +111,7 @@
       (if (not= html-data (@last-value k))
 
         (let [r (json-response {:html html-data
-                                :sequence (next-value k)})]
+                                :next (next-value k)})]
           (swap! last-value assoc k html-data)
           (doseq [c (remove-clients k)]
             (log/debugf "async response to %s with %s" c r)

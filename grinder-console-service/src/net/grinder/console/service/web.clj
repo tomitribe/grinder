@@ -72,7 +72,8 @@
     (html
       [:table {:id :process-state
                :class
-               "grinder-table process-table live-data live-data-animation"}
+               "grinder-table process-table live-data live-data-animation"
+               :data-live-data (livedata/get-value :process-state)}
        [:caption (t :running-processes)]
        [:thead
         [:tr
@@ -114,7 +115,9 @@
         (recording/data sample-model sample-model-views :as-text true)]
     ; Maybe we should track and highlight changed values?
     (html
-      [:div {:id :data :class "grinder-table data-table live-data"}
+      [:div {:id :data
+             :class "grinder-table data-table live-data"
+             :data-live-data (livedata/get-value :data)}
        [:table
         [:caption (t :data)]
         [:thead
