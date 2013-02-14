@@ -10,4 +10,4 @@
 .lein-plugins
 /.*
 !/.gitignore
-
+*dev*.org
