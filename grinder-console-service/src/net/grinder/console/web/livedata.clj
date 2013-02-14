@@ -76,6 +76,8 @@
      with a synchronous or asynchronous Ring response."
     [data-key sequence]
 
+    (log/debugf "(poll %s %s)" data-key sequence)
+
     (let [k (keyword data-key)
           v (@last-value k)]
 
@@ -95,6 +97,8 @@
     "Send `html-data` to all clients listening to `data-key`."
     [data-key html-data]
     (let [k (keyword data-key)]
+      (log/debugf "(push %s) %s" data-key (get-value k))
+
       (if (not= html-data (@last-value k))
 
         (let [r (json-response {:html html-data

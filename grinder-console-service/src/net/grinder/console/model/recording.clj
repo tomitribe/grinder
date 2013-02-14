@@ -59,7 +59,9 @@
 
         (newSample
           [this]
-          (notify))
+          ; Ignore - we'll have received a stateChanged event.
+          ;(notify)
+          )
 
         (newTests
           [this tests index]
