@@ -39,7 +39,8 @@
                                [processes :as processes]
                                [properties :as properties]
                                [recording :as recording]]
-    [net.grinder.console.web [livedata :as livedata]]
+    [net.grinder.console.web [livedata :as livedata]
+                             [ringutil :as ringutil]]
     [taoensso.tower :as tower])
   (:import
     java.awt.Rectangle
@@ -350,6 +351,7 @@
               (for [[section {:keys [render-fn]}] sections :when render-fn]
                 (GET (section-url section) []
                   (content section (apply render-fn [state])))))
+            (ringutil/wrap-no-cache)
             translate))
 
         (POST "/properties" {params :form-params}

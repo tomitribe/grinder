@@ -23,12 +23,8 @@
   "Long polling support."
   (:use
     [org.httpkit.server :only [async-response]]
-    [ring.util [response :only [content-type
-                                header
-                                response]]]
-    )
+    [net.grinder.console.web.ringutil])
   (:require
-    [cheshire.core :as json]
     [clojure.tools [logging :as log]]))
 
 
@@ -52,15 +48,6 @@
          (fn [vs] (assoc vs k (inc (vs k default))))))
       str)))
 
-(defn- json-response
-  "Format a clojure structure as a Ring JSON response."
-  [c]
-  (-> c
-    json/generate-string
-    response
-    (content-type "application/json")
-    (header "Cache-Control" "no-cache, must-revalidate")
-    (header "Pragma" "no-cache")))
 
 (let [ ; Holds {data-key #{client}}
       clients (ref {})]
