@@ -37,13 +37,18 @@
     (header "Cache-Control" "no-cache, must-revalidate")
     (header "Pragma" "no-cache")))
 
+(defmacro make-middleware
+  "Produce a handler that executes body with anaphoric binding of rsp to the
+   response."
+  [handler rsp & body]
+  `(fn [req#]
+     (when-let [~rsp (~handler req#)]
+       ~@body)))
 
 (defn wrap-no-cache
   "Middleware that disables browser caching."
   [handler]
-  (fn [req]
-    (when-let [rsp (handler req)]
-      (no-cache rsp))))
+  (make-middleware handler rsp (no-cache rsp)))
 
 (defn json-response
   "Format a clojure structure as a Ring JSON response."

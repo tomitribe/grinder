@@ -351,7 +351,7 @@
               (for [[section {:keys [render-fn]}] sections :when render-fn]
                 (GET (section-url section) []
                   (content section (apply render-fn [state])))))
-            (ringutil/wrap-no-cache)
+            ringutil/wrap-no-cache
             translate))
 
         (POST "/properties" {params :form-params}
@@ -359,34 +359,28 @@
 
         (context "/action" []
           (POST "/start-processes" []
-            (response
-              (str
-                (processes/workers-start process-control properties {}))))
+            (ringutil/json-response
+              (processes/workers-start process-control properties {})))
 
           (POST "/reset-processes" []
-            (response
-              (str
-                (processes/workers-stop process-control))))
+            (ringutil/json-response
+              (processes/workers-stop process-control)))
 
           (POST "/stop-processes" []
-            (response
-              (str
-                (processes/agents-stop process-control))))
+            (ringutil/json-response
+              (processes/agents-stop process-control)))
 
           (POST "/start-recording" []
-            (response
-              (str
-                (recording/start sample-model))))
+            (ringutil/json-response
+              (recording/start sample-model)))
 
           (POST "/stop-recording" []
-            (response
-              (str
-                (recording/stop sample-model))))
+            (ringutil/json-response
+              (recording/stop sample-model)))
 
           (POST "/reset-recording" []
-            (response
-              (str
-                (recording/zero sample-model)))))
+            (ringutil/json-response
+              (recording/zero sample-model))))
 
         (GET "/" []
           (page (content (t :about)
