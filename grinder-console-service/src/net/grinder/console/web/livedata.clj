@@ -25,6 +25,7 @@
     [org.httpkit.server :only [async-response]]
     [net.grinder.console.web.ringutil])
   (:require
+    [clojure.set]
     [clojure.tools [logging :as log]]))
 
 
