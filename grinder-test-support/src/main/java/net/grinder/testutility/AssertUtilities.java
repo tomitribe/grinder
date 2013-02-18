@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2009 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,9 +21,13 @@
 
 package net.grinder.testutility;
 
+import static java.util.Arrays.asList;
+
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -140,5 +144,13 @@ public class AssertUtilities extends Assert {
 
     assertTrue("'" + text + "' contains pattern '" + pattern + "'",
                matcher.find());
+  }
+
+  public static final <T> Set<T> asSet(final T... a) {
+    return asSet(asList(a));
+  }
+
+  public static final <T> Set<T> asSet(final Collection<T> list) {
+    return new HashSet<T>(list);
   }
 }

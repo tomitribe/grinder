@@ -285,6 +285,12 @@ public final class SampleModelImplementation implements SampleModel {
   @Override
   public void zeroStatistics() {
     zero();
+
+    m_listeners.apply(
+      new ListenerSupport.Informer<Listener>() {
+        @Override
+        public void inform(final Listener l) { l.stateChanged(); }
+      });
   }
 
   /**
@@ -519,6 +525,7 @@ public final class SampleModelImplementation implements SampleModel {
 
         m_listeners.apply(
           new ListenerSupport.Informer<Listener>() {
+            @SuppressWarnings("deprecation")
             @Override
             public void inform(final Listener l) { l.newSample(); }
           });

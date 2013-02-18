@@ -70,8 +70,7 @@
 
         (resetTests
           [this]
-          (.newTests this nil (ModelTestIndex.))
-          (notify))))))
+          (.newTests this nil (ModelTestIndex.)))))))
 
 (defn status
   "Return a map summarising the state of the provided SampleModel.

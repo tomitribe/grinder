@@ -22,10 +22,13 @@
 
 package net.grinder.console.model;
 
+import static java.util.Collections.emptySet;
+import static java.util.Collections.sort;
 import static net.grinder.console.model.SampleModel.State.Value.IgnoringInitialSamples;
 import static net.grinder.console.model.SampleModel.State.Value.Recording;
 import static net.grinder.console.model.SampleModel.State.Value.Stopped;
 import static net.grinder.console.model.SampleModel.State.Value.WaitingForFirstReport;
+import static net.grinder.testutility.AssertUtilities.asSet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
@@ -40,7 +43,6 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -69,7 +71,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 
 
 /**
@@ -102,6 +103,15 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
   @Captor private ArgumentCaptor<StatisticsSet> m_statisicsSetCaptor1;
   @Captor private ArgumentCaptor<StatisticsSet> m_statisicsSetCaptor2;
 
+  @Mock private SampleListener m_totalSampleListener;
+
+  private final net.grinder.common.Test m_test1 = new StubTest(1, "test 1");
+  private final net.grinder.common.Test m_test2 = new StubTest(2, "test 2");
+  private final net.grinder.common.Test m_test3 = new StubTest(3, "test 3");
+  private final net.grinder.common.Test m_test4 = new StubTest(4, "test 4");
+
+  private SampleModelImplementation m_sampleModelImplementation;
+
   @Before
   public void setUp() throws Exception {
     initMocks(this);
@@ -110,6 +120,15 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
     m_consoleProperties =
       new ConsoleProperties(m_resources,
                             new File(getDirectory(), "props"));
+
+    m_sampleModelImplementation =
+        new SampleModelImplementation(m_consoleProperties,
+                                      m_statisticsServices,
+                                      m_timer,
+                                      m_resources,
+                                      m_errorHandler);
+
+    m_sampleModelImplementation.addTotalSampleListener(m_totalSampleListener);
   }
 
   @After
@@ -118,75 +137,54 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
   }
 
   @Test public void testConstruction() throws Exception {
-    final SampleModelImplementation sampleModelImplementation =
-      new SampleModelImplementation(m_consoleProperties,
-                                    m_statisticsServices,
-                                    m_timer,
-                                    m_resources,
-                                    m_errorHandler);
-
     final StatisticExpression tpsExpression =
-      sampleModelImplementation.getTPSExpression();
+      m_sampleModelImplementation.getTPSExpression();
     assertNotNull(tpsExpression);
-    assertSame(tpsExpression, sampleModelImplementation.getTPSExpression());
+    assertSame(tpsExpression, m_sampleModelImplementation.getTPSExpression());
 
     final StatisticExpression peakTPSExpression =
-      sampleModelImplementation.getPeakTPSExpression();
+      m_sampleModelImplementation.getPeakTPSExpression();
     assertNotNull(peakTPSExpression);
     assertSame(
-      peakTPSExpression, sampleModelImplementation.getPeakTPSExpression());
+      peakTPSExpression, m_sampleModelImplementation.getPeakTPSExpression());
     assertNotSame(tpsExpression, peakTPSExpression);
 
     final StatisticsSet totalCumulativeStatistics =
-      sampleModelImplementation.getTotalCumulativeStatistics();
+      m_sampleModelImplementation.getTotalCumulativeStatistics();
     assertNotNull(totalCumulativeStatistics);
     assertSame(totalCumulativeStatistics,
-               sampleModelImplementation.getTotalCumulativeStatistics());
+               m_sampleModelImplementation.getTotalCumulativeStatistics());
 
     final StatisticsSet totalLatestStatistics =
-    	      sampleModelImplementation.getTotalLatestStatistics();
+    	      m_sampleModelImplementation.getTotalLatestStatistics();
     	    assertNotNull(totalLatestStatistics);
     	    assertSame(totalLatestStatistics,
-    	               sampleModelImplementation.getTotalLatestStatistics());
+    	               m_sampleModelImplementation.getTotalLatestStatistics());
 
-    final State state = sampleModelImplementation.getState();
+    final State state = m_sampleModelImplementation.getState();
     assertEquals(WaitingForFirstReport, state.getValue());
     assertEquals("waiting, waiting, waiting", state.getDescription());
     assertNull(m_timer.getLastScheduledTimerTask());
   }
 
   @Test public void testRegisterTests() throws Exception {
-    final SampleModelImplementation sampleModelImplementation =
-      new SampleModelImplementation(m_consoleProperties,
-                                    m_statisticsServices,
-                                    m_timer,
-                                    m_resources,
-                                    m_errorHandler);
 
-    sampleModelImplementation.addModelListener(m_listener);
+    m_sampleModelImplementation.addModelListener(m_listener);
 
-    final Set<net.grinder.common.Test> emptySet = Collections.emptySet();
-    sampleModelImplementation.registerTests(emptySet);
-    verifyNoMoreInteractions(m_listener);
-
-    final net.grinder.common.Test test1 = new StubTest(1, "test 1");
-    final net.grinder.common.Test test2 = new StubTest(2, "test 2");
-    final net.grinder.common.Test test3 = new StubTest(3, "test 3");
-    final net.grinder.common.Test test4 = new StubTest(4, "test 4");
+    final Set<net.grinder.common.Test> emptySet = emptySet();
+    m_sampleModelImplementation.registerTests(emptySet);
 
     final List<net.grinder.common.Test> testList =
         new ArrayList<net.grinder.common.Test>() { {
-      add(test2);
-      add(test1);
-      add(test3);
+      add(m_test2);
+      add(m_test1);
+      add(m_test3);
     } };
 
-    sampleModelImplementation.registerTests(testList);
+    m_sampleModelImplementation.registerTests(testList);
 
     verify(m_listener).newTests(m_testSetCaptor.capture(),
                                 m_modelTestIndexCaptor.capture());
-
-    Collections.sort(testList);
 
     final Set<net.grinder.common.Test> callbackTestSet =
         m_testSetCaptor.getValue();
@@ -197,26 +195,28 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
     assertEquals(testList.size(), modelIndex.getNumberOfTests());
     assertEquals(testList.size(), modelIndex.getAccumulatorArray().length);
 
+    sort(testList);
+
     for (int i = 0; i < modelIndex.getNumberOfTests(); ++i) {
       assertEquals(testList.get(i), modelIndex.getTest(i));
     }
 
     final List<net.grinder.common.Test> testList2 =
         new ArrayList<net.grinder.common.Test>() { {
-      add(test2);
-      add(test4);
+      add(m_test2);
+      add(m_test4);
     } };
 
-    Mockito.reset(m_listener);
+    reset(m_listener);
 
-    sampleModelImplementation.registerTests(testList2);
+    m_sampleModelImplementation.registerTests(testList2);
 
     verify(m_listener).newTests(m_testSetCaptor.capture(),
                                 m_modelTestIndexCaptor.capture());
 
     final Set<net.grinder.common.Test> expectedNewTests =
         new HashSet<net.grinder.common.Test>() { {
-      add(test4);
+      add(m_test4);
     } };
 
     final Set<net.grinder.common.Test> callbackTestSet2 =
@@ -228,39 +228,33 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
     assertEquals(4, modelIndex2.getNumberOfTests());
     assertEquals(4, modelIndex2.getAccumulatorArray().length);
 
-    sampleModelImplementation.registerTests(testList2);
+    m_sampleModelImplementation.registerTests(testList2);
 
     verifyNoMoreInteractions(m_listener);
   }
 
   @Test public void testWaitingToStopped() throws Exception {
-    final SampleModelImplementation sampleModelImplementation =
-      new SampleModelImplementation(m_consoleProperties,
-                                    m_statisticsServices,
-                                    m_timer,
-                                    m_resources,
-                                    m_errorHandler);
 
-    sampleModelImplementation.addModelListener(m_listener);
+    m_sampleModelImplementation.addModelListener(m_listener);
 
-    final State state = sampleModelImplementation.getState();
+    final State state = m_sampleModelImplementation.getState();
     assertEquals(WaitingForFirstReport, state.getValue());
     assertEquals("waiting, waiting, waiting", state.getDescription());
 
     verifyNoMoreInteractions(m_listener);
 
-    sampleModelImplementation.stop();
+    m_sampleModelImplementation.stop();
 
     verify(m_listener).stateChanged();
 
-    final State stoppedState = sampleModelImplementation.getState();
+    final State stoppedState = m_sampleModelImplementation.getState();
     assertEquals(Stopped, stoppedState.getValue());
     assertEquals("done", stoppedState.getDescription());
 
 
-    sampleModelImplementation.addTestReport(new TestStatisticsMap());
+    m_sampleModelImplementation.addTestReport(new TestStatisticsMap());
 
-    final State stoppedState2 = sampleModelImplementation.getState();
+    final State stoppedState2 = m_sampleModelImplementation.getState();
     assertEquals(Stopped, stoppedState2.getValue());
     assertEquals("done", stoppedState2.getDescription());
 
@@ -271,19 +265,11 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
   @Test public void testWaitingToTriggeredToCapturingToStopped()
       throws Exception {
 
-    final SampleModelImplementation sampleModelImplementation =
-      new SampleModelImplementation(m_consoleProperties,
-                                    m_statisticsServices,
-                                    m_timer,
-                                    m_resources,
-                                    m_errorHandler);
-
     final TestStatisticsMap testStatisticsMap = new TestStatisticsMap();
 
+    m_sampleModelImplementation.addModelListener(m_listener);
 
-    sampleModelImplementation.addModelListener(m_listener);
-
-    final State waitingState = sampleModelImplementation.getState();
+    final State waitingState = m_sampleModelImplementation.getState();
     assertEquals(WaitingForFirstReport, waitingState.getValue());
     assertEquals("waiting, waiting, waiting", waitingState.getDescription());
 
@@ -292,9 +278,9 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
 
     m_consoleProperties.setIgnoreSampleCount(10);
 
-    sampleModelImplementation.addTestReport(testStatisticsMap);
+    m_sampleModelImplementation.addTestReport(testStatisticsMap);
 
-    final State triggeredState = sampleModelImplementation.getState();
+    final State triggeredState = m_sampleModelImplementation.getState();
     assertEquals(IgnoringInitialSamples, triggeredState.getValue());
     assertEquals("whatever: 1", triggeredState.getDescription());
 
@@ -305,13 +291,13 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
     assertEquals("whatever: 2", triggeredState.getDescription());
 
 
-    sampleModelImplementation.addTestReport(testStatisticsMap);
-    sampleModelImplementation.addTestReport(testStatisticsMap);
-    sampleModelImplementation.addTestReport(testStatisticsMap);
+    m_sampleModelImplementation.addTestReport(testStatisticsMap);
+    m_sampleModelImplementation.addTestReport(testStatisticsMap);
+    m_sampleModelImplementation.addTestReport(testStatisticsMap);
     triggeredSampleTask.run();
 
     assertEquals("whatever: 3",
-                 sampleModelImplementation.getState().getDescription());
+                 m_sampleModelImplementation.getState().getDescription());
 
 
     for (int i = 0; i < 4; ++i) {
@@ -319,30 +305,30 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
     }
 
     assertEquals("whatever: 7",
-      sampleModelImplementation.getState().getDescription());
+      m_sampleModelImplementation.getState().getDescription());
 
 
     triggeredSampleTask.run();
 
     assertEquals("whatever: 8",
-      sampleModelImplementation.getState().getDescription());
+      m_sampleModelImplementation.getState().getDescription());
     assertEquals(IgnoringInitialSamples,
-                 sampleModelImplementation.getState().getValue());
+                 m_sampleModelImplementation.getState().getValue());
 
     for (int i = 0; i < 3; ++i) {
-      sampleModelImplementation.addTestReport(testStatisticsMap);
+      m_sampleModelImplementation.addTestReport(testStatisticsMap);
       triggeredSampleTask.run();
     }
 
-    final State capturingState = sampleModelImplementation.getState();
+    final State capturingState = m_sampleModelImplementation.getState();
     assertEquals(Recording, capturingState.getValue());
     assertEquals("running: 1", capturingState.getDescription());
 
 
-    sampleModelImplementation.addTestReport(testStatisticsMap);
+    m_sampleModelImplementation.addTestReport(testStatisticsMap);
 
     assertEquals("running: 1",
-      sampleModelImplementation.getState().getDescription());
+      m_sampleModelImplementation.getState().getDescription());
 
 
     final TimerTask capturingSampleTask = m_timer.getLastScheduledTimerTask();
@@ -350,75 +336,89 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
     capturingSampleTask.run();
 
     assertEquals("running: 2",
-      sampleModelImplementation.getState().getDescription());
+      m_sampleModelImplementation.getState().getDescription());
 
 
-    sampleModelImplementation.addTestReport(testStatisticsMap);
+    m_sampleModelImplementation.addTestReport(testStatisticsMap);
     capturingSampleTask.run();
 
     assertEquals("running: 3",
-      sampleModelImplementation.getState().getDescription());
+      m_sampleModelImplementation.getState().getDescription());
 
 
     m_consoleProperties.setCollectSampleCount(2);
     capturingSampleTask.run();
 
-    assertEquals("done", sampleModelImplementation.getState().getDescription());
-
+    assertEquals("done",
+                 m_sampleModelImplementation.getState().getDescription());
 
     capturingSampleTask.run();
-    assertEquals("done", sampleModelImplementation.getState().getDescription());
+    assertEquals("done",
+                 m_sampleModelImplementation.getState().getDescription());
   }
 
   @Test public void testReset() throws Exception {
-    final SampleModelImplementation sampleModelImplementation =
-      new SampleModelImplementation(m_consoleProperties,
-                                    m_statisticsServices,
-                                    m_timer,
-                                    m_resources,
-                                    m_errorHandler);
 
-    sampleModelImplementation.addModelListener(m_listener);
-    sampleModelImplementation.reset();
+    m_sampleModelImplementation.addModelListener(m_listener);
+    m_sampleModelImplementation.reset();
 
     verify(m_listener).resetTests();
   }
 
-  @Test public void testSampleListeners() throws Exception {
-    final SampleModelImplementation sampleModelImplementation =
-      new SampleModelImplementation(m_consoleProperties,
-                                    m_statisticsServices,
-                                    m_timer,
-                                    m_resources,
-                                    m_errorHandler);
 
-    final SampleListener totalSampleListener = mock(SampleListener.class);
-    sampleModelImplementation.addTotalSampleListener(totalSampleListener);
+  @Test public void testSampleListenersZeroStatistics() throws Exception {
 
-    final net.grinder.common.Test test1 = new StubTest(1, "test 1");
-    final net.grinder.common.Test test2 = new StubTest(2, "test 2");
-    final net.grinder.common.Test test3 = new StubTest(3, "test 3");
-    final net.grinder.common.Test test4 = new StubTest(4, "test 4");
+    final SampleListener sampleListener = mock(SampleListener.class);
+    final SampleListener sampleListener2 = mock(SampleListener.class);
+
+    // Adding a listener for a test that isn't registered is a no-op.
+    m_sampleModelImplementation.addSampleListener(m_test1, sampleListener);
+
+    final Set<net.grinder.common.Test> testSet = asSet(m_test2, m_test4);
+    m_sampleModelImplementation.registerTests(testSet);
+    m_sampleModelImplementation.addSampleListener(m_test2, sampleListener2);
+
+    // Also no-op.
+    m_sampleModelImplementation.addSampleListener(m_test3, sampleListener);
+
+    m_sampleModelImplementation.zeroStatistics();
+    verify(sampleListener2).update(m_statisicsSetCaptor1.capture(),
+                                  m_statisicsSetCaptor2.capture());
+    verify(m_totalSampleListener).update(m_statisicsSetCaptor1.capture(),
+                                         m_statisicsSetCaptor2.capture());
+
+    verifyNoMoreInteractions(sampleListener,
+                             sampleListener2,
+                             m_totalSampleListener);
+  }
+
+  @Test public void testSampleListenersReset() throws Exception {
 
     final SampleListener sampleListener = mock(SampleListener.class);
 
     // Adding a listener for a test that isn't registered is a no-op.
-    sampleModelImplementation.addSampleListener(test1, sampleListener);
+    m_sampleModelImplementation.addSampleListener(m_test1, sampleListener);
 
 
-    final Set<net.grinder.common.Test> testSet =
-        new HashSet<net.grinder.common.Test>() { {
-      add(test2);
-      add(test4);
-    } };
+    final Set<net.grinder.common.Test> testSet = asSet(m_test2, m_test4);
 
-    sampleModelImplementation.registerTests(testSet);
-    sampleModelImplementation.addSampleListener(test2, sampleListener);
+    m_sampleModelImplementation.registerTests(testSet);
+    m_sampleModelImplementation.addSampleListener(m_test2, sampleListener);
 
+    m_sampleModelImplementation.reset();
 
-    sampleModelImplementation.reset();
-    verifyNoMoreInteractions(sampleListener);
+    // Reset only notifies the total statistics listener.
+    verify(m_totalSampleListener).update(m_statisicsSetCaptor1.capture(),
+                                         m_statisicsSetCaptor2.capture());
 
+    verifyNoMoreInteractions(sampleListener, m_totalSampleListener);
+  }
+
+  @Test public void testSampleListeners() throws Exception {
+
+    final SampleListener sampleListener = mock(SampleListener.class);
+
+    final Set<net.grinder.common.Test> testSet = asSet(m_test2, m_test4);
 
     final TestStatisticsMap testReports = new TestStatisticsMap();
     final StatisticsSet statistics1 =
@@ -430,16 +430,22 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
     statistics1.setValue(userLong0, 99);
     statistics2.setValue(userLong0, 1);
     statistics2.setIsComposite();
-    testReports.put(test2, statistics1);
-    testReports.put(test3, statistics2);
-    testReports.put(test4, statistics2);
+    testReports.put(m_test2, statistics1);
+    testReports.put(m_test3, statistics2);
+    testReports.put(m_test4, statistics2);
 
+    m_sampleModelImplementation.registerTests(testSet);
+    m_sampleModelImplementation.addSampleListener(m_test2, sampleListener);
+    m_sampleModelImplementation.addTestReport(testReports);
 
-    sampleModelImplementation.registerTests(testSet);
-    sampleModelImplementation.addSampleListener(test2, sampleListener);
-    sampleModelImplementation.addTestReport(testReports);
+    verify(sampleListener).update(m_statisicsSetCaptor1.capture(),
+                                  m_statisicsSetCaptor2.capture());
 
-    verifyNoMoreInteractions(totalSampleListener, sampleListener);
+    verify(m_totalSampleListener).update(m_statisicsSetCaptor1.capture(),
+                                         m_statisicsSetCaptor2.capture());
+
+    verifyNoMoreInteractions(m_totalSampleListener, sampleListener);
+    reset(sampleListener, m_totalSampleListener);
 
 
     final TimerTask capturingTask = m_timer.getLastScheduledTimerTask();
@@ -451,13 +457,13 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
     assertEquals(99, m_statisicsSetCaptor1.getValue().getValue(userLong0));
     assertEquals(99, m_statisicsSetCaptor2.getValue().getValue(userLong0));
 
-    verify(totalSampleListener).update(m_statisicsSetCaptor1.capture(),
-                                       m_statisicsSetCaptor2.capture());
+    verify(m_totalSampleListener).update(m_statisicsSetCaptor1.capture(),
+                                         m_statisicsSetCaptor2.capture());
 
     assertEquals(99, m_statisicsSetCaptor1.getValue().getValue(userLong0));
     assertEquals(99, m_statisicsSetCaptor2.getValue().getValue(userLong0));
 
-    reset(totalSampleListener, sampleListener);
+    reset(m_totalSampleListener, sampleListener);
 
     capturingTask.run();
 
@@ -467,21 +473,21 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
     assertEquals(0, m_statisicsSetCaptor1.getValue().getValue(userLong0));
     assertEquals(99, m_statisicsSetCaptor2.getValue().getValue(userLong0));
 
-    verify(totalSampleListener).update(m_statisicsSetCaptor1.capture(),
-                                       m_statisicsSetCaptor2.capture());
+    verify(m_totalSampleListener).update(m_statisicsSetCaptor1.capture(),
+                                         m_statisicsSetCaptor2.capture());
 
     assertEquals(0, m_statisicsSetCaptor1.getValue().getValue(userLong0));
     assertEquals(99, m_statisicsSetCaptor2.getValue().getValue(userLong0));
 
 
     // Now put into the triggered state.
-    sampleModelImplementation.start();
+    m_sampleModelImplementation.start();
     m_consoleProperties.setIgnoreSampleCount(10);
     statistics1.setValue(userLong0, 3);
 
-    reset(totalSampleListener, sampleListener);
+    reset(m_totalSampleListener, sampleListener);
 
-    sampleModelImplementation.addTestReport(testReports);
+    m_sampleModelImplementation.addTestReport(testReports);
 
     final TimerTask triggeredTask = m_timer.getLastScheduledTimerTask();
     triggeredTask.run();
@@ -492,8 +498,8 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
     assertEquals(3, m_statisicsSetCaptor1.getValue().getValue(userLong0));
     assertEquals(0, m_statisicsSetCaptor2.getValue().getValue(userLong0));
 
-    verify(totalSampleListener).update(m_statisicsSetCaptor1.capture(),
-                                       m_statisicsSetCaptor2.capture());
+    verify(m_totalSampleListener).update(m_statisicsSetCaptor1.capture(),
+                                         m_statisicsSetCaptor2.capture());
 
     assertEquals(3, m_statisicsSetCaptor1.getValue().getValue(userLong0));
     assertEquals(0, m_statisicsSetCaptor2.getValue().getValue(userLong0));

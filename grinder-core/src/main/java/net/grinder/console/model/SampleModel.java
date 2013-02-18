@@ -1,4 +1,4 @@
-// Copyright (C) 2006 - 2012 Philip Aston
+// Copyright (C) 2006 - 2013 Philip Aston
 // Copyright (C) 2012 Marc Holden
 // All rights reserved.
 //
@@ -181,13 +181,20 @@ public interface SampleModel {
   interface Listener extends EventListener {
 
     /**
-     * Called when the model state has changed.
+     * Called when the model state has changed, or there is a new
+     * sample.
      */
     void stateChanged();
 
     /**
      * Called when the model has a new sample.
+     *
+     * @deprecated Deprecated for 3.12. Redundant, since {@link #stateChanged()}
+     * is fired whenever there is a new sample, and fine grained notifications
+     * are available via {@link SampleModel#addSampleListener} and
+     * {@link SampleModel#addTotalSampleListener}.
      */
+    @Deprecated
     void newSample();
 
     /**

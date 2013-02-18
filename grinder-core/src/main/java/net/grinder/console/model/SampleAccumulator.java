@@ -22,8 +22,8 @@
 package net.grinder.console.model;
 
 import net.grinder.statistics.PeakStatisticExpression;
-import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.StatisticsIndexMap;
+import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.StatisticsSetFactory;
 import net.grinder.util.ListenerSupport;
 
@@ -46,9 +46,9 @@ final class SampleAccumulator {
   private StatisticsSet m_intervalStatistics;
   private StatisticsSet m_lastSampleStatistics;
 
-  public SampleAccumulator(PeakStatisticExpression peakTPSExpression,
-                           StatisticsIndexMap.LongIndex periodIndex,
-                           StatisticsSetFactory statisticsSetFactory) {
+  public SampleAccumulator(final PeakStatisticExpression peakTPSExpression,
+                           final StatisticsIndexMap.LongIndex periodIndex,
+                           final StatisticsSetFactory statisticsSetFactory) {
 
     m_peakTPSExpression = peakTPSExpression;
     m_periodIndex = periodIndex;
@@ -59,19 +59,19 @@ final class SampleAccumulator {
     m_lastSampleStatistics = m_statisticsSetFactory.create();
   }
 
-  public void addSampleListener(SampleListener listener) {
+  public void addSampleListener(final SampleListener listener) {
     m_listeners.add(listener);
   }
 
-  public void addIntervalStatistics(StatisticsSet report) {
+  public void addIntervalStatistics(final StatisticsSet report) {
     m_intervalStatistics.add(report);
   }
 
-  public void addCumulativeStaticstics(StatisticsSet report) {
+  public void addCumulativeStaticstics(final StatisticsSet report) {
     m_cumulativeStatistics.add(report);
   }
 
-  public void fireSample(long sampleInterval, long period) {
+  public void fireSample(final long sampleInterval, final long period) {
 
     m_intervalStatistics.setValue(m_periodIndex, sampleInterval);
     m_cumulativeStatistics.setValue(m_periodIndex, period);
@@ -80,7 +80,8 @@ final class SampleAccumulator {
 
     m_listeners.apply(
       new ListenerSupport.Informer<SampleListener>() {
-        public void inform(SampleListener l) {
+        @Override
+        public void inform(final SampleListener l) {
           l.update(m_intervalStatistics, m_cumulativeStatistics);
         }
       });
@@ -96,6 +97,14 @@ final class SampleAccumulator {
     m_intervalStatistics.reset();
     m_lastSampleStatistics.reset();
     m_cumulativeStatistics.reset();
+
+    m_listeners.apply(
+      new ListenerSupport.Informer<SampleListener>() {
+        @Override
+        public void inform(final SampleListener l) {
+          l.update(m_intervalStatistics, m_cumulativeStatistics);
+        }
+      });
   }
 
   public StatisticsSet getLastSampleStatistics() {

@@ -152,8 +152,8 @@ abstract class DynamicStatisticsTableModel
     fireTableRowsUpdated(0, getRowCount());
   }
 
-  public final synchronized void newSample() {
-    fireTableRowsUpdated(0, getRowCount());
+  public final void newSample() {
+    // Do nothing - stateChanged will have been called.
   }
 
   public final synchronized void newTests(Set<Test> newTests,
