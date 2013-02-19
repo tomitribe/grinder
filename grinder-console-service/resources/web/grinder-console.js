@@ -74,19 +74,21 @@ jQuery(function($) {
 
                     var ee = $(e);
 
+                    ee.trigger("livedata", [key, x]);
+
                     if (ee.hasClass("live-data-animation")) {
                         ee
                         .stop()
                         .animate({opacity: 0.5},
                                 "fast",
                                 function() {
-                                    $(this)
-                                    .html(x.html)
-                                    .animate({opacity: 1}, "fast");
-                                });
+                            $(this)
+                            .html(x.data)
+                            .animate({opacity: 1}, "fast");
+                        });
                     }
-                    else {
-                        ee.html(x.html);
+                    else if (ee.hasClass("live-data-display")) { // TODO Better name
+                        ee.html(x.data);
                     }
 
                     seq = x.next;
@@ -114,7 +116,6 @@ jQuery(function($) {
 
     function addButtons(scope) {
         content = $("div#content");
-
 
         $(".grinder-button", scope).each(function() {
             if (this.id) {
@@ -162,6 +163,8 @@ jQuery(function($) {
         addButtons(scope);
         addChangeDetection(scope);
         pollLiveData(scope);
+
+        $("#test").on('livedata', function() {console.log(arguments);});
     }
 
     addDynamicBehaviour(document);

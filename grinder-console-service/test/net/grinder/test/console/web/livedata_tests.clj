@@ -81,7 +81,7 @@
       (let [r2 (.get (:body r1))]
         (is (= 200 (:status r2)))
         (is (= "application/json" ((:headers r2) "Content-Type")))
-        (is (= {"html" msg "next" "1"} (json/decode (:body r2))))
+        (is (= {"data" msg "next" "1"} (json/decode (:body r2))))
         )
       )))
 
@@ -96,7 +96,7 @@
       (let [r  (ld/poll k "-1")]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"html" msg "next" "1"} (json/decode (:body r)))))
+        (is (= {"data" msg "next" "1"} (json/decode (:body r)))))
 
       ; push of the same value is a no-op.
       (ld/push k msg)
@@ -105,7 +105,7 @@
       (let [r  (ld/poll k "-1")]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"html" msg "next" "1"} (json/decode (:body r)))))
+        (is (= {"data" msg "next" "1"} (json/decode (:body r)))))
 
       ; existing client gets long poll
       (let [r  (ld/poll k "1")]
@@ -119,5 +119,5 @@
       (let [r  (ld/poll k "1")]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"html" msg2 "next" "2"} (json/decode (:body r)))))
+        (is (= {"data" msg2 "next" "2"} (json/decode (:body r)))))
       )))

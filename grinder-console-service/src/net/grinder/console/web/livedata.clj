@@ -71,7 +71,7 @@
               (commute clients dissoc data-key)
               cs))))
 
-(let [last-value (atom {})]
+(let [last-data (atom {})]
   (defn poll
     "Respond to a client poll for `data-key` and `sequence`
      with a synchronous or asynchronous Ring response."
@@ -80,14 +80,14 @@
     (log/debugf "(poll %s %s)" data-key sequence)
 
     (let [k (keyword data-key)
-          v (@last-value k)]
+          v (@last-data k)]
 
       (let [s (get-value k)]
         (if (and v (not= sequence s))
           ; Client has stale value => give them the current value.
           (do
             (log/debugf "sync response %s %s/%s %s" k sequence s v)
-            (json-response {:html v
+            (json-response {:data v
                             :next s}))
 
           ; Client has current value, or there is none => long poll.
@@ -95,19 +95,18 @@
             (register-client k client))))))
 
   (defn push
-    "Send `html-data` to all clients listening to `data-key`."
-    [data-key html-data]
+    "Send `data` to all clients listening to `data-key`."
+    [data-key data]
     (let [k (keyword data-key)]
       (log/debugf "(push %s) %s" data-key (get-value k))
 
-      (if (not= html-data (@last-value k))
+      (if (not= data (@last-data k)) ; Is this check worth it?
 
-        (let [r (json-response {:html html-data
+        (let [r (json-response {:data data
                                 :next (next-value k)})]
-          (swap! last-value assoc k html-data)
+          (swap! last-data assoc k data)
           (doseq [c (remove-clients k)]
             (log/debugf "async response to %s with %s" c r)
             (c r)))
 
-        (log/debugf "ignoring push of same value %s" html-data)))))
-
+        (log/debugf "ignoring push of same value %s" data)))))

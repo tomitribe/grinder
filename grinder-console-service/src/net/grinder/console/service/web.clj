@@ -69,11 +69,15 @@
          d)])))
 
 (defn- add-live-data
-  [ld-key attribute-map]
-  (assoc attribute-map
-    :data-ld-key ld-key
-    :data-ld-seq (livedata/get-value ld-key)
-    :class (str (:class attribute-map "") " " "live-data")))
+  ([ld-key]
+    (add-live-data ld-key {}))
+
+  ([ld-key m]
+    (-> m
+      (update-in [:class] (partial str "live-data "))
+      (assoc
+        :data-ld-key ld-key
+        :data-ld-seq (livedata/get-value ld-key)))))
 
 (defn- render-process-table [process-control]
   (let [processes (processes/status process-control)]
@@ -119,9 +123,10 @@
 (defn- render-data-table [sample-model sample-model-views]
   (let [{:keys [status columns tests totals] :as data}
         (recording/data sample-model sample-model-views :as-text true)]
-    ; Maybe we should track and highlight changed values?
+
     (html
-      [:div (add-live-data :data {:class "grinder-table data-table" })
+      [:div (add-live-data
+              :data {:class "grinder-table data-table live-data-display" })
        [:table
         [:caption (t :data)]
         [:thead
@@ -142,6 +147,19 @@
 
        [:pre (str status)]])))
 
+(defn- render-data-graphs
+  [sample-model]
+  ; Return sample data - JSON formatted?
+  ; As <script> or something else?
+  ; Client side figures out whether it needs to render new tests;
+  ; it can assume it only needs to remove tests if #tests = 0
+  (html
+    [:script
+     (add-live-data :sample {:id "test" :type "text/json"})
+     ]
+    )
+  )
+
 
 (defn- render-data [{:keys [sample-model
                             sample-model-views]}]
@@ -149,8 +167,9 @@
                  (make-button :stop-recording)
                  (make-button :reset-recording)]]
     (html
-      [:div {:class "recording-controls"} (for [b buttons] b) ]
-      (render-data-table sample-model sample-model-views))))
+      [:div {:class "recording-controls"} (for [b buttons] b)]
+      (render-data-table sample-model sample-model-views)
+      (render-data-graphs sample-model))))
 
 (defn- render-files [{:keys [process-control]}]
   "files")
