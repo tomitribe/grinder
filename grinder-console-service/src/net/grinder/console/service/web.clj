@@ -68,13 +68,18 @@
                       (:maximum-threads p)))
          d)])))
 
+(defn- add-live-data
+  [ld-key attribute-map]
+  (assoc attribute-map
+    :data-ld-key ld-key
+    :data-ld-seq (livedata/get-value ld-key)
+    :class (str (:class attribute-map "") " " "live-data")))
+
 (defn- render-process-table [process-control]
   (let [processes (processes/status process-control)]
     (html
-      [:table {:id :process-state
-               :class
-               "grinder-table process-table live-data live-data-animation"
-               :data-live-data (livedata/get-value :process-state)}
+      [:table (add-live-data :process-state
+                {:class "grinder-table process-table live-data-animation"})
        [:caption (t :running-processes)]
        [:thead
         [:tr
@@ -116,9 +121,7 @@
         (recording/data sample-model sample-model-views :as-text true)]
     ; Maybe we should track and highlight changed values?
     (html
-      [:div {:id :data
-             :class "grinder-table data-table live-data"
-             :data-live-data (livedata/get-value :data)}
+      [:div (add-live-data :data {:class "grinder-table data-table" })
        [:table
         [:caption (t :data)]
         [:thead

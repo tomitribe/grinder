@@ -62,13 +62,14 @@ jQuery(function($) {
 
         $(".live-data", scope).each(function() {
             //console.log("Registering ", this);
-            var seq = $(this).data("live-data");
+            var key = $(this).data("ld-key");
+            var seq = $(this).data("ld-seq");
 
             var xhr = null;
 
             function poll(e) {
                 //console.log("Polling ", e);
-                xhr = $.get("/ui/poll", {k : e.id, s: seq}, function(x) {
+                xhr = $.get("/ui/poll", {k : key, s: seq}, function(x) {
                     //console.log("Update ", x);
 
                     var ee = $(e);
