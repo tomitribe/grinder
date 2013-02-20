@@ -88,7 +88,9 @@ public final class ConsoleFoundation {
       "net.grinder.console.common.resources.Console";
 
   private final MutablePicoContainer m_container;
+  private final Logger m_logger;
   private final Timer m_timer;
+
 
   /**
    * Constructor. Locates the console properties in the user's home directory.
@@ -136,6 +138,7 @@ public final class ConsoleFoundation {
                            final ConsoleProperties properties)
     throws GrinderException {
 
+    m_logger = logger;
     m_timer = timer;
 
     final ComponentMonitor monitor = new NullComponentMonitor();
@@ -231,8 +234,13 @@ public final class ConsoleFoundation {
     final ConsoleCommunication communication =
       m_container.getComponent(ConsoleCommunication.class);
 
-    while (communication.processOneMessage()) {
-      // Process until communication is shut down.
+    try {
+      while (communication.processOneMessage()) {
+        // Process until communication is shut down.
+      }
+    }
+    catch (final Exception e) {
+      m_logger.error("Exiting",  e);
     }
   }
 
