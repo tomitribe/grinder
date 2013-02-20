@@ -267,7 +267,7 @@
         <!-- <module name="RedundantThrows"/> -->
 
         <module name="Regexp">
-          <property name="format" value="System\....\.println"/>
+          <property name="format" value="System\....\.print"/>
           <property name="illegalPattern" value="true"/>
           <property name="ignoreComments" value="true"/>
         </module>
