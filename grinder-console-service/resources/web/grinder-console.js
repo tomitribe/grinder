@@ -87,7 +87,7 @@ jQuery(function($) {
                             .animate({opacity: 1}, "fast");
                         });
                     }
-                    else if (ee.hasClass("live-data-display")) { // TODO Better name
+                    else if (ee.hasClass("live-data-display")) {
                         ee.html(x.data);
                     }
 
@@ -159,12 +159,148 @@ jQuery(function($) {
         });
     }
 
+    var context = cubism.context()
+    //.serverDelay(new Date(2012, 4, 2) - Date.now())
+    //.step(864e5)
+    .size(800)
+    //.stop()
+    ;
+
+    function cubismDemo() {
+
+        d3.select("#demo").selectAll(".axis")
+            .data(["top", "bottom"])
+            .enter().append("div")
+            .attr("class", function(d) { return d + " axis"; })
+            .each(function(d) {
+                d3.select(this).call(context.axis().ticks(12).orient(d)); });
+
+        d3.select("#demo").append("div")
+            .attr("class", "rule")
+            .call(context.rule());
+    }
+
+    function cubismMetric(existing, timestamp, test) {
+        var metric;
+
+        if (existing) {
+            metric = existing;
+        }
+        else {
+            // We may want to replace this with a balanced binary
+            // tree. For now we just have an array in timestamp order.
+            // Each element is an array pair of timestamp and statistic.
+            // We assume that we're called with increasing timestamps.
+            var data = [];
+
+            metric = context.metric(function(start, stop, step, callback) {
+                    var values = [];
+
+                    start = +start; // Date -> timestamp.
+                    var x, stats;
+
+                    var previousBetween = function() {
+                        var d = data.length - 1;
+
+                        return function(s, e) {
+                            x = data[d];
+
+                            while (x && x[0] >= s) {
+                                d -= 1;
+                                if (x[0] < e) {
+                                    return x[1];
+                                }
+
+                                x = data[d];
+                            }
+                        };
+                    }();
+
+                    for (var i = +stop; i > start; i-= step) {
+                        stats = [];
+
+                        while (x = previousBetween(i - step, i)) {
+                            stats.push(x);
+                        }
+
+                        values.unshift(averageStatistic(stats, 0 /* tests */));
+                    }
+
+                    console.log("->", values);
+
+                    callback(null, values);
+                },
+                test.description);
+
+            metric.test = test;
+            metric.data = data;
+
+            function averageStatistic(stats, slot) {
+                if (stats.length == 0) {
+                    return NaN;
+                }
+
+                var total =
+                    stats.reduce(function(x, y) { return x + y[slot]; }, 0);
+                return total / stats.length;
+            }
+        }
+
+        // Trim old data?
+        metric.data.push([timestamp, test.statistics]);
+
+        return metric;
+    }
+
+    function collectSamples() {
+
+        $("#test").on('livedata', function(_e, k, x) {
+            if (k === "sample") {
+                // Bind tests to nodes.
+                var binding = d3.select("#demo").selectAll(".horizon")
+                .data(function() {
+                        var existing = {};
+
+                        $(this).each(function() {
+                            existing[this.__data__.test.test] = this.__data__;
+                            });
+
+                        return $.map(
+                                x.data.tests,
+                                function(t) {
+                                    return cubismMetric(existing[t.test],
+                                                        x.data.timestamp,
+                                                        t);
+                                });
+                      },
+                      // Use the test number as the key for the d3 join.
+                      function(metric) { return metric.test.test; });
+
+                // Handle new nodes.
+                // How do we alter the sort order?
+                binding.enter().insert("div", ".bottom")
+                .attr("class", "horizon")
+                .call(context.horizon().format(d3.format("+,.2p")));
+
+                binding.exit().remove();
+
+                context.on("focus", function(i) {
+                    d3.selectAll(".value")
+                    .style("right", i == null ? null : context.size() - i + "px");
+                });
+
+                //console.log(newTests, tests);
+            }
+        });
+
+    }
+
     function addDynamicBehaviour(scope) {
         addButtons(scope);
         addChangeDetection(scope);
         pollLiveData(scope);
-
-        $("#test").on('livedata', function() {console.log(arguments);});
+        cubismDemo();
+        collectSamples();
     }
 
     addDynamicBehaviour(document);

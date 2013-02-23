@@ -157,6 +157,7 @@
     [:script
      (add-live-data :sample {:id "test" :type "text/json"})
      ]
+    [:div {:id :demo}]
     )
   )
 
@@ -292,6 +293,8 @@
     ;(include-js "lib/jquery-1.9.0.min.js")
     (include-js "lib/jquery-1.9.0.js")
     (include-js "lib/jquery-ui-1.10.0.custom.js")
+    (include-js "lib/d3.v3.js")
+    (include-js "lib/cubism.v1.js")
     (include-css "lib/jquery-ui-1.10.0.custom.css")
 
     (include-css "resources/main.css")
@@ -342,7 +345,11 @@
   (recording/add-listener :key
     (fn [k]
       (livedata/push :data
-        (render-data-table sample-model sample-model-views))))
+        (render-data-table sample-model sample-model-views))
+      (livedata/push :sample
+        (assoc
+          (recording/data sample-model sample-model-views :sample true)
+          :timestamp (System/currentTimeMillis)))))
 
   (tower/load-dictionary-from-map-resource! "translations.clj")
 
