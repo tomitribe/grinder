@@ -161,18 +161,18 @@ jQuery(function($) {
 
     function cubismDemo() {
 
-        if (!$("#demo").length) {
+        if (!$("#cubism").length) {
             return;
         }
 
-        var w = $("#demo").width();
+        var w = $("#cubism").width();
 
         var context = cubism.context()
                         .step(2000)
                         .size(w);
 
         // Maybe there's a neater way to do this with d3?
-        $("#demo").each(function() {
+        $("#cubism").each(function() {
             var thisElement = this;
             $(document).bind("DOMNodeRemoved", function(e) {
                 if (e.target == thisElement) {
@@ -181,14 +181,14 @@ jQuery(function($) {
             });
         });
 
-        d3.select("#demo").selectAll(".axis")
+        d3.select("#cubism").selectAll(".axis")
             .data(["top", "bottom"])
             .enter().append("div")
             .attr("class", function(d) { return d + " axis"; })
             .each(function(d) {
                 d3.select(this).call(context.axis().ticks(12).orient(d)); });
 
-        d3.select("#demo").append("div")
+        d3.select("#cubism").append("div")
             .attr("class", "rule")
             .call(context.rule());
 
@@ -196,7 +196,7 @@ jQuery(function($) {
         $("#test").on('livedata', function(_e, k, x) {
             if (k === "sample") {
                 // Bind tests to nodes.
-                var binding = d3.select("#demo").selectAll(".horizon")
+                var binding = d3.select("#cubism").selectAll(".horizon")
                 .data(function() {
                         var existing = {};
 

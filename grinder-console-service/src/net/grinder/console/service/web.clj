@@ -149,17 +149,14 @@
 
 (defn- render-data-graphs
   [sample-model]
-  ; Return sample data - JSON formatted?
-  ; As <script> or something else?
-  ; Client side figures out whether it needs to render new tests;
-  ; it can assume it only needs to remove tests if #tests = 0
   (html
     [:script
      (add-live-data :sample {:id "test" :type "text/json"})
      ]
-    [:div {:id :demo}]
-    )
-  )
+    [:div {:id :graphs}
+     ; position:relative div with no margins so cubsim rule position is correct.
+     [:div {:id :cubism}]]
+    ))
 
 
 (defn- render-data [{:keys [sample-model
