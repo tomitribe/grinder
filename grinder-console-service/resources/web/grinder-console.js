@@ -159,14 +159,26 @@ jQuery(function($) {
         });
     }
 
-    var context = cubism.context()
-    //.serverDelay(new Date(2012, 4, 2) - Date.now())
-    //.step(864e5)
-    .size(800)
-    //.stop()
-    ;
-
     function cubismDemo() {
+
+        if (!$("#demo").length) {
+            return;
+        }
+
+        var context = cubism.context()
+        //.serverDelay(new Date(2012, 4, 2) - Date.now())
+        //.step(864e5)
+        .size(800);
+
+        // Maybe there's a neater way to do this with d3?
+        $("#demo").each(function() {
+            var thisElement = this;
+            $(document).bind("DOMNodeRemoved", function(e) {
+                if (e.target == thisElement) {
+                    context.stop();
+                }
+            });
+        });
 
         d3.select("#demo").selectAll(".axis")
             .data(["top", "bottom"])
@@ -178,81 +190,7 @@ jQuery(function($) {
         d3.select("#demo").append("div")
             .attr("class", "rule")
             .call(context.rule());
-    }
 
-    function cubismMetric(existing, timestamp, test) {
-        var metric;
-
-        if (existing) {
-            metric = existing;
-        }
-        else {
-            // We may want to replace this with a balanced binary
-            // tree. For now we just have an array in timestamp order.
-            // Each element is an array pair of timestamp and statistic.
-            // We assume that we're called with increasing timestamps.
-            var data = [];
-
-            metric = context.metric(function(start, stop, step, callback) {
-                    var values = [];
-
-                    start = +start; // Date -> timestamp.
-                    var x, stats;
-
-                    var previousBetween = function() {
-                        var d = data.length - 1;
-
-                        return function(s, e) {
-                            x = data[d];
-
-                            while (x && x[0] >= s) {
-                                d -= 1;
-                                if (x[0] < e) {
-                                    return x[1];
-                                }
-
-                                x = data[d];
-                            }
-                        };
-                    }();
-
-                    for (var i = +stop; i > start; i-= step) {
-                        stats = [];
-
-                        while (x = previousBetween(i - step, i)) {
-                            stats.push(x);
-                        }
-
-                        values.unshift(averageStatistic(stats, 0 /* tests */));
-                    }
-
-                    console.log("->", values);
-
-                    callback(null, values);
-                },
-                test.description);
-
-            metric.test = test;
-            metric.data = data;
-
-            function averageStatistic(stats, slot) {
-                if (stats.length == 0) {
-                    return NaN;
-                }
-
-                var total =
-                    stats.reduce(function(x, y) { return x + y[slot]; }, 0);
-                return total / stats.length;
-            }
-        }
-
-        // Trim old data?
-        metric.data.push([timestamp, test.statistics]);
-
-        return metric;
-    }
-
-    function collectSamples() {
 
         $("#test").on('livedata', function(_e, k, x) {
             if (k === "sample") {
@@ -293,6 +231,78 @@ jQuery(function($) {
             }
         });
 
+        function cubismMetric(existing, timestamp, test) {
+            var metric;
+
+            if (existing) {
+                metric = existing;
+            }
+            else {
+                // We may want to replace this with a binary tree.
+                // For now we just have an array in timestamp order.
+                // Each element is an array pair of timestamp and statistic.
+                // We assume that we're called with increasing timestamps.
+                var data = [];
+
+                metric = context.metric(function(start, stop, step, callback) {
+                        var values = [];
+
+                        start = +start; // Date -> timestamp.
+                        var x, stats;
+
+                        var previousBetween = function() {
+                            var d = data.length - 1;
+
+                            return function(s, e) {
+                                x = data[d];
+
+                                while (x && x[0] >= s) {
+                                    d -= 1;
+                                    if (x[0] < e) {
+                                        return x[1];
+                                    }
+
+                                    x = data[d];
+                                }
+                            };
+                        }();
+
+                        for (var i = +stop; i > start; i-= step) {
+                            stats = [];
+
+                            while (x = previousBetween(i - step, i)) {
+                                stats.push(x);
+                            }
+
+                            values.unshift(
+                                    averageStatistic(stats, 0 /* tests */));
+                        }
+
+                        console.log("->", values, +start, +stop, context);
+
+                        callback(null, values);
+                    },
+                    test.description);
+
+                metric.test = test;
+                metric.data = data;
+
+                function averageStatistic(stats, slot) {
+                    if (stats.length == 0) {
+                        return NaN;
+                    }
+
+                    var total =
+                        stats.reduce(function(x, y) { return x + y[slot]; }, 0);
+                    return total / stats.length;
+                }
+            }
+
+            // Trim old data?
+            metric.data.push([timestamp, test.statistics]);
+
+            return metric;
+        }
     }
 
     function addDynamicBehaviour(scope) {
@@ -300,7 +310,6 @@ jQuery(function($) {
         addChangeDetection(scope);
         pollLiveData(scope);
         cubismDemo();
-        collectSamples();
     }
 
     addDynamicBehaviour(document);
