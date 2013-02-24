@@ -53,7 +53,7 @@ body {
 	width: 80%;
 }
 
-#content fieldset,table {
+#content fieldset,table,#demo {
 	background-color: white;
 	color: black;
 	border-radius: 1em;
@@ -291,4 +291,49 @@ button.ui-button {
 
 .ui-state-hover .ui-icon.stop-recording {
   background-image: url(/ui/core/stop-rollover.png);
+}
+
+.axis {
+	font-size: 0.9em;
+}
+
+#demo {
+	position: relative;
+}
+
+.horizon {
+  border-top: 1px solid #808080;
+	border-bottom: 1px solid #808080;
+  overflow: hidden;
+  position: relative;
+}
+
+.horizon + .horizon {
+  border-top: medium none;
+}
+
+.horizon canvas {
+  display: block;
+}
+
+.horizon .title, .horizon .value {
+  bottom: 0;
+  line-height: 2em;
+  margin: 0 1em;
+  position: absolute;
+  white-space: nowrap;
+}
+
+.horizon .title {
+  left: 0;
+}
+
+.horizon .value {
+  right: 0;
+}
+
+.line {
+  background: none repeat scroll 0 0 #000000;
+  opacity: 0.2;
+  z-index: 2;
 }

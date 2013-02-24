@@ -165,10 +165,11 @@ jQuery(function($) {
             return;
         }
 
+        var w = $("#demo").width();
+
         var context = cubism.context()
-        //.serverDelay(new Date(2012, 4, 2) - Date.now())
-        //.step(864e5)
-        .size(800);
+                        .step(2000)
+                        .size(w);
 
         // Maybe there's a neater way to do this with d3?
         $("#demo").each(function() {
@@ -217,14 +218,15 @@ jQuery(function($) {
                 // Handle new nodes.
                 // How do we alter the sort order?
                 binding.enter().insert("div", ".bottom")
-                .attr("class", "horizon")
-                .call(context.horizon().format(d3.format("+,.2p")));
+                    .attr("class", "horizon")
+                    .call(context.horizon().format(d3.format(",.4g")));
 
                 binding.exit().remove();
 
                 context.on("focus", function(i) {
                     d3.selectAll(".value")
-                    .style("right", i == null ? null : context.size() - i + "px");
+                    .style("right",
+                            i == null ? null : context.size() - i + "px");
                 });
 
                 //console.log(newTests, tests);
@@ -282,7 +284,7 @@ jQuery(function($) {
 
                         callback(null, values);
                     },
-                    test.description);
+                    test.test + " [" + test.description + "]");
 
                 metric.test = test;
                 metric.data = data;
