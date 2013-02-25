@@ -219,7 +219,16 @@ jQuery(function($) {
                 // How do we alter the sort order?
                 binding.enter().insert("div", ".bottom")
                     .attr("class", "horizon")
-                    .call(context.horizon().format(d3.format(",.4g")));
+                    .call(context.horizon()
+                            .format(d3.format(",.4g"))
+                            .colors(["#225EA8",
+                                     "#41B6C4",
+                                     "#A1DAB4",
+                                     "#FFFFCC",
+                                     "#FECC5C",
+                                     "#FD8D3C",
+                                     "#F03B20",
+                                     "#BD0026"]));
 
                 binding.exit().remove();
 
