@@ -220,7 +220,7 @@ jQuery(function($) {
                 binding.enter().insert("div", ".bottom")
                     .attr("class", "horizon")
                     .call(context.horizon()
-                            .format(d3.format(",.4g"))
+                            .format(d3.format(",.3r"))
                             .colors(["#225EA8",
                                      "#41B6C4",
                                      "#A1DAB4",
