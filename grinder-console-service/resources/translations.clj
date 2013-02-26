@@ -34,6 +34,7 @@
   :start-recording "Start recording"
   :stop-recording "Stop recording"
   :reset-recording "Reset recording"
+  :chart-statistic "Statistic"
 
   ; Properties
   :sampling "Sampling"

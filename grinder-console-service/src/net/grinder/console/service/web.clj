@@ -44,7 +44,8 @@
     [taoensso.tower :as tower])
   (:import
     java.awt.Rectangle
-    net.grinder.console.ConsoleFoundation))
+    net.grinder.console.ConsoleFoundation
+    [net.grinder.statistics ExpressionView]))
 
 (defn- state [type p]
   (let [s (:state p)]
@@ -147,17 +148,6 @@
 
        [:pre (str status)]])))
 
-(defn- render-data-graphs
-  [sample-model]
-  (html
-    [:script
-     (add-live-data :sample {:id "test" :type "text/json"})
-     ]
-    [:div {:id :graphs}
-     ; position:relative div with no margins so cubsim rule position is correct.
-     [:div {:id :cubism}]]
-    ))
-
 
 (defn- render-data [{:keys [sample-model
                             sample-model-views]}]
@@ -167,7 +157,22 @@
     (html
       [:div {:class "recording-controls"} (for [b buttons] b)]
       (render-data-table sample-model sample-model-views)
-      (render-data-graphs sample-model))))
+
+      [:script(add-live-data :sample {:id "test" :type "text/json"})]
+
+      [:div {:id :charts}
+       ; position:relative div with no margins so cubsim rule position is correct.
+       [:div {:id :cubism}]
+       [:fieldset
+        [:legend (t :chart-statistic)]
+        (map-indexed
+          (fn [i ^ExpressionView v]
+            [:input {:type :radio
+                     :name :chart-statistic
+                     :value i}
+             (.getDisplayName v)])
+          (.getExpressionViews (.getIntervalStatisticsView sample-model-views)))
+        ]])))
 
 (defn- render-files [{:keys [process-control]}]
   "files")

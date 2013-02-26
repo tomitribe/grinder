@@ -159,8 +159,7 @@ jQuery(function($) {
         });
     }
 
-    function cubismDemo() {
-
+    function cubismCharts() {
         if (!$("#cubism").length) {
             return;
         }
@@ -192,28 +191,18 @@ jQuery(function($) {
             .attr("class", "rule")
             .call(context.rule());
 
+        var selected_statistic = 0;
 
-        $("#test").on('livedata', function(_e, k, x) {
-            if (k === "sample") {
+        var new_data = function(data_fn) {
+                // data_fn is passed an array of the existing data items and
+                // returns the new data items.
+
                 // Bind tests to nodes.
-                var binding = d3.select("#cubism").selectAll(".horizon")
-                .data(function() {
-                        var existing = {};
+                var selection = d3.select("#cubism").selectAll(".horizon");
 
-                        $(this).each(function() {
-                            existing[this.__data__.test.test] = this.__data__;
-                            });
-
-                        return $.map(
-                                x.data.tests,
-                                function(t) {
-                                    return cubismMetric(existing[t.test],
-                                                        x.data.timestamp,
-                                                        t);
-                                });
-                      },
-                      // Use the test number as the key for the d3 join.
-                      function(metric) { return metric.test.test; });
+                var binding = selection
+                    .data(function() { return data_fn(selection.data()); },
+                          function(metric) { return metric.key; });
 
                 // Handle new nodes.
                 // How do we alter the sort order?
@@ -237,12 +226,31 @@ jQuery(function($) {
                     .style("right",
                             i == null ? null : context.size() - i + "px");
                 });
+            };
 
-                //console.log(newTests, tests);
+        $("#test").on('livedata', function(_e, k, x) {
+            if (k === "sample") {
+                new_data(
+                    function(existing) {
+                        var by_test= {};
+
+                        $(existing).each(function() {
+                            by_test[this.test.test] = this;
+                         });
+
+                        return $.map(
+                                x.data.tests,
+                                function(t) {
+                                    return cubismMetric(by_test[t.test],
+                                                        x.data.timestamp,
+                                                        t,
+                                                        selected_statistic);
+                                });
+                      });
             }
         });
 
-        function cubismMetric(existing, timestamp, test) {
+        function cubismMetric(existing, timestamp, test, statistic) {
             var metric;
 
             if (existing) {
@@ -253,74 +261,99 @@ jQuery(function($) {
                 // For now we just have an array in timestamp order.
                 // Each element is an array pair of timestamp and statistic.
                 // We assume that we're called with increasing timestamps.
-                var data = [];
+                var stats = [];
 
-                metric = context.metric(function(start, stop, step, callback) {
-                        var values = [];
-
-                        start = +start; // Date -> timestamp.
-                        var x, stats;
-
-                        var previousBetween = function() {
-                            var d = data.length - 1;
-
-                            return function(s, e) {
-                                x = data[d];
-
-                                while (x && x[0] >= s) {
-                                    d -= 1;
-                                    if (x[0] < e) {
-                                        return x[1];
-                                    }
-
-                                    x = data[d];
-                                }
-                            };
-                        }();
-
-                        for (var i = +stop; i > start; i-= step) {
-                            stats = [];
-
-                            while (x = previousBetween(i - step, i)) {
-                                stats.push(x);
-                            }
-
-                            values.unshift(
-                                    averageStatistic(stats, 0 /* tests */));
+                var average = function(ss, s) {
+                        if (ss.length == 0) {
+                            return NaN;
                         }
 
-                        console.log("->", values, +start, +stop, context);
+                        var total =
+                            ss.reduce(function(x, y) { return x + y[s]; }, 0);
 
-                        callback(null, values);
-                    },
-                    test.test + " [" + test.description + "]");
+                        return total / ss.length;
+                    };
 
-                metric.test = test;
-                metric.data = data;
+                var metric_fn = function(statistic) {
+                        return function(start, stop, step, callback) {
+                            var values = [];
 
-                function averageStatistic(stats, slot) {
-                    if (stats.length == 0) {
-                        return NaN;
-                    }
+                            start = +start; // Date -> timestamp.
+                            var x, ss;
 
-                    var total =
-                        stats.reduce(function(x, y) { return x + y[slot]; }, 0);
-                    return total / stats.length;
-                }
+                            var previousBetween = function() {
+                                    var d = stats.length - 1;
+
+                                    return function(s, e) {
+                                        x = stats[d];
+
+                                        while (x && x[0] >= s) {
+                                            d -= 1;
+                                            if (x[0] < e) {
+                                                return x[1];
+                                            }
+
+                                            x = stats[d];
+                                        }
+                                    };
+                                }();
+
+                            for (var i = +stop; i > start; i-= step) {
+                                ss = [];
+
+                                while (x = previousBetween(i - step, i)) {
+                                    ss.push(x);
+                                }
+
+                                values.unshift(average(ss, statistic));
+                            }
+
+                            callback(null, values);
+                        };
+                    };
+
+                function create_metric(s) {
+                    var metric =
+                        context.metric(metric_fn(s),
+                                       test.test + " [" +
+                                       test.description + "]");
+
+                    metric.key = test.test + "-" + s;
+                    metric.test = test;
+                    metric.stats = stats;
+                    metric.with_statistic = create_metric;
+                    return metric;
+                };
+
+                metric = create_metric(statistic);
             }
 
-            // Trim old data?
-            metric.data.push([timestamp, test.statistics]);
+            // Trim old stats?
+            metric.stats.push([timestamp, test.statistics]);
 
             return metric;
         }
+
+        $("input[name=chart-statistic][value=" + selected_statistic + "]")
+            .prop('checked', true);
+
+        $("input[name=chart-statistic]").change(
+                function(_e, k, x) {
+                    selected_statistic = this.value;
+
+                    new_data(function(existing) {
+                        return $.map(existing, function(old) {
+                            return old.with_statistic(selected_statistic);
+                        });
+                    });
+                });
     }
 
     function addDynamicBehaviour(scope) {
         addButtons(scope);
         addChangeDetection(scope);
         pollLiveData(scope);
-        cubismDemo();
+        cubismCharts();
     }
 
     addDynamicBehaviour(document);

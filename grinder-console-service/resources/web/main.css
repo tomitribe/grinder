@@ -53,7 +53,7 @@ body {
 	width: 80%;
 }
 
-#content fieldset,table,#graphs {
+#content form>fieldset,table,#charts {
 	background-color: white;
 	color: black;
 	border-radius: 1em;
@@ -76,7 +76,7 @@ body {
 	font-size: 0.9em;
 }
 
-#content legend {
+#content form>legend {
   margin-bottom: 1em;
   float: left;
 }
@@ -332,8 +332,12 @@ button.ui-button {
   right: 0;
 }
 
-.line {
+#charts .line {
   background: none repeat scroll 0 0 #000000;
   opacity: 0.2;
   z-index: 2;
+}
+
+#charts fieldset {
+	border: none;
 }
