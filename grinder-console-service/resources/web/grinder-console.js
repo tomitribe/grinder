@@ -68,10 +68,9 @@ jQuery(function($) {
             var xhr = null;
 
             function poll(e) {
-                //console.log("Polling ", e);
-                xhr = $.get("/ui/poll", {k : key, s: seq}, function(x) {
-                    //console.log("Update ", x);
+                xhr = $.get("/ui/poll", {k : key, s: seq}, "json");
 
+                xhr.then(function(x) {
                     var ee = $(e);
 
                     ee.trigger("livedata", [key, x]);
@@ -82,22 +81,20 @@ jQuery(function($) {
                         .animate({opacity: 0.5},
                                 "fast",
                                 function() {
-                            $(this)
-                            .html(x.data)
-                            .animate({opacity: 1}, "fast");
-                        });
+                                    $(this)
+                                        .html(x.data)
+                                        .animate({opacity: 1}, "fast");
+                                });
                     }
                     else if (ee.hasClass("live-data-display")) {
                         ee.html(x.data);
                     }
 
                     seq = x.next;
-
-                    // Dispatch in timer - directly calling poll()
-                    // causes FF to spin sometimes.
-                    setTimeout(function() {poll(e);}, 1);
-                },
-                "json");
+                })
+                .then(function() {
+                    poll(e);
+                });
             }
 
             var thisElement = this;
