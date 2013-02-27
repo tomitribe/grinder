@@ -201,7 +201,6 @@ jQuery(function($) {
                           function(metric) { return metric.key; });
 
                 // Handle new nodes.
-                // How do we alter the sort order?
                 binding.enter().insert("div", ".bottom")
                     .attr("class", "horizon")
                     .call(context.horizon()
@@ -216,6 +215,10 @@ jQuery(function($) {
                                      "#BD0026"]));
 
                 binding.exit().remove();
+
+                binding.sort(function(a, b) {
+                        return d3.ascending(a.test.test, b.test.test);
+                    });
 
                 context.on("focus", function(i) {
                     d3.selectAll(".value")
