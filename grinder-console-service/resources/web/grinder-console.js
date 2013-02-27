@@ -156,27 +156,25 @@ jQuery(function($) {
         });
     }
 
-    function cubismCharts() {
-        if (!$("#cubism").length) {
+    function cubismCharts(scope) {
+        var cubismDiv = $("#cubism");
+
+        if (!cubismDiv.length) {
             return;
         }
 
-        var w = $("#cubism").width();
-
         var context = cubism.context()
                         .step(2000)
-                        .size(w);
+                        .size(cubismDiv.width());
 
         // Maybe there's a neater way to do this with d3?
-        $("#cubism").each(function() {
-            var thisElement = this;
-            $(document).bind("DOMNodeRemoved", function(e) {
-                if (e.target == thisElement) {
-                    context.stop();
-                }
-            });
+        $(document).bind("DOMNodeRemoved", function(e) {
+            if (e.target == cubismDiv) {
+                context.stop();
+            }
         });
 
+        // Should constrain D3 selection to scope, but how?
         d3.select("#cubism").selectAll(".axis")
             .data(["top", "bottom"])
             .enter().append("div")
@@ -194,9 +192,10 @@ jQuery(function($) {
                 // data_fn is passed an array of the existing data items and
                 // returns the new data items.
 
-                // Bind tests to nodes.
-                var selection = d3.select("#cubism").selectAll(".horizon");
+                var selection =
+                    d3.select("#cubism").selectAll(".horizon");
 
+                // Bind tests to nodes.
                 var binding = selection
                     .data(function() { return data_fn(selection.data()); },
                           function(metric) { return metric.key; });
@@ -225,7 +224,7 @@ jQuery(function($) {
                 });
             };
 
-        $("#test").on('livedata', function(_e, k, x) {
+        $("#sample").on('livedata', function(_e, k, x) {
             if (k === "sample") {
                 new_data(
                     function(existing) {
@@ -346,11 +345,35 @@ jQuery(function($) {
                 });
     }
 
+    function addDataPanels(scope) {
+        var old_state = null;
+
+        $("#sample", scope).on('livedata', function(_e, k, x) {
+            var s = x.data.status;
+
+            for (var y in s) {
+                $("#recording #" + y).html(s[y]);
+            }
+
+            if (s.state != old_state) {
+                if (s.state === "Stopped") {
+                    $("#recording").stop().animate({opacity: 0}, "slow");
+                }
+                else {
+                    $("#recording").stop().animate({opacity: 1}, "fast");
+                }
+
+                old_state = s.state;
+            }
+        });
+    }
+
     function addDynamicBehaviour(scope) {
         addButtons(scope);
         addChangeDetection(scope);
         pollLiveData(scope);
-        cubismCharts();
+        cubismCharts(scope);
+        addDataPanels(scope);
     }
 
     addDynamicBehaviour(document);

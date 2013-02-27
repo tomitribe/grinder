@@ -85,7 +85,6 @@
     (html
       [:table (add-live-data :process-state
                 {:class "grinder-table process-table live-data-animation"})
-       [:caption (t :running-processes)]
        [:thead
         [:tr
          [:th (t [:agent-name])]
@@ -129,7 +128,6 @@
       [:div (add-live-data
               :data {:class "grinder-table data-table live-data-display" })
        [:table
-        [:caption (t :data)]
         [:thead
          [:tr
           [:th (t :test-number)]
@@ -145,8 +143,7 @@
          [:th (t :totals)]
          [:th]
          (for [c totals] [:td c])]]
-
-       [:pre (str status)]])))
+       ])))
 
 
 (defn- render-data [{:keys [sample-model
@@ -158,10 +155,8 @@
       [:div {:class "recording-controls"} (for [b buttons] b)]
       (render-data-table sample-model sample-model-views)
 
-      [:script(add-live-data :sample {:id "test" :type "text/json"})]
-
       [:div {:id :charts}
-       ; position:relative div with no margins so cubsim rule position is correct.
+       ; position:relative div with no margins so rule position is correct.
        [:div {:id :cubism}]
        [:fieldset
         [:legend (t :chart-statistic)]
@@ -311,9 +306,16 @@
        (for [[k v] sections]
          [:button {:class "grinder-button replace-content"
                    :id k} (t k)])
+
+        [:div {:id :recording}
+         [:span {:id :description}]
+         ]
        ]
       [:div {:id :content}
-       body]]))
+       body]
+
+      [:script(add-live-data :sample {:id "sample" :type "text/json"})]
+      ]))
 
 (defn- spy [handler spyname]
   (fn [request]

@@ -40,10 +40,8 @@ body {
 #sidebar {
 	margin-top: 7em;
 	padding-right: 1em;
-	margin-right: 1em;
 	float: left;
 	width: 20%;
-	font-weight: bold;
 }
 
 #sidebar button {
@@ -51,9 +49,10 @@ body {
 	float: left;
 	margin-top: 30px;
 	width: 80%;
+  font-weight: bold;
 }
 
-#content form>fieldset,table,#charts {
+#content form>fieldset, table, #charts, #recording {
 	background-color: white;
 	color: black;
 	border-radius: 1em;
@@ -61,6 +60,15 @@ body {
 	margin-bottom: 2em;
 	padding: 1em;
 }
+
+/* How to make this div the same width as the button? */
+#recording {
+  -moz-box-sizing:border-box;
+  float: left;
+  width: 80%;
+  border-radius: 6px;
+}
+
 
 #content {
 	font-weight: 400;
