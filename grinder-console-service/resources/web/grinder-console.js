@@ -234,7 +234,7 @@ jQuery(function($) {
                             by_test[this.test.test] = this;
                          });
 
-                        return $.map(
+                        var result = $.map(
                                 x.data.tests,
                                 function(t) {
                                     return cubismMetric(by_test[t.test],
@@ -242,6 +242,17 @@ jQuery(function($) {
                                                         t,
                                                         selected_statistic);
                                 });
+
+                        var totalTest = { test :"Total",
+                                          description : null,
+                                          statistics : x.data.totals };
+
+                        result.push(cubismMetric(by_test[totalTest.test],
+                                                 x.data.timestamp,
+                                                 totalTest,
+                                                 selected_statistic));
+
+                        return result;
                       });
             }
         });
@@ -308,12 +319,17 @@ jQuery(function($) {
                         };
                     };
 
-                function create_metric(s) {
-                    var metric =
-                        context.metric(metric_fn(s),
-                                       test.test + " [" +
-                                       test.description + "]");
+                var description;
 
+                if (test.description) {
+                    description = test.test + " [" + test.description + "]";
+                }
+                else {
+                    description = test.test;
+                }
+
+                function create_metric(s) {
+                    var metric = context.metric(metric_fn(s), description);
                     metric.key = test.test + "-" + s;
                     metric.test = test;
                     metric.stats = stats;
