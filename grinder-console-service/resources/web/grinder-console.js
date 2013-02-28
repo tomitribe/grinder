@@ -376,10 +376,10 @@ jQuery(function($) {
 
             if (s.state != old_state) {
                 if (s.state === "Stopped") {
-                    $("#recording").stop().animate({opacity: 0}, "slow");
+                    $("#recording").parent().stop().animate({opacity: 0}, "slow");
                 }
                 else {
-                    $("#recording").stop().animate({opacity: 1}, "fast");
+                    $("#recording").parent().stop().animate({opacity: 1}, "fast");
                 }
 
                 old_state = s.state;

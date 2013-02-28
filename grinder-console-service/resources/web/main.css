@@ -1,88 +1,78 @@
 body {
-	color: white;
-	background-color: #123456;
-	font-family: Arial, Helvetica, Verdana, sans-serif;
+  color: white;
+  background-color: #123456;
+  font-family: Arial, Helvetica, Verdana, sans-serif;
 }
 
 #wrapper {
-	margin-right: auto;
-	margin-left: auto;
-	width: 95%;
+  margin-right: auto;
+  margin-left: auto;
+  width: 95%;
 }
 
 #header {
-	float: left;
-	width: 100%;
+  float: left;
+  width: 100%;
 }
 
 #title {
-	float: left;
-	width: 70%;
+  float: left;
+  width: 70%;
 }
 
 #logo {
-	float: right;
-	width: 20%;
+  float: right;
+  width: 20%;
 }
 
 #logo img {
-	float: right;
-	max-width: 10em;
+  float: right;
+  max-width: 10em;
 }
 
 #content {
-	margin-top: 3em;
-	margin-right: 1em;
-	float: right;
-	width: 70%;
+  margin-top: 3em;
+  margin-right: 1em;
+  float: right;
+  width: 70%;
 }
 
 #sidebar {
-	margin-top: 7em;
-	padding-right: 1em;
-	float: left;
-	width: 20%;
+  margin-top: 7em;
+  padding-right: 1em;
+  float: left;
+  width: 20%;
 }
 
 #sidebar button {
-	padding: 4%;
-	float: left;
-	margin-top: 0.5em;
-	width: 80%;
+  padding: 4%;
+  float: left;
+  margin-top: 0.5em;
+  width: 80%;
   font-weight: bold;
 }
 
-#content form>fieldset, table, #charts, #recording {
-	background-color: white;
-	color: black;
-	border-radius: 1em;
-	border-style: none;
-	margin-bottom: 2em;
-	padding: 1em;
+#content form>fieldset, table, #charts {
+  background-color: white;
+  color: black;
+  border-radius: 1em;
+  border-style: none;
+  margin-bottom: 2em;
+  padding: 1em;
 }
-
-/* How to make this div the same width as the button? */
-#recording {
-  margin-top: 5em;
-  -moz-box-sizing:border-box;
-  float: left;
-  width: 80%;
-  border-radius: 6px;
-}
-
 
 #content {
-	font-weight: 400;
+  font-weight: 400;
 }
 
 #content hgroup {
-	margin-bottom: 1em;
+  margin-bottom: 1em;
 }
 
 #content legend,caption {
-	font-style: italic;
-	color: #434242;
-	font-size: 0.9em;
+  font-style: italic;
+  color: #434242;
+  font-size: 0.9em;
 }
 
 #content form legend {
@@ -121,36 +111,36 @@ body {
 }
 
 #content input {
-	vertical-align: middle;
-	border: 1px solid #bfbfbf;
-	padding: 0.2em;
-	font-size: 1.1em;
-	line-height: 1.2em;
-	background: #ffffff;
-	background: linear-gradient(to bottom, #ffffff 0%, #ededed 8%, #ffffff 100%);
-	border-radius: 4px;
-	box-shadow: 2px 2px 5px hsla(0, 0%, 16.6667%, 0.1);
+  vertical-align: middle;
+  border: 1px solid #bfbfbf;
+  padding: 0.2em;
+  font-size: 1.1em;
+  line-height: 1.2em;
+  background: #ffffff;
+  background: linear-gradient(to bottom, #ffffff 0%, #ededed 8%, #ffffff 100%);
+  border-radius: 4px;
+  box-shadow: 2px 2px 5px hsla(0, 0%, 16.6667%, 0.1);
 }
 
 #content input#submit {
-	text-decoration: none;
-	height: 34px;
-	font-size: 1.25em;
-	background-color: #b01c20;
-	border-radius: 4px;
-	color: white;
-	float: right;
-	margin-bottom: 10px;
-	background: linear-gradient(to bottom, rgb(241, 92, 96) 0%, rgb(176, 28, 32)
-		100% );
-	margin-top: 10px;
-	box-shadow: 5px 5px 5px hsla(0, 0%, 26.6667%, 0.8);
-	border: 2px solid #bfbfbf;
-	background-color: #b01c20;
+  text-decoration: none;
+  height: 34px;
+  font-size: 1.25em;
+  background-color: #b01c20;
+  border-radius: 4px;
+  color: white;
+  float: right;
+  margin-bottom: 10px;
+  background: linear-gradient(to bottom, rgb(241, 92, 96) 0%, rgb(176, 28, 32)
+    100% );
+  margin-top: 10px;
+  box-shadow: 5px 5px 5px hsla(0, 0%, 26.6667%, 0.8);
+  border: 2px solid #bfbfbf;
+  background-color: #b01c20;
 }
 
 #content .hidden {
-	visibility: hidden;
+  visibility: hidden;
 }
 
 #content .property input:not([type=checkbox]){
@@ -160,7 +150,7 @@ body {
 }
 
 #content .property input[type=checkbox] {
-	float: left;
+  float: left;
   margin-left: 0;
 }
 
@@ -170,7 +160,7 @@ body {
 }
 
 #content .changed {
-	font-weight: bolder;
+  font-weight: bolder;
 }
 
 
@@ -220,7 +210,7 @@ table.grinder-table {
 
 
 .live-data {
-	/* border: 4px solid red;*/
+  /* border: 4px solid red;*/
 
 }
 
@@ -240,7 +230,7 @@ button.ui-button {
 }
 
 .grinder-button.ui-button-text-icon-primary .ui-button-text {
-	padding-left: 3em;
+  padding-left: 3em;
 }
 
 .grinder-button .ui-icon {
@@ -263,7 +253,7 @@ button.ui-button {
 }
 
 .ui-icon.start-processes {
-	background-image: url(/ui/core/start-processes.png);
+  background-image: url(/ui/core/start-processes.png);
 }
 
 .ui-state-hover .ui-icon.start-processes {
@@ -303,16 +293,16 @@ button.ui-button {
 }
 
 .axis {
-	font-size: 0.9em;
+  font-size: 0.9em;
 }
 
 #cubism {
-	position: relative;
+  position: relative;
 }
 
 .horizon {
   border-top: 1px solid #808080;
-	border-bottom: 1px solid #808080;
+  border-bottom: 1px solid #808080;
   overflow: hidden;
   position: relative;
 }
@@ -348,5 +338,25 @@ button.ui-button {
 }
 
 #charts fieldset {
-	border: none;
+  border: none;
+}
+
+.ui-button .info {
+  overflow: visible;
+  clear: both;
+  color: black;
+  position: absolute;
+  z-index: 99;
+  font-size: 0.8em;
+  font-weight: 400;
+  outline: medium none;
+  border-radius: 4px;
+  border: 1px solid #FFAD33;
+  box-shadow: 5px 5px 5px rgba(0.1, 0, 0, 0.1);
+  right: -5em;
+  top: -1em;
+  padding: 0.4em;
+  margin-left: 0;
+  background: none repeat scroll 0 0 #FFFFCA;
+  opacity: 0.5;
 }
