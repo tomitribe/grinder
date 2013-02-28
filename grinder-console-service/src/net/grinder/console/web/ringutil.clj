@@ -58,3 +58,14 @@
     response
     (content-type "application/json")
     (no-cache)))
+
+(defn spy [handler spyname]
+  "Log requests and responses."
+  (fn [request]
+    (let [response (handler request)]
+      (log/debugf
+        (str "--------------> %s >----------------%n"
+          "request: %s\nresponse:%s%n"
+          "--------------< %s <-----------------%n")
+        spyname request response spyname)
+      response)))

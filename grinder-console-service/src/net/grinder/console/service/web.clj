@@ -40,8 +40,7 @@
                                [properties :as properties]
                                [recording :as recording]]
     [net.grinder.console.web [livedata :as livedata]
-                             [ringutil :as ringutil]]
-    [taoensso.tower :as tower])
+                             [ringutil :as ringutil]])
   (:import
     java.awt.Rectangle
     net.grinder.console.ConsoleFoundation
@@ -70,9 +69,9 @@
          d)])))
 
 (defn- add-live-data
+  "Add live-data details to a hiccup form."
   ([ld-key]
     (add-live-data ld-key {}))
-
   ([ld-key m]
     (-> m
       (update-in [:class] (partial str "live-data "))
@@ -314,18 +313,9 @@
       [:div {:id :content}
        body]
 
-      [:script(add-live-data :sample {:id "sample" :type "text/json"})]
+      [:script (add-live-data :sample {:id "sample" :type "text/json"})]
       ]))
 
-(defn- spy [handler spyname]
-  (fn [request]
-    (let [response (handler request)]
-      (log/debugf
-        (str "--------------> %s >----------------%n"
-          "request: %s\nresponse:%s%n"
-          "--------------< %s <-----------------%n")
-        spyname request response spyname)
-      response)))
 
 (defn- context-url [p]
   "Force hiccup to add its base-url to the given path"
@@ -354,8 +344,6 @@
         (assoc
           (recording/data sample-model sample-model-views :sample true)
           :timestamp (System/currentTimeMillis)))))
-
-  (tower/load-dictionary-from-map-resource! "translations.clj")
 
   (let [translate (make-wrap-with-translation
                     nil

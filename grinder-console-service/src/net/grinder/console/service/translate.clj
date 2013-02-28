@@ -25,8 +25,9 @@
   (:require [taoensso.tower :as tower])
   (:import [java.util MissingResourceException ResourceBundle]))
 
-
 (def ^:dynamic *resource-bundle-name* nil)
+
+(tower/load-dictionary-from-map-resource! "translations.clj")
 
 (defn- to-resource-bundle-keys
   "Translate tower format keys to a list of potential resource bundle keys"
@@ -57,7 +58,6 @@
   `(binding [*resource-bundle-name* ~resource-bundle-name]
      ~@body))
 
-
 (defn t
   "Extends `tower/t` so that if the key is missing, the last part of the
    key is looked up using the Java resource bundle and the current tower
@@ -74,7 +74,6 @@
         (some resource-bundle-result kchoices)
         (tower/t kchoices*)
         ))))
-
 
 (defn make-wrap-with-translation
   "Returns Ring middleware that binds the translation context.
