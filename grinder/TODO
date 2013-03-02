@@ -14,7 +14,40 @@ against it too :-).
 - Philip Aston
 
 
+* Status
+** Good, "done"
+Instrumentation
+
+Script engine
+
+Distributed process model
+
+Script distribution
+
+** More work required
+REST API
+
+TCPProxy
+
+Statistics - could be more flexible
+
+More scheduling and control: ramp-up/ramp-down, control individual
+agents, etc.
+
+** Refresh
+Console UI (currently in progress - new HTML 5 on the way)
+
+HTTP support, in particular how to model the threading/connection
+model of a modern browser
+
+** Missing
+
+Script generation from other network capture sources
+
+Publish statistics streams, e.g. to Graphite
+
 * Enhancements
+(Should clean these up and move them to sourceforge tracker)
 
 ** Console Services
 
@@ -40,7 +73,7 @@ Looks like I can remove:
 
 Task: Distribution file filter should be dynamically settable.
 
-** Console
+** Console (rethink for HTML console)
 
 *** Stop the recording when last thread terminates
 Requested by Jýrgen Weber
@@ -92,7 +125,6 @@ its license terms are acceptable. Apparently now available.
 Support for some sort of "Surrogate task" that is run in a pool of
 threads and has its own statistics context would be good.
 
-
 *** Instrumentation API
 
 Could we support a procedural "startTest()", "stopTest()" API?
@@ -118,7 +150,6 @@ Simplify the index classes. Move the index implementations to nested
 classes of StatisticsSetImplementation and expose a single, opaque
 StatsiticsSet.Index interface.
 
-
 *** Aligning data files
 
 Requested by Jose Antonio Zapata:
@@ -137,7 +168,6 @@ console but not in the process logs.
 
 Should store max, min values against SampleStatistics, and add max(),
 min() to expressions.
-
 
 ** TCPProxy
 
@@ -273,6 +303,7 @@ efficiency here.
 Also http://www.nogoop.com/product_16.html#compare
 
 * Bugs
+(Should clean these up and move them to sourceforge tracker)
 
 (In addition to those on Sourceforge).
 
@@ -307,6 +338,5 @@ Create back links from javadoc. This isn't trivial, e.g. this:
       </bottom>
 
 only works for top level javadoc.
-
 
 How to include arbitrary HTML (e.g. for poll forms?)
