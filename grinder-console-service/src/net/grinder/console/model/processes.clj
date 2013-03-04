@@ -1,4 +1,4 @@
-; Copyright (C) 2012 Philip Aston
+; Copyright (C) 2012 - 2013 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -35,8 +35,8 @@
             WorkerProcessReport]
            ))
 
-(defonce ^:private last-reports (atom nil))
-(defonce ^:private initialised (atom false))
+(def ^:private last-reports (atom nil))
+(def ^:private initialised (atom false))
 
 (defn initialise
   "Should be called once before 'status' will work."
@@ -87,6 +87,24 @@
     (throw (IllegalStateException. "Not initialised.")))
   (for [r @last-reports]
     (agent-and-workers r)))
+
+(defn running-threads-summary
+  "Translates the result of `status` into a summary of the running processes.
+   The result is map containing the following keys and values:
+       :agents  - total number of connected, running agents
+       :workers - total number of running worker processes
+       :threads - total numnber of running threads."
+  [status-map]
+  (let [in-state (fn [s m] (for [r m :when (= (:state r) s)] r))
+        as (for [a (in-state :running status-map)]
+             (for [w (in-state :running (:workers a))] (:running-threads w)))
+        agent-total (count as)
+        ws (flatten as)
+        worker-total (count ws)
+        thread-total (reduce + ws)]
+    {:agents agent-total
+     :workers worker-total
+     :threads thread-total}))
 
 (defn add-listener
   [key callback]

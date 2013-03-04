@@ -171,27 +171,55 @@
     [this]
     (into-array WorkerProcessReport worker-reports)))
 
+(defn mock-reports
+  [spec]
+  (into-array ProcessControl$ProcessReports
+    (for [[a-id a-name a-number a-state ws] spec]
+      (MockReports.
+        (MockAgentReport. (MockAgentIdentity. a-id a-name a-number) a-state)
+        (for [[w-id w-name w-number w-state w-ts w-max-ts] ws]
+          (MockWorkerReport.
+            (MockWorkerIdentity. w-id w-name w-number) w-state w-ts w-max-ts)
+          )
+        ))))
+
 (deftest test-status-with-reports
   (def listener (atom nil))
   (let [pc (reify ProcessControl
              (addProcessStatusListener [this l] (reset! listener l)))]
     (processes/initialise pc)
     (let [l @listener
-          r1 (MockReports.
-               (MockAgentReport.
-                 (MockAgentIdentity. "1" "foo" 10)
-                 :RUNNING)
-               [(MockWorkerReport.
-                  (MockWorkerIdentity. "13" "bah" 9)
-                  :STARTED
-                  2
-                  22)])]
-      (.update l (into-array ProcessControl$ProcessReports [r1]))
+          r1 (mock-reports
+               [["1" "foo" 10 :RUNNING [["13" "bah" 9 :STARTED 2 22]]]])
+          r2 (mock-reports
+               [["1" "foo" 10 :RUNNING [["13" "bah" 9 :RUNNING 2 22]
+                                        ["14" "bah" 1 :RUNNING 1 2]]]
+                ["2" "bah" 11 :RUNNING [["15" "bah" 2 :STARTED 1 2]]]])]
+
+      (.update l r1)
       (is (= [{:id "1" :name "foo" :number 10 :state :running :workers
                [{:id "13" :name "bah" :number 9 :state :started
                  :running-threads 2 :maximum-threads 22}]}]
-             (processes/status pc))))))
+            (processes/status pc)))
 
+      (is (= {:agents 1, :workers 0, :threads 0}
+            (processes/running-threads-summary (processes/status pc))))
+
+      (.update l r2)
+      (is (= [{:id "1" :name "foo" :number 10 :state :running :workers
+               [{:id "13" :name "bah" :number 9 :state :running
+                 :running-threads 2 :maximum-threads 22}
+                {:id "14" :name "bah" :number 1 :state :running
+                 :running-threads 1 :maximum-threads 2}]}
+              {:id "2" :name "bah" :number 11 :state :running :workers
+               [{:id "15" :name "bah" :number 2 :state :started
+                 :running-threads 1 :maximum-threads 2}]}]
+            (processes/status pc)))
+
+      (is (= {:agents 2, :workers 2, :threads 3}
+            (processes/running-threads-summary (processes/status pc)))
+
+        ))))
 
 (deftest test-status-uninitialised
   (let [pc (reify ProcessControl)]
