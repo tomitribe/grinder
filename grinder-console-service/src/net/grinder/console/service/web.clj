@@ -68,22 +68,19 @@
                       (:maximum-threads p)))
          d)])))
 
-(defn- add-live-data
-  "Add live-data details to a hiccup form."
-  ([ld-key]
-    (add-live-data ld-key {}))
+(defn- live-data-subscription
+  "Add live data subscription details to a hiccup attribute map."
   ([ld-key m]
     (-> m
-      (update-in [:class] (partial str "live-data "))
-      (assoc
-        :data-ld-key ld-key
-        :data-ld-seq (livedata/get-value ld-key)))))
+      (assoc :data-ld-key ld-key
+             :data-ld-seq (livedata/get-value ld-key))
+      (update-in [:class] (partial str "ld-subscribe ")))))
 
 (defn- render-process-table [process-control]
   (let [processes (processes/status process-control)]
     (html
-      [:table (add-live-data :process-state
-                {:class "grinder-table process-table live-data-animation"})
+      [:table (live-data-subscription :process-state
+                {:class "grinder-table process-table ld-animate"})
        [:thead
         [:tr
          [:th (t [:agent-name])]
@@ -124,8 +121,8 @@
         (recording/data sample-model sample-model-views :as-text true)]
 
     (html
-      [:div (add-live-data
-              :data {:class "grinder-table data-table live-data-display" })
+      [:div (live-data-subscription :data
+              {:class "grinder-table data-table ld-display"})
        [:table
         [:thead
          [:tr
@@ -319,7 +316,8 @@
 
       [:div {:id :content} body]
 
-      [:script (add-live-data :sample {:id "sample" :type "text/json"})]
+      [:script (live-data-subscription :sample
+                 {:id "sample" :type "text/json"})]
       ]))
 
 

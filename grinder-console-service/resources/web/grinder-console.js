@@ -60,7 +60,7 @@ jQuery(function($) {
 
     function pollLiveData(scope) {
 
-        $(".live-data", scope).each(function() {
+        $(".ld-subscribe", scope).each(function() {
             var key = $(this).data("ld-key");
             var seq = $(this).data("ld-seq");
 
@@ -70,25 +70,7 @@ jQuery(function($) {
                 xhr = $.get("/ui/poll", {k : key, s: seq}, "json");
 
                 xhr.then(function(x) {
-                    var ee = $(e);
-
-                    ee.trigger("livedata", [key, x]);
-
-                    if (ee.hasClass("live-data-animation")) {
-                        ee
-                        .stop()
-                        .animate({opacity: 0.5},
-                                "fast",
-                                function() {
-                                    $(this)
-                                        .html(x.data)
-                                        .animate({opacity: 1}, "fast");
-                                });
-                    }
-                    else if (ee.hasClass("live-data-display")) {
-                        ee.html(x.data);
-                    }
-
+                    $(e).trigger("livedata", [key, x]);
                     seq = x.next;
                 })
                 .then(function() {
@@ -108,6 +90,33 @@ jQuery(function($) {
 
             poll(this);
         });
+    }
+
+    function addLiveDataElements(scope) {
+        $(".ld-display").on('livedata', function(_e, k, x) {
+                var t = $(this);
+
+                if (k === t.data("ld-key")) {
+                    t.html(x.data);
+                }
+            });
+
+        $(".ld-animate").on('livedata', function(_e, k, x) {
+                var t = $(this);
+
+                if (k === t.data("ld-key")) {
+                    t
+                    .stop()
+                    .animate({opacity: 0.5},
+                            "fast",
+                            function() {
+                                $(this)
+                                    .html(x.data)
+                                    .animate({opacity: 1}, "fast");
+                            });
+                }
+            });
+
     }
 
     function addButtons(scope) {
@@ -392,6 +401,7 @@ jQuery(function($) {
         addButtons(scope);
         addChangeDetection(scope);
         pollLiveData(scope);
+        addLiveDataElements(scope);
         cubismCharts(scope);
         addDataPanels(scope);
     }
