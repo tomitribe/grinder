@@ -68,18 +68,18 @@
                       (:maximum-threads p)))
          d)])))
 
-(defn- live-data-subscription
+(defn- ld-subscription
   "Add live data subscription details to a hiccup attribute map."
-  ([ld-key m]
+  ([ld-channel m]
     (-> m
-      (assoc :data-ld-key ld-key
-             :data-ld-seq (livedata/get-value ld-key))
+      (assoc :data-ld-ch ld-channel
+             :data-ld-seq (livedata/get-sequence ld-channel))
       (update-in [:class] (partial str "ld-subscribe ")))))
 
 (defn- render-process-table [process-control]
   (let [processes (processes/status process-control)]
     (html
-      [:table (live-data-subscription :process-state
+      [:table (ld-subscription :process-state
                 {:class "grinder-table process-table ld-animate"})
        [:thead
         [:tr
@@ -121,7 +121,7 @@
         (recording/data sample-model sample-model-views :as-text true)]
 
     (html
-      [:div (live-data-subscription :data
+      [:div (ld-subscription :data
               {:class "grinder-table data-table ld-display"})
        [:table
         [:thead
@@ -316,8 +316,7 @@
 
       [:div {:id :content} body]
 
-      [:script (live-data-subscription :sample
-                 {:id "sample" :type "text/json"})]
+      [:script (ld-subscription :sample {:id "sample" :type "text/json"})]
       ]))
 
 
@@ -359,8 +358,8 @@
         (resources "/lib/" {:root "web/lib"})
         (resources "/core/" {:root "net/grinder/console/common/resources"})
 
-        (GET "/poll" [k s]
-          (livedata/poll k s))
+        (GET "/poll" [c s]
+          (livedata/poll c s))
 
         (->
           (apply routes

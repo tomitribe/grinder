@@ -28,22 +28,23 @@
     [net.grinder.console.web.livedata :as ld]
     [cheshire.core :as json]))
 
-(deftest next-value
+(deftest next-sequence
   (with-no-logging
     (let [m 10
           n 1000
           current-values
             #(doall
-               (pmap (fn [i] (Integer/parseInt (#'ld/get-value i))) (range m)))
+               (pmap (fn [i]
+                       (Integer/parseInt (#'ld/get-sequence i))) (range m)))
           before-values (current-values)
-          vs (partition n ; Partition the results by key.
+          vs (partition n ; Partition the results by channel.
 
-               ; Generate n values for each of m keys, in parallel.
+               ; Generate n values for each of m channels, in parallel.
                (pmap
-                 (fn [i] (Integer/parseInt (#'ld/next-value (int (/ i n)))))
+                 (fn [i] (Integer/parseInt (#'ld/next-sequence (int (/ i n)))))
                  (range (* m n))))
 
-          ; For each key, we expect a continuous sequence of values.
+          ; For each channel, we expect a continuous sequence of values.
           expected (for [v vs]
                      (let [s (sort v)
                            f (first s)]
@@ -54,29 +55,29 @@
 
 (deftest register-client
   (with-no-logging
-    (let [data [{:k (gensym) :vs (range 10)}
-                {:k (gensym) :vs (range 3)}
-                {:k (gensym) :vs nil }]]
+    (let [data [{:ch (gensym) :vs (range 10)}
+                {:ch (gensym) :vs (range 3)}
+                {:ch (gensym) :vs nil }]]
 
-      (doseq [{:keys [k vs]} data v vs] (#'ld/register-client k v))
+      (doseq [{:keys [ch vs]} data v vs] (#'ld/register-client ch v))
 
       (is (=
         (for [{:keys [vs]} data] (and vs (into #{} vs)))
-        (for [{:keys [k]} data] (#'ld/remove-clients k))))
+        (for [{:keys [ch]} data] (#'ld/remove-clients ch))))
 
       (is (=
         (repeat (count data) nil)
-        (for [{:keys [k]} data] (#'ld/remove-clients k)))))))
+        (for [{:keys [ch]} data] (#'ld/remove-clients ch)))))))
 
 (deftest poll-no-value
   (with-no-logging
-    (let [k (gensym)
-          r1  (ld/poll k "-1")
+    (let [ch (gensym)
+          r1  (ld/poll ch "-1")
           msg "Hello world"]
       (is (= 200 (:status r1)))
       (is (nil? (.get (:body r1))))
 
-      (ld/push k msg)
+      (ld/push ch msg)
 
       (let [r2 (.get (:body r1))]
         (is (= 200 (:status r2)))
@@ -87,36 +88,36 @@
 
 (deftest poll-value
   (with-no-logging
-    (let [k (gensym)
+    (let [ch (gensym)
           msg "Someday"
           msg2 "this will all be yours"]
 
-      (ld/push k msg)
+      (ld/push ch msg)
 
-      (let [r  (ld/poll k "-1")]
+      (let [r  (ld/poll ch "-1")]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
         (is (= {"data" msg "next" "1"} (json/decode (:body r)))))
 
       ; push of the same value is a no-op.
-      (ld/push k msg)
+      (ld/push ch msg)
 
       ; new client gets existing value.
-      (let [r  (ld/poll k "-1")]
+      (let [r  (ld/poll ch "-1")]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
         (is (= {"data" msg "next" "1"} (json/decode (:body r)))))
 
       ; existing client gets long poll
-      (let [r  (ld/poll k "1")]
+      (let [r  (ld/poll ch "1")]
         (is (= 200 (:status r)))
         (is (nil? (.get (:body r)))))
 
       ; push a new value.
-      (ld/push k msg2)
+      (ld/push ch msg2)
 
       ; existing client gets new value
-      (let [r  (ld/poll k "1")]
+      (let [r  (ld/poll ch "1")]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
         (is (= {"data" msg2 "next" "2"} (json/decode (:body r)))))

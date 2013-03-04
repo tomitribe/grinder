@@ -32,80 +32,80 @@
 (let [default 0
       values (atom {})]
 
-  (defn get-value
-    "Get the current value for key `k`."
-    [k]
+  (defn get-sequence
+    "Get the current value for `channel`."
+    [channel]
     (->
-      k
+      channel
       (@values default)
       str))
 
-  (defn- next-value
-    "Return a new value for key `k`."
-    [k]
+  (defn- next-sequence
+    "Return a new value for `channel`."
+    [channel]
     (->
-      k
+      channel
       ((swap! values
-         (fn [vs] (assoc vs k (inc (vs k default))))))
+         (fn [vs] (assoc vs channel (inc (vs channel default))))))
       str)))
 
 
-(let [ ; Holds {data-key #{client}}
+(let [ ; Holds {channel #{client}}
       clients (ref {})]
 
   (defn- register-client
-    "Register http-kit callback `client` for `data-key`."
-    [data-key client]
+    "Register http-kit callback `client` for `channel`."
+    [channel client]
     (dosync
       (commute clients
-        #(merge-with clojure.set/union % {data-key #{client}})))
+        #(merge-with clojure.set/union % {channel #{client}})))
     (log/debugf "register-client: %s %s -> %s"
-                 data-key
+                 channel
                  client
                  @clients))
 
   (defn- remove-clients
-    "Remove and return the registered clients for `data-key`."
-    [data-key]
-    (dosync (let [cs (@clients data-key)]
-              (commute clients dissoc data-key)
+    "Remove and return the registered clients for `channel`."
+    [channel]
+    (dosync (let [cs (@clients channel)]
+              (commute clients dissoc channel)
               cs))))
 
 (let [last-data (atom {})]
   (defn poll
-    "Respond to a client poll for `data-key` and `sequence`
+    "Respond to a client poll for `channel` and `sequence`
      with a synchronous or asynchronous Ring response."
-    [data-key sequence]
+    [channel sequence]
 
-    (log/debugf "(poll %s %s)" data-key sequence)
+    (log/debugf "(poll %s %s)" channel sequence)
 
-    (let [k (keyword data-key)
-          v (@last-data k)]
+    (let [ch (keyword channel)
+          v (@last-data ch)]
 
-      (let [s (get-value k)]
+      (let [s (get-sequence ch)]
         (if (and v (not= sequence s))
           ; Client has stale value => give them the current value.
           (do
-            (log/debugf "sync response %s %s/%s %s" k sequence s v)
+            (log/debugf "sync response %s %s/%s %s" ch sequence s v)
             (json-response {:data v
                             :next s}))
 
           ; Client has current value, or there is none => long poll.
           (async-response client
-            (register-client k client))))))
+            (register-client ch client))))))
 
   (defn push
-    "Send `data` to all clients listening to `data-key`."
-    [data-key data]
-    (let [k (keyword data-key)]
-      (log/debugf "(push %s) %s" data-key (get-value k))
+    "Send `data` to all clients listening to `channel`."
+    [channel data]
+    (let [ch (keyword channel)]
+      (log/debugf "(push %s) %s" channel (get-sequence ch))
 
-      (if (not= data (@last-data k)) ; Is this check worth it?
+      (if (not= data (@last-data ch)) ; Is this check worth it?
 
         (let [r (json-response {:data data
-                                :next (next-value k)})]
-          (swap! last-data assoc k data)
-          (doseq [c (remove-clients k)]
+                                :next (next-sequence ch)})]
+          (swap! last-data assoc ch data)
+          (doseq [c (remove-clients ch)]
             (log/debugf "async response to %s with %s" c r)
             (c r)))
 

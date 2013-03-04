@@ -61,16 +61,16 @@ jQuery(function($) {
     function pollLiveData(scope) {
 
         $(".ld-subscribe", scope).each(function() {
-            var key = $(this).data("ld-key");
+            var channel = $(this).data("ld-ch");
             var seq = $(this).data("ld-seq");
 
             var xhr = null;
 
             function poll(e) {
-                xhr = $.get("/ui/poll", {k : key, s: seq}, "json");
+                xhr = $.get("/ui/poll", {c: channel, s: seq}, "json");
 
                 xhr.then(function(x) {
-                    $(e).trigger("livedata", [key, x]);
+                    $(e).trigger("livedata", [channel, x]);
                     seq = x.next;
                 })
                 .then(function() {
@@ -93,18 +93,18 @@ jQuery(function($) {
     }
 
     function addLiveDataElements(scope) {
-        $(".ld-display").on('livedata', function(_e, k, x) {
+        $(".ld-display").on('livedata', function(_e, ch, x) {
                 var t = $(this);
 
-                if (k === t.data("ld-key")) {
+                if (ch === t.data("ld-ch")) {
                     t.html(x.data);
                 }
             });
 
-        $(".ld-animate").on('livedata', function(_e, k, x) {
+        $(".ld-animate").on('livedata', function(_e, ch, x) {
                 var t = $(this);
 
-                if (k === t.data("ld-key")) {
+                if (ch === t.data("ld-ch")) {
                     t
                     .stop()
                     .animate({opacity: 0.5},
