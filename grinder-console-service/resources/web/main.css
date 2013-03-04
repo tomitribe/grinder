@@ -341,7 +341,7 @@ button.ui-button {
   border: none;
 }
 
-.ui-button .info {
+.ui-button .summary {
   overflow: visible;
   clear: both;
   color: black;

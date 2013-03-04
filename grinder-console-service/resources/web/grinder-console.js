@@ -61,7 +61,6 @@ jQuery(function($) {
     function pollLiveData(scope) {
 
         $(".live-data", scope).each(function() {
-            //console.log("Registering ", this);
             var key = $(this).data("ld-key");
             var seq = $(this).data("ld-seq");
 
@@ -371,15 +370,17 @@ jQuery(function($) {
             var s = x.data.status;
 
             for (var y in s) {
-                $("#recording #" + y).html(s[y]);
+                $("#data-summary #" + y).html(s[y]);
             }
 
             if (s.state != old_state) {
                 if (s.state === "Stopped") {
-                    $("#recording").parent().stop().animate({opacity: 0}, "slow");
+                    $("#data-summary").parent()
+                        .stop().animate({opacity: 0}, "slow");
                 }
                 else {
-                    $("#recording").parent().stop().animate({opacity: 1}, "fast");
+                    $("#data-summary").parent()
+                        .stop().animate({opacity: 0.9}, "fast");
                 }
 
                 old_state = s.state;

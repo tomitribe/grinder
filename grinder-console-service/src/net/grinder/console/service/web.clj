@@ -270,16 +270,17 @@
     (redirect-after-post "./properties")))
 
 
-(defn render-data-info []
+(defn render-data-summary []
   (html
-        [:div {:id :recording}
+        [:div {:id :data-summary}
          [:span {:id :description}]
          ]))
 
 (def ^{:const true} sections [
   [:processes {:render-fn #'render-processes}]
+   ;            :summary-fn #'render-process-summary}]
   [:data {:render-fn #'render-data
-          :info-fn #'render-data-info}]
+          :summary-fn #'render-data-summary}]
   [:file-distribution {:render-fn #'render-files}]
   [:console-properties {:render-fn #'render-properties-form}]])
 
@@ -309,11 +310,11 @@
        [:div {:id :logo} (image "core/logo.png" "Logo")]]
 
       [:div {:id :sidebar}
-       (for [[k {:keys [info-fn] :as v}] sections]
+       (for [[k {:keys [summary-fn] :as v}] sections]
          [:button {:class "grinder-button replace-content"
                    :id k} (t k)
-          (when info-fn
-            [:div {:class "info"} (info-fn)])
+          (when summary-fn
+            [:div {:class "summary"} (summary-fn)])
          ])]
 
       [:div {:id :content} body]
