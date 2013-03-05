@@ -31,25 +31,22 @@ jQuery(function($) {
         submit.visible(false);
 
         changeables.each(function() {
-
             if (this.type === "checkbox") {
                 this.modified = function() {
                     return this.checked != this.defaultChecked;
                 };
             } else {
-                this.original = this.value;
+                var original = this.value;
                 this.modified = function() {
-                    return this.original != this.value;
+                    return original != this.value;
                 };
             }
 
             $(this).change(function(e) {
+                console.log(this, $(e.target).val(), e.target.modified());
+
                 // This is wrong if multiple controls share the same label.
-                if (e.target.modified()) {
-                    $(e.target.label).addClass("changed");
-                } else {
-                    $(e.target.label).removeClass("changed");
-                }
+                $(e.target.label).toggleClass("changed", e.target.modified());
 
                 submit.visible(changeables.filter(function(x) {
                     return this.modified();
