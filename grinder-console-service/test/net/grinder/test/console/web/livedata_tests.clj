@@ -119,9 +119,6 @@
         (is (= "application/json" ((:headers r) "Content-Type")))
         (is (= {"data" msg "next" "1"} (json/decode (:body r)))))
 
-      ; push of the same value is a no-op.
-      (ld/push ch msg)
-
       ; new client gets existing value.
       (ld/poll (adder rh) ch "-1")
 
@@ -143,3 +140,29 @@
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
         (is (= {"data" msg2 "next" "2"} (json/decode (:body r))))))))
+
+(deftest push-assoc
+  (with-no-logging
+    (let [ch (gensym)
+          rh (result-holder)]
+
+      (ld/push-assoc ch :a 1)
+
+      (ld/poll (adder rh) ch "-1")
+
+      (let [r (one rh)]
+        (is (= 200 (:status r)))
+        (is (= "application/json" ((:headers r) "Content-Type")))
+        (is (= {"data" {"a" 1} "next" "1"} (json/decode (:body r)))))
+
+      (ld/push-assoc ch :b 2 :c 3)
+
+      (ld/poll (adder rh) ch "1")
+
+      (let [r (one rh)]
+        (is (= 200 (:status r)))
+        (is (= "application/json" ((:headers r) "Content-Type")))
+        (is (= {"data" {"a" 1 "b" 2 "c" 3} "next" "2"}
+              (json/decode (:body r)))))
+      )))
+
