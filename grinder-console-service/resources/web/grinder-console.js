@@ -90,6 +90,10 @@ jQuery(function($) {
     }
 
     function addLiveDataElements(scope) {
+        // TODO: Better idiom for filter by channel
+        // TODO: Add (livedata/push ch key data), which assocs partial data
+        // TODO: Add data-ld-key, and use it to select the partial data
+
         $(".ld-display").on('livedata', function(_e, ch, x) {
                 var t = $(this);
 
@@ -284,7 +288,15 @@ jQuery(function($) {
                         }
 
                         var total =
-                            ss.reduce(function(x, y) { return x + y[s]; }, 0);
+                            ss.reduce(function(x, y) {
+                                    var v = y[s];
+                                    if (typeof(v) == "number") {
+                                        return x + v;
+                                    }
+
+                                    return x;
+                                }
+                                , 0);
 
                         return total / ss.length;
                     };
@@ -350,6 +362,10 @@ jQuery(function($) {
 
             // Trim old stats?
             metric.stats.push([timestamp, test.statistics]);
+
+            if (test.test === 0) {
+                console.log(metric.stats);
+            }
 
             return metric;
         }
