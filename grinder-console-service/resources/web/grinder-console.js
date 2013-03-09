@@ -43,8 +43,6 @@ jQuery(function($) {
             }
 
             $(this).change(function(e) {
-                console.log(this, $(e.target).val(), e.target.modified());
-
                 // This is wrong if multiple controls share the same label.
                 $(e.target.label).toggleClass("changed", e.target.modified());
 
@@ -91,7 +89,6 @@ jQuery(function($) {
 
     function addLiveDataElements(scope) {
         // TODO: Better idiom for filter by channel
-        // TODO: Add (livedata/push ch key data), which assocs partial data
         // TODO: Add data-ld-key, and use it to select the partial data
 
         $(".ld-display").on('livedata', function(_e, ch, x) {
@@ -236,8 +233,10 @@ jQuery(function($) {
                 });
             };
 
-        $("#sample").on('livedata', function(_e, k, x) {
-            if (k === "sample") {
+        $("#data-subscription").on('livedata', function(_e, k, x) {
+            var sample = x.data.sample;
+
+            if (sample) {
                 new_data(
                     function(existing) {
                         var by_test= {};
@@ -247,20 +246,20 @@ jQuery(function($) {
                          });
 
                         var result = $.map(
-                                x.data.tests,
+                                sample.tests,
                                 function(t) {
                                     return cubismMetric(by_test[t.test],
-                                                        x.data.timestamp,
+                                                        sample.timestamp,
                                                         t,
                                                         selected_statistic);
                                 });
 
                         var totalTest = { test :"Total",
                                           description : null,
-                                          statistics : x.data.totals };
+                                          statistics : sample.totals };
 
                         result.push(cubismMetric(by_test[totalTest.test],
-                                                 x.data.timestamp,
+                                                 sample.timestamp,
                                                  totalTest,
                                                  selected_statistic));
 
@@ -363,10 +362,6 @@ jQuery(function($) {
             // Trim old stats?
             metric.stats.push([timestamp, test.statistics]);
 
-            if (test.test === 0) {
-                console.log(metric.stats);
-            }
-
             return metric;
         }
 
@@ -388,24 +383,28 @@ jQuery(function($) {
     function addDataPanels(scope) {
         var old_state = null;
 
-        $("#sample", scope).on('livedata', function(_e, k, x) {
-            var s = x.data.status;
+        $("#data-subscription", scope).on('livedata', function(_e, k, x) {
+            var sample = x.data.sample;
 
-            for (var y in s) {
-                $("#data-summary #" + y).html(s[y]);
-            }
+            if (sample) {
+                var s = sample.status;
 
-            if (s.state != old_state) {
-                if (s.state === "Stopped") {
-                    $("#data-summary").parent()
-                        .stop().animate({opacity: 0}, "slow");
-                }
-                else {
-                    $("#data-summary").parent()
-                        .stop().animate({opacity: 0.9}, "fast");
+                for (var y in s) {
+                    $("#data-summary #" + y).html(s[y]);
                 }
 
-                old_state = s.state;
+                if (s.state != old_state) {
+                    if (s.state === "Stopped") {
+                        $("#data-summary").parent()
+                            .stop().animate({opacity: 0}, "slow");
+                    }
+                    else {
+                        $("#data-summary").parent()
+                            .stop().animate({opacity: 0.9}, "fast");
+                    }
+
+                    old_state = s.state;
+                }
             }
         });
     }

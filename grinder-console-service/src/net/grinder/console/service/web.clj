@@ -119,7 +119,7 @@
         (recording/data sample-model sample-model-views :as-text true)]
 
     (html
-      [:div (ld-subscription :data
+      [:div (ld-subscription :statistics
               {:class "grinder-table data-table ld-display"})
        [:table
         [:thead
@@ -314,7 +314,8 @@
 
       [:div {:id :content} body]
 
-      [:script (ld-subscription :sample {:id "sample" :type "text/json"})]
+      [:script
+       (ld-subscription :data {:id :data-subscription :type "text/json"})]
       ]))
 
 
@@ -335,13 +336,21 @@
   (processes/add-listener :key
     (fn [k _]
       (livedata/push :process-state
-        (render-process-table process-control))))
+        (render-process-table process-control))
+
+      (livedata/push-assoc :data
+        :threads (processes/running-threads-summary
+                   (processes/status process-control)))
+
+      ))
 
   (recording/add-listener :key
     (fn [k]
-      (livedata/push :data
+      (livedata/push :statistics
         (render-data-table sample-model sample-model-views))
-      (livedata/push :sample
+
+      (livedata/push-assoc :data
+        :sample
         (assoc
           (recording/data sample-model sample-model-views :sample true)
           :timestamp (System/currentTimeMillis)))))
