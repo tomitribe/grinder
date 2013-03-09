@@ -20,10 +20,21 @@
 ; OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (ns net.grinder.console.web.livedata
-  "Long polling support."
+  "Long polling support.
+
+   Data streams are partitioned into 'channels'. Each channel has a current
+   value (or nil), with an associated sequence number. New data values are
+   provided with the `push` function.
+
+   Clients `poll`, supplying a channel, sequence number, and callback function.
+   If the provided sequence does not match the current sequence, the callback
+   is invoked immediately with the current value andsequence for the channel.
+
+   Otherwise, the callback is retained and invoked asynchronously when the
+   channel has new data."
+
   (:use
-    [org.httpkit.server :only [async-response]]
-    [net.grinder.console.web.ringutil])
+    [net.grinder.console.web.ringutil :only [json-response]])
   (:require
     [clojure.set]
     [clojure.tools [logging :as log]]))
@@ -33,7 +44,7 @@
       values (atom {})]
 
   (defn get-sequence
-    "Get the current value for `channel`."
+    "Get the current sequence number for `channel`."
     [channel]
     (->
       channel
@@ -41,7 +52,7 @@
       str))
 
   (defn- next-sequence
-    "Return a new value for `channel`."
+    "Generate a new sequence number for `channel`."
     [channel]
     (->
       channel
@@ -50,32 +61,35 @@
       str)))
 
 
-(let [ ; Holds {channel #{client}}
-      clients (ref {})]
+(let [ ; Holds {channel #{callback}}
+      callbacks (ref {})]
 
-  (defn- register-client
-    "Register http-kit callback `client` for `channel`."
-    [channel client]
+  (defn- register-callback
+    "Register callback for `channel`."
+    [channel callback]
     (dosync
-      (commute clients
-        #(merge-with clojure.set/union % {channel #{client}})))
-    (log/debugf "register-client: %s %s -> %s"
+      (commute callbacks
+        #(merge-with clojure.set/union % {channel #{callback}})))
+    (log/debugf "register-callback: %s %s -> %s"
                  channel
-                 client
-                 @clients))
+                 callback
+                 @callbacks))
 
-  (defn- remove-clients
-    "Remove and return the registered clients for `channel`."
+  (defn- remove-callbacks
+    "Remove and return the registered callbacks for `channel`."
     [channel]
-    (dosync (let [cs (@clients channel)]
-              (commute clients dissoc channel)
+    (dosync (let [cs (@callbacks channel)]
+              (commute callbacks dissoc channel)
               cs))))
 
+
 (let [last-data (atom {})]
+
   (defn poll
-    "Respond to a client poll for `channel` and `sequence`
-     with a synchronous or asynchronous Ring response."
-    [channel sequence]
+    "Register a callback for `channel` and `sequence`. The callback will
+     be invoked with a Ring response, synchronously or asynchronously
+     depending on whether the provided sequence number is current."
+    [callback channel sequence]
 
     (log/debugf "(poll %s %s)" channel sequence)
 
@@ -87,12 +101,12 @@
           ; Client has stale value => give them the current value.
           (do
             (log/debugf "sync response %s %s/%s %s" ch sequence s v)
-            (json-response {:data v
-                            :next s}))
+            (callback (json-response {:data v
+                                      :next s})))
 
           ; Client has current value, or there is none => long poll.
-          (async-response client
-            (register-client ch client))))))
+          (register-callback ch callback)))))
+
 
   (defn push
     "Send `data` to all clients listening to `channel`."
@@ -105,8 +119,8 @@
         (let [r (json-response {:data data
                                 :next (next-sequence ch)})]
           (swap! last-data assoc ch data)
-          (doseq [c (remove-clients ch)]
-            (log/debugf "async response to %s with %s" c r)
-            (c r)))
+          (doseq [cb (remove-callbacks ch)]
+            (log/debugf "async response to %s with %s" cb r)
+            (cb r)))
 
         (log/debugf "ignoring push of same value %s" data)))))

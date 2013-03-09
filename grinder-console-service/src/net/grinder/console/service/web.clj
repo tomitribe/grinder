@@ -23,15 +23,13 @@
   "Compojure application that provides the console web UI."
   (:use
     [compojure [core :only [GET POST PUT context routes]]
-     [route :only [not-found resources]]]
+               [route :only [not-found resources]]]
     [hiccup core def element form page
-     [middleware :only [wrap-base-url]]
-     [util :only [to-str to-uri]]]
-    [net.grinder.console.service
-     [translate :only [t make-wrap-with-translation]]]
-    [ring.util [response :only [redirect
-                                redirect-after-post
-                                response]]])
+            [middleware :only [wrap-base-url]]
+            [util :only [to-str to-uri]]]
+    [net.grinder.console.service.translate :only [t make-wrap-with-translation]]
+    [org.httpkit.server :only [async-response]]
+    [ring.util [response :only [redirect redirect-after-post response]]])
   (:require
     [compojure.handler]
     [clojure.tools [logging :as log]]
@@ -358,8 +356,11 @@
         (resources "/lib/" {:root "web/lib"})
         (resources "/core/" {:root "net/grinder/console/common/resources"})
 
-        (GET "/poll" [c s]
-          (livedata/poll c s))
+        (GET "/poll" [c s :as request]
+          (async-response
+            request
+            client
+            (livedata/poll client c s)))
 
         (->
           (apply routes
