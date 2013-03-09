@@ -28,7 +28,7 @@
             [middleware :only [wrap-base-url]]
             [util :only [to-str to-uri]]]
     [net.grinder.console.service.translate :only [t make-wrap-with-translation]]
-    [org.httpkit.server :only [async-response]]
+    [org.httpkit.server :only [with-channel send!]]
     [ring.util [response :only [redirect redirect-after-post response]]])
   (:require
     [compojure.handler]
@@ -357,10 +357,10 @@
         (resources "/core/" {:root "net/grinder/console/common/resources"})
 
         (GET "/poll" [c s :as request]
-          (async-response
+          (with-channel
             request
-            client
-            (livedata/poll client c s)))
+            ch
+            (livedata/poll (fn [d] (send! ch d)) c s)))
 
         (->
           (apply routes
