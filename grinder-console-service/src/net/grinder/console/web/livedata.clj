@@ -22,16 +22,16 @@
 (ns net.grinder.console.web.livedata
   "Long polling support.
 
-   Data streams are partitioned into 'channels'. Each channel has a current
-   value (or nil), with an associated sequence number. New data values are
-   provided with the `push` function.
+   Data streams are partitioned by key. Each key has a current value (or nil),
+   with an associated token. New data values are provided with the `push`
+   function.
 
-   Clients `poll`, supplying a channel, sequence number, and callback function.
-   If the provided sequence does not match the current sequence, the callback
-   is invoked immediately with the current value andsequence for the channel.
+   Clients `poll`, supplying a list of key/token pairs, and a callback
+   function. If one of the provided tokens is not current, the callback
+   is invoked immediately with the out of date values.
 
-   Otherwise, the callback is retained and invoked asynchronously when the
-   channel has new data."
+   Otherwise, the callback is retained and invoked asynchronously when one
+   of the keys has a new value."
 
   (:use
     [net.grinder.console.web.ringutil :only [json-response]])
@@ -43,80 +43,99 @@
 (let [default 0
       values (atom {})]
 
-  (defn get-sequence
-    "Get the current sequence number for `channel`."
-    [channel]
+  (defn get-token
+    "Get the current token for key `k`."
+    [k]
     (->
-      channel
+      k
       (@values default)
       str))
 
-  (defn- next-sequence
-    "Generate a new sequence number for `channel`."
-    [channel]
+  (defn- next-token
+    "Generate a new token for key `k`."
+    [k]
     (->
-      channel
+      k
       ((swap! values
-         (fn [vs] (assoc vs channel (inc (vs channel default))))))
+         (fn [vs] (assoc vs k (inc (vs k default))))))
       str)))
 
 
-(let [ ; Holds {channel #{callback}}
+(let [ ; Holds {k #{callback}}
       callbacks (ref {})]
 
   (defn- register-callback
-    "Register callback for `channel`."
-    [channel callback]
+    "Register callback for key `k`."
+    [k callback]
     (dosync
       (commute callbacks
-        #(merge-with clojure.set/union % {channel #{callback}})))
+        #(merge-with clojure.set/union % {k #{callback}})))
     (log/debugf "register-callback: %s %s -> %s"
-                 channel
+                 k
                  callback
                  @callbacks))
 
   (defn- remove-callbacks
-    "Remove and return the registered callbacks for `channel`."
-    [channel]
-    (dosync (let [cs (@callbacks channel)]
-              (commute callbacks dissoc channel)
-              cs))))
+    "Remove and return the registered callbacks for key `k`.
 
-(defn- make-response [data s] (json-response {:data data :next s}))
+     A callback can be regsitered for many keys. Currently, we do not remove
+     returned callbacks from the lists belonging to other keys. Hence, some
+     of the callbacks in the result may already have been used."
+    [k]
+    (dosync (let [cbs (@callbacks k)]
+              (commute callbacks dissoc k)
+              cbs))))
+
+(defn- make-response [values]
+  (json-response
+    (for [[k v s] values] {:key k :value v :next s})))
 
 (let [last-data (atom {})]
 
   (defn poll
-    "Register a callback for `channel` and `sequence`. The callback will
-     be invoked with a Ring response, synchronously or asynchronously
-     depending on whether the provided sequence number is current."
-    [callback channel sequence]
+    "Register a single use callback for a list of `[key token]` pairs.
 
-    (log/debugf "(poll %s %s)" channel sequence)
+     If there are tokens that are not current, the callback will be invoked
+     synchronously with a Ring response containing the current values for the
+     stale keys.
 
-    (let [ch (keyword channel)
-          v (@last-data ch)]
+     Otherwise, the callback will be not be invoked immediately. When a
+     value arrives for one of the keys, the callback will be invoked
+     asynchronously with a Ring response containing the single value.
 
-      (let [s (get-sequence ch)]
-        (if (and v (not= sequence s))
-          ; Client has stale value => give them the current value.
-          (do
-            (log/debugf "sync response %s %s/%s %s" ch sequence s v)
-            (callback (make-response {ch v} s)))
+     The current implementation does not discard used callbacks, so relies
+     on the callback implementation to be a no-op if called more than once."
+    [callback kts]
 
-          ; Client has current value, or there is none => long poll.
-          (register-callback ch callback)))))
+    (log/debugf "(poll %s)" kts)
+
+    (let [kwts (for [[k t] kts] [(keyword k) t])
+          stale (for [[k t] kwts
+                      :let [t' (get-token k)
+                            v (@last-data k)]
+                      :when (and v (not= t t'))]
+                  [k v t'])]
+      (if (not-empty stale)
+        ; Client has one or more stale values => give them the current values.
+        (do
+          (log/debugf "sync response %s -> %s" kts stale)
+          (callback (make-response stale))
+        )
+
+        ; Client has current value for each key => register callbacks.
+        (doseq [[k _t] kwts] (register-callback k callback))
+      )))
 
   (defn push
-    "Send `data` to all clients listening to `channel`."
-    [channel data]
-    (let [ch (keyword channel)]
-      (log/debugf "(push %s) %s" channel (get-sequence ch))
+    "Send `data` to all clients listening to key `k`."
+    [k data]
+    (let [kkw (keyword k)]
+      (log/debugf "(push %s) %s" k (get-token kkw))
 
-      (swap! last-data assoc ch data)
+      (swap! last-data assoc kkw data)
 
-      (let [r (make-response {ch data} (next-sequence ch))]
-        (doseq [cb (remove-callbacks ch)]
+      (let [r (make-response [[kkw data (next-token kkw)]])]
+        (doseq [cb (remove-callbacks kkw)]
           (log/debugf "async response to %s with %s" cb r)
           (cb r))))))
 

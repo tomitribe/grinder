@@ -56,19 +56,21 @@ jQuery(function($) {
     function pollLiveData(scope) {
 
         $(".ld-subscribe", scope).each(function() {
-            var channel = $(this).data("ld-ch");
+            var key = $(this).data("ld-ch");
             var seq = $(this).data("ld-seq");
 
             var xhr = null;
 
             function poll(e) {
-                xhr = $.get("/ui/poll", {c: channel, s: seq}, "json");
+                xhr = $.get("/ui/poll", {c: key, s: seq}, "json");
 
                 xhr.then(function(x) {
-                    $.each(x.data, function(k, v) {
-                            $(e).trigger("livedata", [k, v]);
+                    $.each(x, function(k, v) {
+                        console.log(v);
+                        $(e).trigger("livedata", [v.key, v.value]);
+                        seq = v.next;
                         });
-                    seq = x.next;
+                    //seq = x.next;
                 })
                 .then(function() {
                     poll(e);
@@ -90,8 +92,7 @@ jQuery(function($) {
     }
 
     function addLiveDataElements(scope) {
-        // TODO: Better idiom for filter by channel
-        // TODO: Add data-ld-key, and use it to select the partial data
+        // TODO: Better idiom for filter by key.
 
         $(".ld-display").on('livedata', function(_e, k, v) {
                 var t = $(this);

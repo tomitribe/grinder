@@ -29,46 +29,46 @@
     [net.grinder.console.web.livedata :as ld]
     [cheshire.core :as json]))
 
-(deftest next-sequence
+(deftest next-token
   (with-no-logging
     (let [m 10
           n 1000
           current-values
             #(doall
                (pmap (fn [i]
-                       (Integer/parseInt (#'ld/get-sequence i))) (range m)))
+                       (Integer/parseInt (#'ld/get-token i))) (range m)))
           before-values (current-values)
-          vs (partition n ; Partition the results by channel.
+          vs (partition n ; Partition the results by key.
 
-               ; Generate n values for each of m channels, in parallel.
+               ; Generate n values for each of m keys, in parallel.
                (pmap
-                 (fn [i] (Integer/parseInt (#'ld/next-sequence (int (/ i n)))))
+                 (fn [i] (Integer/parseInt (#'ld/next-token (int (/ i n)))))
                  (range (* m n))))
 
-          ; For each channel, we expect a continuous sequence of values.
+          ; For each key, we expect a continuous sequence of tokens.
           expected (for [v vs]
-                     (let [s (sort v)
-                           f (first s)]
-                       (= s (range f (+ f n)))))]
+                     (let [t (sort v)
+                           f (first t)]
+                       (= t (range f (+ f n)))))]
       (is (every? identity expected))
       (is (= (map #(+ n %) before-values) (current-values))))))
 
 
 (deftest register-callback
   (with-no-logging
-    (let [data [{:ch (gensym) :vs (range 10)}
-                {:ch (gensym) :vs (range 3)}
-                {:ch (gensym) :vs nil }]]
+    (let [data [{:k (gensym) :vs (range 10)}
+                {:k (gensym) :vs (range 3)}
+                {:k (gensym) :vs nil }]]
 
-      (doseq [{:keys [ch vs]} data v vs] (#'ld/register-callback ch v))
+      (doseq [{:keys [k vs]} data v vs] (#'ld/register-callback k v))
 
       (is (=
         (for [{:keys [vs]} data] (and vs (into #{} vs)))
-        (for [{:keys [ch]} data] (#'ld/remove-callbacks ch))))
+        (for [{:keys [k]} data] (#'ld/remove-callbacks k))))
 
       (is (=
         (repeat (count data) nil)
-        (for [{:keys [ch]} data] (#'ld/remove-callbacks ch)))))))
+        (for [{:keys [k]} data] (#'ld/remove-callbacks k)))))))
 
 ; what's a better idiom for this?
 (defprotocol ResultHolder
@@ -89,54 +89,97 @@
 
 (deftest poll-no-value
   (with-no-logging
-    (let [ch (gensym)
+    (let [k (gensym)
           msg "Hello world"
           rh (result-holder)]
-      (ld/poll (adder rh) ch "-1")
+      (ld/poll (adder rh) [[k "-1"]])
 
       (none rh)
 
-      (ld/push ch msg)
+      (ld/push k msg)
 
       (let [r (one rh)]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"data" {(str ch) msg} "next" "1"} (json/decode (:body r))))))))
+        (is (= [{"key" (str k)
+                 "value" msg
+                 "next" "1"}] (json/decode (:body r))))))))
 
 (deftest poll-value
   (with-no-logging
-    (let [ch (gensym)
+    (let [k (gensym)
           msg "Someday"
           msg2 "this will all be yours"
           rh (result-holder)]
 
-      (ld/push ch msg)
+      (ld/push k msg)
 
-      (ld/poll (adder rh) ch "-1")
+      (ld/poll (adder rh) [[k "-1"]])
 
       (let [r (one rh)]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"data" {(str ch) msg} "next" "1"} (json/decode (:body r)))))
+        (is (= [{"key" (str k) "value" msg "next" "1"}]
+              (json/decode (:body r)))))
 
       ; new client gets existing value.
-      (ld/poll (adder rh) ch "-1")
+      (ld/poll (adder rh) [[k "-1"]])
 
       (let [r (one rh)]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"data" {(str ch) msg} "next" "1"} (json/decode (:body r)))))
+        (is (= [{"key" (str k) "value" msg "next" "1"}]
+              (json/decode (:body r)))))
 
       ; existing client gets long poll
-      (ld/poll (adder rh) ch "1")
+      (ld/poll (adder rh) [[k "1"]])
 
       (none rh)
 
       ; push a new value.
-      (ld/push ch msg2)
+      (ld/push k msg2)
 
       ; client called back
       (let [r (one rh)]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"data" {(str ch) msg2} "next" "2"} (json/decode (:body r))))))))
+        (is (= [{"key" (str k) "value" msg2 "next" "2"}]
+              (json/decode (:body r))))))))
+
+(deftest poll-many
+  (with-no-logging
+    (let [k1 (gensym)
+          k2 (gensym)
+          k3 (gensym)
+          k4 (gensym)
+          msg1 "Into the oven you go"
+          msg2 "I caught the smell of honey"
+          msg3 "In the tragedian landfill"
+          rh (result-holder)]
+
+      (ld/push k1 msg1)
+      (ld/push k2 msg2)
+      (ld/push k4 msg3)
+
+      ; k1 is up to date; k2, k4 is stale; k3 has no value.
+      (ld/poll (adder rh) [[k1 "1"] [k2 "0"] [k3 "0"] [k4 "0"]])
+
+      (let [r (one rh)]
+        (is (= 200 (:status r)))
+        (is (= "application/json" ((:headers r) "Content-Type")))
+        (is (= [{"key" (str k2) "value" msg2 "next" "1"}
+                {"key" (str k4) "value" msg3 "next" "1"}]
+              (json/decode (:body r)))))
+
+      ; k1, k2 up to date; k3 has no value.
+      (ld/poll (adder rh) [[k1 "1"] [k2 "1"] [k3 "0"]])
+
+      (none rh)
+
+      (ld/push k2 msg3)
+
+      (let [r (one rh)]
+        (is (= 200 (:status r)))
+        (is (= "application/json" ((:headers r) "Content-Type")))
+        (is (= [{"key" (str k2) "value" msg3 "next" "2"}]
+              (json/decode (:body r))))))))

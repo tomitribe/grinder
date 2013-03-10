@@ -338,10 +338,8 @@
       (livedata/push :process-state
         (render-process-table process-control))
 
-      (livedata/push
-        :threads (processes/running-threads-summary
-                   (processes/status process-control)))
-
+      (livedata/push :threads
+        (processes/running-threads-summary (processes/status process-control)))
       ))
 
   (recording/add-listener :key
@@ -349,8 +347,7 @@
       (livedata/push :statistics
         (render-data-table sample-model sample-model-views))
 
-      (livedata/push
-        :sample
+      (livedata/push :sample
         (assoc
           (recording/data sample-model sample-model-views :sample true)
           :timestamp (System/currentTimeMillis)))))
@@ -369,7 +366,7 @@
           (with-channel
             request
             ch
-            (livedata/poll (fn [d] (send! ch d)) c s)))
+            (livedata/poll (fn [d] (send! ch d)) [[c s]])))
 
         (->
           (apply routes
