@@ -92,7 +92,7 @@
     (let [k (gensym)
           msg "Hello world"
           rh (result-holder)]
-      (ld/poll (adder rh) [[k "-1"]])
+      (ld/poll (adder rh) {k "-1"})
 
       (none rh)
 
@@ -114,7 +114,7 @@
 
       (ld/push k msg)
 
-      (ld/poll (adder rh) [[k "-1"]])
+      (ld/poll (adder rh) {k "-1"})
 
       (let [r (one rh)]
         (is (= 200 (:status r)))
@@ -123,7 +123,7 @@
               (json/decode (:body r)))))
 
       ; new client gets existing value.
-      (ld/poll (adder rh) [[k "-1"]])
+      (ld/poll (adder rh) {k "-1"})
 
       (let [r (one rh)]
         (is (= 200 (:status r)))
@@ -132,7 +132,7 @@
               (json/decode (:body r)))))
 
       ; existing client gets long poll
-      (ld/poll (adder rh) [[k "1"]])
+      (ld/poll (adder rh) {k "1"})
 
       (none rh)
 
@@ -162,7 +162,7 @@
       (ld/push k4 msg3)
 
       ; k1 is up to date; k2, k4 is stale; k3 has no value.
-      (ld/poll (adder rh) [[k1 "1"] [k2 "0"] [k3 "0"] [k4 "0"]])
+      (ld/poll (adder rh) {k1 "1" k2 "0" k3 "0" k4 "0"})
 
       (let [r (one rh)]
         (is (= 200 (:status r)))
@@ -172,7 +172,7 @@
               (json/decode (:body r)))))
 
       ; k1, k2 up to date; k3 has no value.
-      (ld/poll (adder rh) [[k1 "1"] [k2 "1"] [k3 "0"]])
+      (ld/poll (adder rh) {k1 "1" k2 "1" k3 "0"})
 
       (none rh)
 

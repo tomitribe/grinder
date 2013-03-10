@@ -53,59 +53,103 @@ jQuery(function($) {
         });
     }
 
-    function pollLiveData(scope) {
+    function createPoller(e) {
 
-        $(".ld-subscribe", scope).each(function() {
-            var key = $(this).data("ld-ch");
-            var seq = $(this).data("ld-seq");
+        var tokens = {}; // key => token
+        var listeners = {}; // key => {listeners}
+        var xhr = null;
 
-            var xhr = null;
+        var poller = {
+            poll : function() {
+                if (xhr != null) {
+                    xhr.abort();
+                    xhr = null;
+                }
 
-            function poll(e) {
-                xhr = $.get("/ui/poll", {c: key, s: seq}, "json");
+                if ($.isEmptyObject(tokens)) {
+                    return;
+                }
+
+                var p = this;
+
+                xhr = $.getJSON("/ui/poll", tokens);
 
                 xhr.then(function(x) {
-                    $.each(x, function(k, v) {
-                        console.log(v);
-                        $(e).trigger("livedata", [v.key, v.value]);
-                        seq = v.next;
-                        });
-                    //seq = x.next;
+                    $.each(x, function(_k, v) {
+                        if (tokens.hasOwnProperty(v.key)) {
+                            $.each(listeners[v.key],
+                                   function() { this(v.key, v.value); });
+
+                            tokens[v.key] = v.next;
+                        }
+                        else {
+                            console.warn("Ignoring value with unknown key", v);
+                        }
+                    });
                 })
                 .then(function() {
-                    poll(e);
+                    p.poll();
                 });
-            }
+            },
 
-            var thisElement = this;
+            subscribe : function(e, k, t, f) {
+                var p = this;
 
-            $(document).bind("DOMNodeRemoved", function(e) {
-                if (e.target == thisElement) {
-                    if (xhr != null)  {
-                        xhr.abort();
+                var unsubscribe = function() {
+                    var l = listeners[k];
+
+                    if (l) {
+                        delete l[f];
+
+                        if ($.isEmptyObject(l)) {
+                            delete listeners[k];
+                            delete tokens[k];
+                            p.poll();
+                        }
                     }
-                }
-            });
+                };
 
-            poll(this);
-        });
-    }
+                unsubscribe();
+
+                $(document).bind("DOMNodeRemoved", function(r) {
+                    if (r.target == e) {
+                        unsubscribe();
+                    }
+                });
+
+                var l = listeners[k] || { };
+                l[f] = f;
+                listeners[k] = l;
+
+                // TODO change tokens to values; set tokens[k] to the minimum
+                // of its existing value and t.
+                tokens[k] = t || "-1";
+
+                this.poll();
+            },
+        };
+
+        return poller;
+    };
+
+    var poller = createPoller(document);
 
     function addLiveDataElements(scope) {
-        // TODO: Better idiom for filter by key.
 
-        $(".ld-display").on('livedata', function(_e, k, v) {
-                var t = $(this);
+        $(".ld-display").each(function() {
+            var t = $(this);
 
-                if (k === t.data("ld-ch")) {
+            poller.subscribe(this, t.data("ld-key"), t.data("ld-token"),
+                function(k, v) {
                     t.html(v);
-                }
-            });
+                });
+        });
 
-        $(".ld-animate").on('livedata', function(_e, k, v) {
-                var t = $(this);
+        $(".ld-animate").each(function() {
+            var t = $(this);
 
-                if (k === t.data("ld-ch")) {
+            poller.subscribe(this, t.data("ld-key"), t.data("ld-token"),
+                function(k, v) {
                     t
                     .stop()
                     .animate({opacity: 0.5},
@@ -115,8 +159,8 @@ jQuery(function($) {
                                     .html(v)
                                     .animate({opacity: 1}, "fast");
                             });
-                }
-            });
+                });
+         });
 
     }
 
@@ -236,37 +280,38 @@ jQuery(function($) {
                 });
             };
 
-        $("#data-subscription").on('livedata', function(_e, k, v) {
+        $("#cubism").each(function() {
+            poller.subscribe(this, "sample", undefined, function(k, v) {
+                new_data(
+                    function(existing) {
+                        var by_test= {};
 
-            new_data(
-                function(existing) {
-                    var by_test= {};
+                        $(existing).each(function() {
+                            by_test[this.test.test] = this;
+                         });
 
-                    $(existing).each(function() {
-                        by_test[this.test.test] = this;
-                     });
+                        var result = $.map(
+                                v.tests,
+                                function(t) {
+                                    return cubismMetric(by_test[t.test],
+                                                        v.timestamp,
+                                                        t,
+                                                        selected_statistic);
+                                });
 
-                    var result = $.map(
-                            v.tests,
-                            function(t) {
-                                return cubismMetric(by_test[t.test],
-                                                    v.timestamp,
-                                                    t,
-                                                    selected_statistic);
-                            });
+                        var totalTest = { test :"Total",
+                                          description : null,
+                                          statistics : v.totals };
 
-                    var totalTest = { test :"Total",
-                                      description : null,
-                                      statistics : v.totals };
+                        result.push(cubismMetric(by_test[totalTest.test],
+                                                 v.timestamp,
+                                                 totalTest,
+                                                 selected_statistic));
 
-                    result.push(cubismMetric(by_test[totalTest.test],
-                                             v.timestamp,
-                                             totalTest,
-                                             selected_statistic));
-
-                    return result;
-                  });
-        });
+                        return result;
+                    });
+                });
+            });
 
         function cubismMetric(existing, timestamp, test, statistic) {
             var metric;
@@ -383,37 +428,37 @@ jQuery(function($) {
     function addDataPanels(scope) {
         var old_state = null;
 
-        $("#data-subscription", scope).on('livedata', function(_e, k, v) {
+        $(scope).each(function() {
+            poller.subscribe(this, "sample", undefined, function(k, v) {
+                var s = v.status;
 
-            var s = v.status;
-
-            for (var y in s) {
-                $("#data-summary #" + y).html(s[y]);
-            }
-
-            if (s.state != old_state) {
-                if (s.state === "Stopped") {
-                    $("#data-summary").parent()
-                        .stop().animate({opacity: 0}, "slow");
-                }
-                else {
-                    $("#data-summary").parent()
-                        .stop().animate({opacity: 0.9}, "fast");
+                for (var y in s) {
+                    $("#data-summary #" + y).html(s[y]);
                 }
 
-                old_state = s.state;
-            }
+                if (s.state != old_state) {
+                    if (s.state === "Stopped") {
+                        $("#data-summary").parent()
+                            .stop().animate({opacity: 0}, "slow");
+                    }
+                    else {
+                        $("#data-summary").parent()
+                            .stop().animate({opacity: 0.9}, "fast");
+                    }
+
+                    old_state = s.state;
+                }
+            });
         });
     }
 
     function addDynamicBehaviour(scope) {
         addButtons(scope);
         addChangeDetection(scope);
-        pollLiveData(scope);
         addLiveDataElements(scope);
         cubismCharts(scope);
-        addDataPanels(scope);
     }
 
+    addDataPanels(document);
     addDynamicBehaviour(document);
 });

@@ -68,11 +68,10 @@
 
 (defn- ld-subscription
   "Add live data subscription details to a hiccup attribute map."
-  ([ld-channel m]
+  ([ld-key m]
     (-> m
-      (assoc :data-ld-ch ld-channel
-             :data-ld-seq (livedata/get-sequence ld-channel))
-      (update-in [:class] (partial str "ld-subscribe ")))))
+      (assoc :data-ld-key ld-key
+             :data-ld-token (livedata/get-token ld-key)))))
 
 (defn- render-process-table [process-control]
   (let [processes (processes/status process-control)]
@@ -312,12 +311,7 @@
             [:div {:class "summary"} (summary-fn)])
          ])]
 
-      [:div {:id :content} body]
-
-      [:script
-       (ld-subscription :sample {:id :data-subscription :type "text/json"})]
-      ]))
-
+      [:div {:id :content} body]]))
 
 (defn- context-url [p]
   "Force hiccup to add its base-url to the given path"
@@ -362,11 +356,11 @@
         (resources "/lib/" {:root "web/lib"})
         (resources "/core/" {:root "net/grinder/console/common/resources"})
 
-        (GET "/poll" [c s :as request]
+        (GET "/poll" [& kts :as request]
           (with-channel
             request
             ch
-            (livedata/poll (fn [d] (send! ch d)) [[c s]])))
+            (livedata/poll (fn [d] (send! ch d)) kts)))
 
         (->
           (apply routes
