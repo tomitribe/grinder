@@ -121,9 +121,14 @@ jQuery(function($) {
                 l[f] = f;
                 listeners[k] = l;
 
-                // TODO change tokens to values; set tokens[k] to the minimum
-                // of its existing value and t.
-                tokens[k] = t || "-1";
+                if (!t || tokens[k] && tokens[k] != t) {
+                    // No token supplied, or there is a listener registered
+                    // for a different token. Request the current value.
+                    tokens[k] = "-1";
+                }
+                else {
+                    tokens[k] = t;
+                }
 
                 this.poll();
             },
@@ -426,29 +431,45 @@ jQuery(function($) {
     }
 
     function addDataPanels(scope) {
-        var old_state = null;
+        var data_state = null;
+        var process_threads = null;
 
-        $(scope).each(function() {
-            poller.subscribe(this, "sample", undefined, function(k, v) {
-                var s = v.status;
+        poller.subscribe(scope, "sample", undefined, function(k, v) {
+            var s = v.status;
+            var d = $("#data-summary");
 
-                for (var y in s) {
-                    $("#data-summary #" + y).html(s[y]);
+            d.html(s.description);
+
+            if (s.state != data_state) {
+                if (s.state === "Stopped") {
+                    d.parent().stop().animate({opacity: 0}, "slow");
+                }
+                else {
+                    d.parent().stop().animate({opacity: 0.9}, "fast");
                 }
 
-                if (s.state != old_state) {
-                    if (s.state === "Stopped") {
-                        $("#data-summary").parent()
-                            .stop().animate({opacity: 0}, "slow");
-                    }
-                    else {
-                        $("#data-summary").parent()
-                            .stop().animate({opacity: 0.9}, "fast");
-                    }
+                data_state = s.state;
+            }
+        });
 
-                    old_state = s.state;
+        poller.subscribe(scope, "threads", undefined, function(k, v) {
+            console.log(v);
+            var p = $("#process-summary");
+
+            p.html("<span>a:" + v.agents + " </span>" +
+                   "<span>w:" + v.workers + " </span>" +
+                   "<span>t:" + v.threads + " </span>");
+
+            if (v.threads != process_threads) {
+                if (v.threads === 0) {
+                    p.parent().stop().animate({opacity: 0}, "slow");
                 }
-            });
+                else {
+                    p.parent().stop().animate({opacity: 0.9}, "fast");
+                }
+
+                process_threads = v.threads;
+            }
         });
     }
 

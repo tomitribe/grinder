@@ -66,6 +66,10 @@
                       (:maximum-threads p)))
          d)])))
 
+
+(defn render-process-summary []
+  (html [:div {:id :process-summary}]))
+
 (defn- ld-subscription
   "Add live data subscription details to a hiccup attribute map."
   ([ld-key m]
@@ -265,14 +269,11 @@
 
 
 (defn render-data-summary []
-  (html
-        [:div {:id :data-summary}
-         [:span {:id :description}]
-         ]))
+  (html [:div {:id :data-summary}]))
 
 (def ^{:const true} sections [
-  [:processes {:render-fn #'render-processes}]
-   ;            :summary-fn #'render-process-summary}]
+  [:processes {:render-fn #'render-processes
+               :summary-fn #'render-process-summary}]
   [:data {:render-fn #'render-data
           :summary-fn #'render-data-summary}]
   [:file-distribution {:render-fn #'render-files}]
