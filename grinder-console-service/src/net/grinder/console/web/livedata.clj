@@ -84,7 +84,7 @@
 
 (defn- make-response [data s] (json-response {:data data :next s}))
 
-(let [last-data (ref {})]
+(let [last-data (atom {})]
 
   (defn poll
     "Register a callback for `channel` and `sequence`. The callback will
@@ -107,32 +107,16 @@
           ; Client has current value, or there is none => long poll.
           (register-callback ch callback)))))
 
-  (defn- pushf
-    "Sets data for `channel` to the result of calling `f` with the old value.
-     Sends the new data to all clients listening to `channel`."
-    [channel f]
-    (let [ch (keyword channel)]
-      (log/debugf "(push %s) %s" channel (get-sequence ch))
-
-      (let [data
-        (dosync
-          (let [new-data (f (@last-data ch))]
-            (commute last-data assoc ch new-data)
-            new-data))]
-
-        (let [r (make-response {ch data} (next-sequence ch))]
-          (doseq [cb (remove-callbacks ch)]
-            (log/debugf "async response to %s with %s" cb r)
-            (cb r))))))
-
   (defn push
     "Send `data` to all clients listening to `channel`."
     [channel data]
-    (pushf channel (constantly data)))
+    (let [ch (keyword channel)]
+      (log/debugf "(push %s) %s" channel (get-sequence ch))
 
-  (defn push-assoc
-    "Assoc new values to the `data` for `channel` and send it to all listening
-     clients. Assumes the current data value is a map, or nil."
-    [channel key val & kvs]
-    (pushf channel #(apply assoc %1 key val kvs))))
+      (swap! last-data assoc ch data)
+
+      (let [r (make-response {ch data} (next-sequence ch))]
+        (doseq [cb (remove-callbacks ch)]
+          (log/debugf "async response to %s with %s" cb r)
+          (cb r))))))
 

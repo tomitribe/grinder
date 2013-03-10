@@ -315,7 +315,7 @@
       [:div {:id :content} body]
 
       [:script
-       (ld-subscription :data {:id :data-subscription :type "text/json"})]
+       (ld-subscription :sample {:id :data-subscription :type "text/json"})]
       ]))
 
 
@@ -338,7 +338,7 @@
       (livedata/push :process-state
         (render-process-table process-control))
 
-      (livedata/push-assoc :data
+      (livedata/push
         :threads (processes/running-threads-summary
                    (processes/status process-control)))
 
@@ -349,7 +349,7 @@
       (livedata/push :statistics
         (render-data-table sample-model sample-model-views))
 
-      (livedata/push-assoc :data
+      (livedata/push
         :sample
         (assoc
           (recording/data sample-model sample-model-views :sample true)

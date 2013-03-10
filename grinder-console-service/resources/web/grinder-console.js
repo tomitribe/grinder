@@ -236,38 +236,35 @@ jQuery(function($) {
             };
 
         $("#data-subscription").on('livedata', function(_e, k, v) {
-            var sample = v.sample;
 
-            if (sample) {
-                new_data(
-                    function(existing) {
-                        var by_test= {};
+            new_data(
+                function(existing) {
+                    var by_test= {};
 
-                        $(existing).each(function() {
-                            by_test[this.test.test] = this;
-                         });
+                    $(existing).each(function() {
+                        by_test[this.test.test] = this;
+                     });
 
-                        var result = $.map(
-                                sample.tests,
-                                function(t) {
-                                    return cubismMetric(by_test[t.test],
-                                                        sample.timestamp,
-                                                        t,
-                                                        selected_statistic);
-                                });
+                    var result = $.map(
+                            v.tests,
+                            function(t) {
+                                return cubismMetric(by_test[t.test],
+                                                    v.timestamp,
+                                                    t,
+                                                    selected_statistic);
+                            });
 
-                        var totalTest = { test :"Total",
-                                          description : null,
-                                          statistics : sample.totals };
+                    var totalTest = { test :"Total",
+                                      description : null,
+                                      statistics : v.totals };
 
-                        result.push(cubismMetric(by_test[totalTest.test],
-                                                 sample.timestamp,
-                                                 totalTest,
-                                                 selected_statistic));
+                    result.push(cubismMetric(by_test[totalTest.test],
+                                             v.timestamp,
+                                             totalTest,
+                                             selected_statistic));
 
-                        return result;
-                      });
-            }
+                    return result;
+                  });
         });
 
         function cubismMetric(existing, timestamp, test, statistic) {
@@ -386,27 +383,24 @@ jQuery(function($) {
         var old_state = null;
 
         $("#data-subscription", scope).on('livedata', function(_e, k, v) {
-            var sample = v.sample;
 
-            if (sample) {
-                var s = sample.status;
+            var s = v.status;
 
-                for (var y in s) {
-                    $("#data-summary #" + y).html(s[y]);
+            for (var y in s) {
+                $("#data-summary #" + y).html(s[y]);
+            }
+
+            if (s.state != old_state) {
+                if (s.state === "Stopped") {
+                    $("#data-summary").parent()
+                        .stop().animate({opacity: 0}, "slow");
+                }
+                else {
+                    $("#data-summary").parent()
+                        .stop().animate({opacity: 0.9}, "fast");
                 }
 
-                if (s.state != old_state) {
-                    if (s.state === "Stopped") {
-                        $("#data-summary").parent()
-                            .stop().animate({opacity: 0}, "slow");
-                    }
-                    else {
-                        $("#data-summary").parent()
-                            .stop().animate({opacity: 0.9}, "fast");
-                    }
-
-                    old_state = s.state;
-                }
+                old_state = s.state;
             }
         });
     }
