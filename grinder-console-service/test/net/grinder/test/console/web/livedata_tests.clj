@@ -101,7 +101,7 @@
       (let [r (one rh)]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"data" msg "next" "1"} (json/decode (:body r))))))))
+        (is (= {"data" {(str ch) msg} "next" "1"} (json/decode (:body r))))))))
 
 (deftest poll-value
   (with-no-logging
@@ -117,7 +117,7 @@
       (let [r (one rh)]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"data" msg "next" "1"} (json/decode (:body r)))))
+        (is (= {"data" {(str ch) msg} "next" "1"} (json/decode (:body r)))))
 
       ; new client gets existing value.
       (ld/poll (adder rh) ch "-1")
@@ -125,7 +125,7 @@
       (let [r (one rh)]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"data" msg "next" "1"} (json/decode (:body r)))))
+        (is (= {"data" {(str ch) msg} "next" "1"} (json/decode (:body r)))))
 
       ; existing client gets long poll
       (ld/poll (adder rh) ch "1")
@@ -139,7 +139,7 @@
       (let [r (one rh)]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"data" msg2 "next" "2"} (json/decode (:body r))))))))
+        (is (= {"data" {(str ch) msg2} "next" "2"} (json/decode (:body r))))))))
 
 (deftest push-assoc
   (with-no-logging
@@ -153,7 +153,7 @@
       (let [r (one rh)]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"data" {"a" 1} "next" "1"} (json/decode (:body r)))))
+        (is (= {"data" {(str ch) {"a" 1}} "next" "1"} (json/decode (:body r)))))
 
       (ld/push-assoc ch :b 2 :c 3)
 
@@ -162,7 +162,7 @@
       (let [r (one rh)]
         (is (= 200 (:status r)))
         (is (= "application/json" ((:headers r) "Content-Type")))
-        (is (= {"data" {"a" 1 "b" 2 "c" 3} "next" "2"}
+        (is (= {"data" {(str ch) {"a" 1 "b" 2 "c" 3}} "next" "2"}
               (json/decode (:body r)))))
       )))
 

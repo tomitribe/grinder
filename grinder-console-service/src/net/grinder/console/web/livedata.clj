@@ -102,7 +102,7 @@
           ; Client has stale value => give them the current value.
           (do
             (log/debugf "sync response %s %s/%s %s" ch sequence s v)
-            (callback (make-response v s)))
+            (callback (make-response {ch v} s)))
 
           ; Client has current value, or there is none => long poll.
           (register-callback ch callback)))))
@@ -120,7 +120,7 @@
             (commute last-data assoc ch new-data)
             new-data))]
 
-        (let [r (make-response data (next-sequence ch))]
+        (let [r (make-response {ch data} (next-sequence ch))]
           (doseq [cb (remove-callbacks ch)]
             (log/debugf "async response to %s with %s" cb r)
             (cb r))))))

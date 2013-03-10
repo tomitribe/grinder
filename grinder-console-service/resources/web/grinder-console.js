@@ -65,7 +65,9 @@ jQuery(function($) {
                 xhr = $.get("/ui/poll", {c: channel, s: seq}, "json");
 
                 xhr.then(function(x) {
-                    $(e).trigger("livedata", [channel, x]);
+                    $.each(x.data, function(k, v) {
+                            $(e).trigger("livedata", [k, v]);
+                        });
                     seq = x.next;
                 })
                 .then(function() {
@@ -91,25 +93,25 @@ jQuery(function($) {
         // TODO: Better idiom for filter by channel
         // TODO: Add data-ld-key, and use it to select the partial data
 
-        $(".ld-display").on('livedata', function(_e, ch, x) {
+        $(".ld-display").on('livedata', function(_e, k, v) {
                 var t = $(this);
 
-                if (ch === t.data("ld-ch")) {
-                    t.html(x.data);
+                if (k === t.data("ld-ch")) {
+                    t.html(v);
                 }
             });
 
-        $(".ld-animate").on('livedata', function(_e, ch, x) {
+        $(".ld-animate").on('livedata', function(_e, k, v) {
                 var t = $(this);
 
-                if (ch === t.data("ld-ch")) {
+                if (k === t.data("ld-ch")) {
                     t
                     .stop()
                     .animate({opacity: 0.5},
                             "fast",
                             function() {
                                 $(this)
-                                    .html(x.data)
+                                    .html(v)
                                     .animate({opacity: 1}, "fast");
                             });
                 }
@@ -233,8 +235,8 @@ jQuery(function($) {
                 });
             };
 
-        $("#data-subscription").on('livedata', function(_e, k, x) {
-            var sample = x.data.sample;
+        $("#data-subscription").on('livedata', function(_e, k, v) {
+            var sample = v.sample;
 
             if (sample) {
                 new_data(
@@ -383,8 +385,8 @@ jQuery(function($) {
     function addDataPanels(scope) {
         var old_state = null;
 
-        $("#data-subscription", scope).on('livedata', function(_e, k, x) {
-            var sample = x.data.sample;
+        $("#data-subscription", scope).on('livedata', function(_e, k, v) {
+            var sample = v.sample;
 
             if (sample) {
                 var s = sample.status;
