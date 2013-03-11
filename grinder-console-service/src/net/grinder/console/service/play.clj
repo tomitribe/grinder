@@ -21,6 +21,8 @@
 
 (ns net.grinder.console.service.play
   "Start and stop the console from the REPL."
+  (:require
+    [clojure.tools [logging :as log]])
   (:import
     net.grinder.common.GrinderBuild
     org.slf4j.LoggerFactory
@@ -43,6 +45,9 @@
             (fn []
               (.shutdown cf)
               (reset! stopper nil)))
-    (future (.run cf))))
+    (future
+      (try
+        (.run cf)
+        (catch Exception e (log/error e "ConsoleFoundation failed"))))))
 
 
