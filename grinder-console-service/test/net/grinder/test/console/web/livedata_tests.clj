@@ -36,7 +36,7 @@
           current-values
             #(doall
                (pmap (fn [i]
-                       (Integer/parseInt (#'ld/get-token i))) (range m)))
+                       (Integer/parseInt (ld/get-token i))) (range m)))
           before-values (current-values)
           vs (partition n ; Partition the results by key.
 
@@ -60,15 +60,24 @@
                 {:k (gensym) :vs (range 3)}
                 {:k (gensym) :vs nil }]]
 
-      (doseq [{:keys [k vs]} data v vs] (#'ld/register-callback k v))
+      (doseq [{:keys [k vs]} data v vs] (#'ld/register-callback [k] v))
 
       (is (=
-        (for [{:keys [vs]} data] (and vs (into #{} vs)))
-        (for [{:keys [k]} data] (#'ld/remove-callbacks k))))
+        (for [{:keys [vs]} data] (or vs '()))
+        (for [{:keys [k]} data] (sort (#'ld/remove-callbacks k)))))
 
       (is (=
         (repeat (count data) nil)
-        (for [{:keys [k]} data] (#'ld/remove-callbacks k)))))))
+        (for [{:keys [k]} data] (#'ld/remove-callbacks k)))))
+
+    ; Now some tests where a callback is registered for mutiple keys.
+    (#'ld/register-callback [:k1] :cb1)
+    (#'ld/register-callback [:k1 :k2] :cb2)
+    (#'ld/register-callback [:k2 :k3] :cb3)
+
+    (is (= [:cb1 :cb2] (sort (#'ld/remove-callbacks :k1))))
+    (is (= [:cb3] (sort (#'ld/remove-callbacks :k2))))
+    (is (= nil (#'ld/remove-callbacks :k1)))))
 
 ; what's a better idiom for this?
 (defprotocol ResultHolder

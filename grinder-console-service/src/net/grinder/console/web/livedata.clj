@@ -27,16 +27,13 @@
    function.
 
    Clients `poll`, supplying a list of key/token pairs, and a callback
-   function. If one of the provided tokens is not current, the callback
-   is invoked immediately with the out of date values.
-
-   Otherwise, the callback is retained and invoked asynchronously when one
-   of the keys has a new value."
+   function. The callback is invoked asynchronously or synchronously,
+   depending on whether all the tokens are current. See `poll` for more
+   details."
 
   (:use
     [net.grinder.console.web.ringutil :only [json-response]])
   (:require
-    [clojure.set]
     [clojure.tools [logging :as log]]))
 
 
@@ -61,30 +58,55 @@
       str)))
 
 
-(let [ ; Holds {k #{callback}}
+(let [ ; Holds {k {callback [ks]}}
       callbacks (ref {})]
 
   (defn- register-callback
-    "Register callback for key `k`."
-    [k callback]
-    (dosync
-      (commute callbacks
-        #(merge-with clojure.set/union % {k #{callback}})))
+    "Register callback for keys `ks`."
+    [ks callback]
+    (let [cb-and-ks {callback ks}
+          m (reduce into {} (for [k ks] {k cb-and-ks}))]
+      (dosync
+        (commute callbacks
+          #(merge-with merge % m))))
     (log/debugf "register-callback: %s %s -> %s"
-                 k
+                 ks
                  callback
                  @callbacks))
 
   (defn- remove-callbacks
     "Remove and return the registered callbacks for key `k`.
 
-     A callback can be regsitered for many keys. Currently, we do not remove
-     returned callbacks from the lists belonging to other keys. Hence, some
-     of the callbacks in the result may already have been used."
+     The returned callbacks are removed from all keys for which they
+     were registered."
     [k]
-    (dosync (let [cbs (@callbacks k)]
-              (commute callbacks dissoc k)
-              cbs))))
+
+    ; If callbacks is
+    ;   {:k1 {:cb1 [:k1] :cb2 [:k1 :k2]}
+    ;    :k2 {:cb2 [:k1 :k2] :cb3 [:k2 :k3]}
+    ;    :k3 {:cb3 [:k2 :k3]}
+    ;
+    ; (remove-callbacks :k1)
+    ; => {:k2 {:cb3 [:k2 :k3]}
+    ;     :k3 {:cb3 [:k2 :k3]}}
+
+    (dosync (let [cbs-for-key (@callbacks k)]
+              (commute callbacks
+                (fn [cbs]
+                  (reduce
+                    (fn [cbs [cb ks]]
+                      (reduce
+                        (fn [cbs k]
+                          (let [v (dissoc (cbs k) cb)]
+                            (if (not= v {})
+                              (assoc cbs k v)
+                              (dissoc cbs k))))
+                        cbs
+                        ks))
+                    cbs
+                    cbs-for-key)))
+
+              (keys cbs-for-key)))))
 
 (defn- make-response [values]
   (json-response
@@ -93,18 +115,17 @@
 (let [last-data (atom {})]
 
   (defn poll
-    "Register a single use callback for a list of `[key token]` pairs.
+    "Register a single-use callback for a list of `[key token]` pairs.
 
      If there are tokens that are not current, the callback will be invoked
      synchronously with a Ring response containing the current values for the
-     stale keys.
+     keys corresponding to the stale tokens.
 
      Otherwise, the callback will be not be invoked immediately. When a
      value arrives for one of the keys, the callback will be invoked
      asynchronously with a Ring response containing the single value.
 
-     The current implementation does not discard used callbacks, so relies
-     on the callback implementation to be a no-op if called more than once."
+     The callback will be called at most once."
     [callback kts]
 
     (log/debugf "(poll %s)" kts)
@@ -123,7 +144,7 @@
         )
 
         ; Client has current value for each key => register callbacks.
-        (doseq [[k _t] kwts] (register-callback k callback))
+        (register-callback (map first kwts) callback)
       )))
 
   (defn push
