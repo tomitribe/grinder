@@ -328,24 +328,28 @@
            console-resources]
     :as state}]
 
-  (processes/add-listener :key
-    (fn [k _]
-      (livedata/push :process-state
-        (render-process-table process-control))
+  (letfn [(push-process-data [_ _]
+            (livedata/push :process-state
+              (render-process-table process-control))
 
-      (livedata/push :threads
-        (processes/running-threads-summary (processes/status process-control)))
-      ))
+            (livedata/push :threads
+              (processes/running-threads-summary
+                (processes/status process-control))))]
 
-  (recording/add-listener :key
-    (fn [k]
-      (livedata/push :statistics
-        (render-data-table sample-model sample-model-views))
+    (processes/add-listener :key push-process-data)
+    (push-process-data nil nil))
 
-      (livedata/push :sample
-        (assoc
-          (recording/data sample-model sample-model-views :sample true)
-          :timestamp (System/currentTimeMillis)))))
+  (letfn [(push-recording-data [_]
+            (livedata/push :statistics
+              (render-data-table sample-model sample-model-views))
+
+            (livedata/push :sample
+              (assoc
+                (recording/data sample-model sample-model-views :sample true)
+                :timestamp (System/currentTimeMillis))))]
+
+    (recording/add-listener :key push-recording-data)
+    (push-recording-data nil))
 
   (let [translate (make-wrap-with-translation
                     nil
