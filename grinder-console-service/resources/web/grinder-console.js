@@ -238,7 +238,7 @@ jQuery(function($) {
             .enter().append("div")
             .attr("class", function(d) { return d + " axis"; })
             .each(function(d) {
-                d3.select(this).call(context.axis().ticks(12).orient(d)); });
+                d3.select(this).call(context.axis().orient(d)); });
 
         d3.select("#cubism").append("div")
             .attr("class", "rule")
@@ -453,7 +453,6 @@ jQuery(function($) {
         });
 
         poller.subscribe(scope, "threads", undefined, function(k, v) {
-            console.log(v);
             var p = $("#process-summary");
 
             p.html("<span>a:" + v.agents + " </span>" +

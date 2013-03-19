@@ -293,7 +293,26 @@ button.ui-button {
 }
 
 .axis {
-  font-size: 0.9em;
+  font-size: 0.8em;
+}
+
+.axis .tick text {
+  fill: gray;
+}
+
+.axis .tick line {
+  stroke: gray;
+}
+
+.axis .domain {
+	opacity:0.3;
+  fill:gray;
+}
+
+#charts .line {
+  background: none repeat scroll 0 0 #000000;
+  opacity: 0.4;
+  z-index: 2;
 }
 
 #cubism {
@@ -329,12 +348,6 @@ button.ui-button {
 
 .horizon .value {
   right: 0;
-}
-
-#charts .line {
-  background: none repeat scroll 0 0 #000000;
-  opacity: 0.4;
-  z-index: 2;
 }
 
 #charts fieldset {
