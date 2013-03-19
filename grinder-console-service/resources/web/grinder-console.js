@@ -275,6 +275,13 @@ jQuery(function($) {
                 binding.exit().remove();
 
                 binding.sort(function(a, b) {
+                        if (a.test.isTotal) {
+                            return b.test.isTotal ? 0 : 1;
+                        }
+                        else if (b.test.isTotal) {
+                            return -1;
+                        }
+
                         return d3.ascending(a.test.test, b.test.test);
                     });
 
@@ -304,9 +311,10 @@ jQuery(function($) {
                                                         selected_statistic);
                                 });
 
-                        var totalTest = { test :"Total",
+                        var totalTest = { test : "Total",
                                           description : null,
-                                          statistics : v.totals };
+                                          statistics : v.totals,
+                                          isTotal : true };
 
                         result.push(cubismMetric(by_test[totalTest.test],
                                                  v.timestamp,
