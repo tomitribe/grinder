@@ -244,6 +244,7 @@ jQuery(function($) {
             .attr("class", "rule")
             .call(context.rule());
 
+        var tests_statistic = 0;
         var selected_statistic = 0;
 
         var new_data = function(data_fn) {
@@ -340,20 +341,23 @@ jQuery(function($) {
                 var stats = [];
 
                 var average = function(ss, s) {
-                        if (ss.length == 0) {
-                            return NaN;
-                        }
-
+                        // Cubism uses NaN to indicate "no value".
                         var total =
                             ss.reduce(function(x, y) {
-                                    var v = y[s];
-                                    if (typeof(v) == "number") {
-                                        return x + v;
-                                    }
+                                // If tests=0, there is no value.
+                                var v = y[tests_statistic] ? y[s] : NaN;
 
+                                if (isNaN(v)) {
                                     return x;
                                 }
-                                , 0);
+
+                                if (isNaN(x)) {
+                                    return v;
+                                }
+
+                                return x + v;
+                            }
+                            , NaN);
 
                         return total / ss.length;
                     };
