@@ -157,13 +157,11 @@
        [:div {:id :cubism}]
        [:fieldset
         [:legend (t :chart-statistic)]
-        (map-indexed
-          (fn [i ^ExpressionView v]
-            [:input {:type :radio
-                     :name :chart-statistic
-                     :value i}
-             (.getDisplayName v)])
-          (.getExpressionViews (.getIntervalStatisticsView sample-model-views)))
+
+        (drop-down :chart-statistic
+          (map-indexed
+            (fn [i ^ExpressionView v] [(.getDisplayName v) i])
+            (.getExpressionViews (.getIntervalStatisticsView sample-model-views))))
         ]])))
 
 (defn- render-files [{:keys [process-control]}]

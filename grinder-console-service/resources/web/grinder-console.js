@@ -423,11 +423,10 @@ jQuery(function($) {
             return metric;
         }
 
-        $("input[name=chart-statistic][value=" + selected_statistic + "]")
-            .prop('checked', true);
+        $("select[name=chart-statistic]").val(selected_statistic);
 
-        $("input[name=chart-statistic]").change(
-                function(_e, k, x) {
+        $("select[name=chart-statistic]").change(
+                function() {
                     selected_statistic = this.value;
 
                     new_data(function(existing) {
