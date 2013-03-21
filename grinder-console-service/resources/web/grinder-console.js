@@ -232,6 +232,12 @@ jQuery(function($) {
             }
         });
 
+        context.on("focus", function(i) {
+            d3.selectAll(".value")
+            .style("right",
+                    i == null ? null : context.size() - i + "px");
+        });
+
         // Should constrain D3 selection to scope, but how?
         d3.select("#cubism").selectAll(".axis")
             .data(["top", "bottom"])
@@ -244,198 +250,189 @@ jQuery(function($) {
             .attr("class", "rule")
             .call(context.rule());
 
-        var tests_statistic = 0;
-        var selected_statistic = 0;
+        const TESTS_STATISTIC = 0;
+        const TOTAL_TEST = "Total";
 
-        var new_data = function(data_fn) {
-                // data_fn is passed an array of the existing data items and
-                // returns the new data items.
+        var selectedStatistic = TESTS_STATISTIC;
 
-                var selection =
-                    d3.select("#cubism").selectAll(".horizon");
+        // A function that updates the bound d3 data.
+        // oldToNewFn is called with an array of the existing metrics
+        // and should returns the new metrics.
+        var newData = function(oldToNewFn) {
 
-                // Bind tests to nodes.
-                var binding = selection
-                    .data(function() { return data_fn(selection.data()); },
-                          function(metric) { return metric.key; });
+            var selection = d3.select("#cubism").selectAll(".horizon");
 
-                // Handle new nodes.
-                binding.enter().insert("div", ".bottom")
-                    .attr("class", "horizon")
-                    .call(context.horizon()
-                            .format(d3.format(",.3r"))
-                            .colors(["#225EA8",
-                                     "#41B6C4",
-                                     "#A1DAB4",
-                                     "#FFFFCC",
-                                     "#FECC5C",
-                                     "#FD8D3C",
-                                     "#F03B20",
-                                     "#BD0026"]));
+            // Bind tests to nodes.
+            var binding = selection
+                .data(function() { return oldToNewFn(selection.data()); },
+                      function(metric) { return metric.key; });
 
-                binding.exit().remove();
+            // Handle new nodes.
+            binding.enter().insert("div", ".bottom")
+                .attr("class", "horizon")
+                .call(context.horizon()
+                        .format(d3.format(",.3r"))
+                        .colors(["#225EA8",
+                                 "#41B6C4",
+                                 "#A1DAB4",
+                                 "#FFFFCC",
+                                 "#FECC5C",
+                                 "#FD8D3C",
+                                 "#F03B20",
+                                 "#BD0026"]));
 
-                binding.sort(function(a, b) {
-                        if (a.test.isTotal) {
-                            return b.test.isTotal ? 0 : 1;
-                        }
-                        else if (b.test.isTotal) {
-                            return -1;
-                        }
+            binding.exit().remove();
 
-                        return d3.ascending(a.test.test, b.test.test);
-                    });
+            binding.sort(function(a, b) {
+                if (a.test === TOTAL_TEST) {
+                    return b.test === TOTAL_TEST ? 0 : 1;
+                }
+                else if (b.test === TOTAL_TEST) {
+                    return -1;
+                }
 
-                context.on("focus", function(i) {
-                    d3.selectAll(".value")
-                    .style("right",
-                            i == null ? null : context.size() - i + "px");
-                });
-            };
+                return d3.ascending(a.test, b.test);
+            });
+        };
 
         $("#cubism").each(function() {
+            // Pull this and by_test out to the document level so we keep
+            // statistics when view is closed?
             poller.subscribe(this, "sample", undefined, function(k, v) {
-                new_data(
-                    function(existing) {
-                        var by_test= {};
+            newData(
+                function(existing) {
+                    var by_test = {};
 
-                        $(existing).each(function() {
-                            by_test[this.test.test] = this;
-                         });
+                    $(existing).each(function() {
+                        by_test[this.test] = this;
+                     });
 
-                        var result = $.map(
-                                v.tests,
-                                function(t) {
-                                    return cubismMetric(by_test[t.test],
-                                                        v.timestamp,
-                                                        t,
-                                                        selected_statistic);
-                                });
+                    var result = $.map(v.tests, function(t) {
+                        var metric =
+                            by_test[t.test] ||
+                            createMetric(t.test,
+                                         t.description,
+                                         selectedStatistic);
 
-                        var totalTest = { test : "Total",
-                                          description : null,
-                                          statistics : v.totals,
-                                          isTotal : true };
+                        metric.add(v.timestamp, t.statistics);
 
-                        result.push(cubismMetric(by_test[totalTest.test],
-                                                 v.timestamp,
-                                                 totalTest,
-                                                 selected_statistic));
-
-                        return result;
+                        return metric;
                     });
+
+                    var total_metric =
+                        by_test[TOTAL_TEST] ||
+                        createMetric(TOTAL_TEST, null, selectedStatistic);
+
+                    total_metric.add(v.timestamp, v.totals);
+
+                    result.push(total_metric);
+
+                    return result;
                 });
             });
+        });
 
-        function cubismMetric(existing, timestamp, test, statistic) {
-            var metric;
+        // Create a cubism metric for a given test and the selected statistic.
+        //
+        // The following are added to the metric:
+        //   key              - a pair of the test number and statistic.
+        //   test             - the test number, or TOTAL_TEST.
+        //   withStatistic(s) - clones the metric for a new statistic s.
+        //   add(t,s)         - adds a new sample s at timestamp t.
+        function createMetric(test, description) {
 
-            if (existing) {
-                metric = existing;
-            }
-            else {
-                // We may want to replace this with a binary tree.
-                // For now we just have an array in timestamp order.
-                // Each element is an array pair of timestamp and statistic.
-                // We assume that we're called with increasing timestamps.
-                var stats = [];
+            // We may want to replace this with a binary tree.
+            // For now we just have an array in timestamp order.
+            // Each element is an array pair of timestamp and statistic.
+            // We assume that we're called with increasing timestamps.
+            var stats = [];
 
-                var average = function(ss, s) {
-                        // Cubism uses NaN to indicate "no value".
-                        var total =
-                            ss.reduce(function(x, y) {
-                                // If tests=0, there is no value.
-                                var v = y[tests_statistic] ? y[s] : NaN;
+            var average = function(ss, s) {
+                // Cubism uses NaN to indicate "no value".
+                var total =
+                    ss.reduce(function(x, y) {
+                        // If tests = 0, there is no value.
+                        var v = y[TESTS_STATISTIC] ? y[s] : NaN;
 
-                                if (isNaN(v)) {
-                                    return x;
+                        if (isNaN(v)) { return x; }
+
+                        if (isNaN(x)) { return v; }
+
+                        return x + v;
+                    }, NaN);
+
+                return total / ss.length;
+            };
+
+            var metric_fn = function(statistic) {
+                return function(start, stop, step, callback) {
+                    var values = [];
+
+                    start = +start; // Date -> timestamp.
+                    var x, ss;
+
+                    var previousBetween = function() {
+                        var d = stats.length - 1;
+
+                        return function(s, e) {
+                            x = stats[d];
+
+                            while (x && x[0] >= s) {
+                                d -= 1;
+                                if (x[0] < e) {
+                                    return x[1];
                                 }
 
-                                if (isNaN(x)) {
-                                    return v;
-                                }
-
-                                return x + v;
+                                x = stats[d];
                             }
-                            , NaN);
-
-                        return total / ss.length;
-                    };
-
-                var metric_fn = function(statistic) {
-                        return function(start, stop, step, callback) {
-                            var values = [];
-
-                            start = +start; // Date -> timestamp.
-                            var x, ss;
-
-                            var previousBetween = function() {
-                                    var d = stats.length - 1;
-
-                                    return function(s, e) {
-                                        x = stats[d];
-
-                                        while (x && x[0] >= s) {
-                                            d -= 1;
-                                            if (x[0] < e) {
-                                                return x[1];
-                                            }
-
-                                            x = stats[d];
-                                        }
-                                    };
-                                }();
-
-                            for (var i = +stop; i > start; i-= step) {
-                                ss = [];
-
-                                while (x = previousBetween(i - step, i)) {
-                                    ss.push(x);
-                                }
-
-                                values.unshift(average(ss, statistic));
-                            }
-
-                            callback(null, values);
                         };
-                    };
+                    }();
 
-                var description;
+                    for (var i = +stop; i > start; i-= step) {
+                        ss = [];
 
-                if (test.description) {
-                    description = test.test + " [" + test.description + "]";
-                }
-                else {
-                    description = test.test;
-                }
+                        while (x = previousBetween(i - step, i)) {
+                            ss.push(x);
+                        }
 
-                function create_metric(s) {
-                    var metric = context.metric(metric_fn(s), description);
-                    metric.key = test.test + "-" + s;
-                    metric.test = test;
-                    metric.stats = stats;
-                    metric.with_statistic = create_metric;
-                    return metric;
+                        values.unshift(average(ss, statistic));
+                    }
+
+                    callback(null, values);
+                };
+            };
+
+            var d = test;
+
+            if (description) {
+                d = d + " [" + description + "]";
+            }
+
+            function createMetric(s) {
+                var metric = context.metric(metric_fn(s), d);
+                metric.key = [test, s];
+                metric.test = test;
+                metric.withStatistic = createMetric;
+
+                metric.add = function(timestamp, sample) {
+                    stats.push([timestamp, sample]);
                 };
 
-                metric = create_metric(statistic);
-            }
+                return metric;
+            };
 
-            // Trim old stats?
-            metric.stats.push([timestamp, test.statistics]);
-
-            return metric;
+            return createMetric(selectedStatistic);
         }
 
-        $("select[name=chart-statistic]").val(selected_statistic);
+        $("select[name=chart-statistic]").val(selectedStatistic);
 
         $("select[name=chart-statistic]").change(
                 function() {
-                    selected_statistic = this.value;
+                    selectedStatistic = this.value;
 
-                    new_data(function(existing) {
+                    newData(function(existing) {
                         return $.map(existing, function(old) {
-                            return old.with_statistic(selected_statistic);
+                            return old.withStatistic(selectedStatistic);
                         });
                     });
                 });
