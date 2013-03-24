@@ -256,15 +256,13 @@ jQuery(function($) {
         var selectedStatistic = TESTS_STATISTIC;
 
         // A function that updates the bound d3 data.
-        // oldToNewFn is called with an array of the existing metrics
-        // and should returns the new metrics.
-        var newData = function(oldToNewFn) {
+        var newData = function(metrics) {
 
             var selection = d3.select("#cubism").selectAll(".horizon");
 
             // Bind tests to nodes.
             var binding = selection
-                .data(function() { return oldToNewFn(selection.data()); },
+                .data(function() { return metrics; },
                       function(metric) { return metric.key; });
 
             // Handle new nodes.
@@ -295,42 +293,42 @@ jQuery(function($) {
             });
         };
 
-        $("#cubism").each(function() {
-            // Pull this and by_test out to the document level so we keep
-            // statistics when view is closed?
-            poller.subscribe(this, "sample", undefined, function(k, v) {
-            newData(
-                function(existing) {
-                    var by_test = {};
 
-                    $(existing).each(function() {
-                        by_test[this.test] = this;
-                     });
+        // Separate out the newData() update, so we can push this subscription
+        // up to document level.
+        // Will need to move the cubism context too.
+        var metrics = [];
 
-                    var result = $.map(v.tests, function(t) {
-                        var metric =
-                            by_test[t.test] ||
-                            createMetric(t.test,
-                                         t.description,
-                                         selectedStatistic);
+        poller.subscribe(scope, "sample", undefined, function(k, v) {
+            var existingByTest = {};
 
-                        metric.add(v.timestamp, t.statistics);
-
-                        return metric;
-                    });
-
-                    var total_metric =
-                        by_test[TOTAL_TEST] ||
-                        createMetric(TOTAL_TEST, null, selectedStatistic);
-
-                    total_metric.add(v.timestamp, v.totals);
-
-                    result.push(total_metric);
-
-                    return result;
-                });
+            $(metrics).each(function() {
+                existingByTest[this.test] = this;
             });
+
+            metrics = $.map(v.tests, function(t) {
+                var metric =
+                    existingByTest[t.test] ||
+                    createMetric(t.test,
+                                 t.description,
+                                 selectedStatistic);
+
+                metric.add(v.timestamp, t.statistics);
+
+                return metric;
+            });
+
+            var totalMetric =
+                existingByTest[TOTAL_TEST] ||
+                createMetric(TOTAL_TEST, null, selectedStatistic);
+
+            totalMetric.add(v.timestamp, v.totals);
+
+            metrics.push(totalMetric);
+
+            newData(metrics);
         });
+
 
         // Create a cubism metric for a given test and the selected statistic.
         //
@@ -430,11 +428,11 @@ jQuery(function($) {
                 function() {
                     selectedStatistic = this.value;
 
-                    newData(function(existing) {
-                        return $.map(existing, function(old) {
-                            return old.withStatistic(selectedStatistic);
-                        });
+                    metrics = $.map(metrics, function(old) {
+                        return old.withStatistic(selectedStatistic);
                     });
+
+                    newData(metrics);
                 });
     }
 
