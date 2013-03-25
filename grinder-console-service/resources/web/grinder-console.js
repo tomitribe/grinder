@@ -214,130 +214,25 @@ jQuery(function($) {
         });
     }
 
-    function cubismCharts(scope) {
-        var cubismDiv = $("#cubism");
+    const TESTS_STATISTIC = 0;
+    const TOTAL_TEST = "Total";
 
-        if (!cubismDiv.length) {
-            return;
-        }
+    var notifySample = undefined; // TEMPORARY
 
-        var context = cubism.context()
-                        .step(2000)
-                        .size(cubismDiv.width());
+    function cubismSampleListener(scope) {
 
-        // Maybe there's a neater way to do this with d3?
-        $(document).bind("DOMNodeRemoved", function(e) {
-            if (e.target == cubismDiv) {
-                context.stop();
-            }
-        });
-
-        context.on("focus", function(i) {
-            d3.selectAll(".value")
-            .style("right",
-                    i == null ? null : context.size() - i + "px");
-        });
-
-        // Should constrain D3 selection to scope, but how?
-        d3.select("#cubism").selectAll(".axis")
-            .data(["top", "bottom"])
-            .enter().append("div")
-            .attr("class", function(d) { return d + " axis"; })
-            .each(function(d) {
-                d3.select(this).call(context.axis().orient(d)); });
-
-        d3.select("#cubism").append("div")
-            .attr("class", "rule")
-            .call(context.rule());
-
-        const TESTS_STATISTIC = 0;
-        const TOTAL_TEST = "Total";
-
-        var selectedStatistic = TESTS_STATISTIC;
-
-        // A function that updates the bound d3 data.
-        var newData = function(metrics) {
-
-            var selection = d3.select("#cubism").selectAll(".horizon");
-
-            // Bind tests to nodes.
-            var binding = selection
-                .data(function() { return metrics; },
-                      function(metric) { return metric.key; });
-
-            // Handle new nodes.
-            binding.enter().insert("div", ".bottom")
-                .attr("class", "horizon")
-                .call(context.horizon()
-                        .format(d3.format(",.3r"))
-                        .colors(["#225EA8",
-                                 "#41B6C4",
-                                 "#A1DAB4",
-                                 "#FFFFCC",
-                                 "#FECC5C",
-                                 "#FD8D3C",
-                                 "#F03B20",
-                                 "#BD0026"]));
-
-            binding.exit().remove();
-
-            binding.sort(function(a, b) {
-                if (a.test === TOTAL_TEST) {
-                    return b.test === TOTAL_TEST ? 0 : 1;
-                }
-                else if (b.test === TOTAL_TEST) {
-                    return -1;
-                }
-
-                return d3.ascending(a.test, b.test);
-            });
-        };
-
-
-        // Separate out the newData() update, so we can push this subscription
-        // up to document level.
-        // Will need to move the cubism context too.
-        var metrics = [];
-
-        poller.subscribe(scope, "sample", undefined, function(k, v) {
-            var existingByTest = {};
-
-            $(metrics).each(function() {
-                existingByTest[this.test] = this;
-            });
-
-            metrics = $.map(v.tests, function(t) {
-                var metric =
-                    existingByTest[t.test] ||
-                    createMetric(t.test,
-                                 t.description,
-                                 selectedStatistic);
-
-                metric.add(v.timestamp, t.statistics);
-
-                return metric;
-            });
-
-            var totalMetric =
-                existingByTest[TOTAL_TEST] ||
-                createMetric(TOTAL_TEST, null, selectedStatistic);
-
-            totalMetric.add(v.timestamp, v.totals);
-
-            metrics.push(totalMetric);
-
-            newData(metrics);
-        });
-
-
-        // Create a cubism metric for a given test and the selected statistic.
+        // Hold the statistics for a given test.
         //
-        // The following are added to the metric:
+        // The returned object has the following fields:
+        //   test          - the test number, or TOTAL_TEST.
+        //   metric(c, s)  - create a cubism metric for context c and
+        //                   statistic s.
+        //   add(t,s)      - adds a new sample s at timestamp t.
+        //
+        // The following are added to the metrics returned by metric():
         //   key              - a pair of the test number and statistic.
         //   test             - the test number, or TOTAL_TEST.
-        //   withStatistic(s) - clones the metric for a new statistic s.
-        //   add(t,s)         - adds a new sample s at timestamp t.
-        function createMetric(test, description) {
+        var createStatisticsHolder = function(test, description) {
 
             // We may want to replace this with a binary tree.
             // For now we just have an array in timestamp order.
@@ -364,6 +259,10 @@ jQuery(function($) {
 
             var metric_fn = function(statistic) {
                 return function(start, stop, step, callback) {
+                    if (test === 0) {
+                        console.log(start, stop, step);
+                    };
+
                     var values = [];
 
                     start = +start; // Date -> timestamp.
@@ -406,34 +305,165 @@ jQuery(function($) {
                 d = d + " [" + description + "]";
             }
 
-            function createMetric(s) {
-                var metric = context.metric(metric_fn(s), d);
-                metric.key = [test, s];
-                metric.test = test;
-                metric.withStatistic = createMetric;
+            return {
+                test : test,
 
-                metric.add = function(timestamp, sample) {
+                metric : function(context, s) {
+                    if (!this._metric ||
+                        this._metric.context !== context ||
+                        this._statistic !== s) {
+
+                        this._metric = context.metric(metric_fn(s), d);
+                        this._metric.key = [test, s];
+                        this._metric.test = test;
+                        this._statistic = s;
+                    }
+
+                    return this._metric;
+                },
+
+                add : function(timestamp, sample) {
                     stats.push([timestamp, sample]);
-                };
 
-                return metric;
+                    // TODO: Trim old stats.
+
+                    if (test === 0) {
+                        console.log(stats.length);
+                    };
+                }
             };
-
-            return createMetric(selectedStatistic);
         }
+
+        var statisticsHolders = [];
+
+        poller.subscribe(scope, "sample", undefined, function(k, v) {
+            var existingByTest = {};
+
+            $(statisticsHolders).each(function() {
+                existingByTest[this.test] = this;
+            });
+
+            statisticsHolders = $.map(v.tests, function(t) {
+                var holder =
+                    existingByTest[t.test] ||
+                    createStatisticsHolder(t.test, t.description);
+
+                holder.add(v.timestamp, t.statistics);
+
+                return holder;
+            });
+
+            var totalHolder =
+                existingByTest[TOTAL_TEST] ||
+                createStatisticsHolder(TOTAL_TEST, null);
+
+            totalHolder.add(v.timestamp, v.totals);
+
+            statisticsHolders.push(totalHolder);
+
+            if (notifySample) {
+                notifySample(statisticsHolders);
+            };
+        });
+    }
+
+    function cubismCharts(scope, cubismContext) {
+        var cubismDiv = $("#cubism");
+
+        if (!cubismDiv.length) {
+            return;
+        }
+
+        var context = cubism.context()
+            .step(2000)
+            .serverDelay(0)
+            .clientDelay(0)
+            .size(cubismDiv.width());
+
+        // Maybe there's a neater way to do this with d3?
+        $(document).bind("DOMNodeRemoved", function(e) {
+            if (e.target == scope) {
+                context.stop();
+            }
+        });
+
+        context.on("focus", function(i) {
+            d3.selectAll(".value")
+              .style("right",
+                      i == null ? null : context.size() - i + "px");
+        });
+
+        // Should constrain D3 selection to scope, but how?
+        d3.select("#cubism")
+            .selectAll(".axis")
+            .data(["top", "bottom"])
+            .enter().append("div")
+            .attr("class", function(d) { return d + " axis"; })
+            .each(function(d) {
+                d3.select(this).call(context.axis().orient(d)); });
+
+        d3.select("#cubism")
+            .append("div")
+            .attr("class", "rule")
+            .call(context.rule());
+
+        $(document).bind("DOMNodeRemoved", function(e) {
+            if (e.target == scope) {
+                notifySample = undefined;
+            }
+        });
+
+        var selectedStatistic = TESTS_STATISTIC;
+
+        // A function that updates the bound d3 data.
+        var newData = function(statisticsHolders) {
+
+            var selection = d3.select("#cubism").selectAll(".horizon");
+
+            var metrics = $.map(statisticsHolders, function(h) {
+                return h.metric(context, selectedStatistic);
+            });
+
+            // Bind tests to nodes.
+            var binding = selection
+                .data(function() { return metrics; },
+                      function(metric) { return metric.key; });
+
+            // Handle new nodes.
+            binding.enter().insert("div", ".bottom")
+                .attr("class", "horizon")
+                .call(context.horizon()
+                        .format(d3.format(",.3r"))
+                        .colors(["#225EA8",
+                                 "#41B6C4",
+                                 "#A1DAB4",
+                                 "#FFFFCC",
+                                 "#FECC5C",
+                                 "#FD8D3C",
+                                 "#F03B20",
+                                 "#BD0026"]));
+
+            binding.exit().remove();
+
+            binding.sort(function(a, b) {
+                if (a.test === TOTAL_TEST) {
+                    return b.test === TOTAL_TEST ? 0 : 1;
+                }
+                else if (b.test === TOTAL_TEST) {
+                    return -1;
+                }
+
+                return d3.ascending(a.test, b.test);
+            });
+        };
 
         $("select[name=chart-statistic]").val(selectedStatistic);
 
-        $("select[name=chart-statistic]").change(
-                function() {
-                    selectedStatistic = this.value;
+        $("select[name=chart-statistic]").change(function() {
+            selectedStatistic = this.value;
+        });
 
-                    metrics = $.map(metrics, function(old) {
-                        return old.withStatistic(selectedStatistic);
-                    });
-
-                    newData(metrics);
-                });
+        notifySample = newData;
     }
 
     function addDataPanels(scope) {
@@ -477,6 +507,8 @@ jQuery(function($) {
             }
         });
     }
+
+    cubismSampleListener(document);
 
     function addDynamicBehaviour(scope) {
         addButtons(scope);
