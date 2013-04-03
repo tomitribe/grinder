@@ -259,9 +259,9 @@ jQuery(function($) {
 
             var metric_fn = function(statistic) {
                 return function(start, stop, step, callback) {
-                    if (test === 0) {
-                        console.log(start, stop, step);
-                    };
+                    //if (test === 0) {
+                    //    console.log(start, stop, step);
+                    //};
 
                     var values = [];
 
@@ -327,9 +327,9 @@ jQuery(function($) {
 
                     // TODO: Trim old stats.
 
-                    if (test === 0) {
-                        console.log(stats.length);
-                    };
+                    //if (test === 0) {
+                    //    console.log(stats.length);
+                    //};
                 }
             };
         }
@@ -367,7 +367,7 @@ jQuery(function($) {
         });
     }
 
-    function cubismCharts(scope, cubismContext) {
+    function cubismCharts(scope) {
         var cubismDiv = $("#cubism");
 
         if (!cubismDiv.length) {
@@ -379,6 +379,13 @@ jQuery(function($) {
             .serverDelay(0)
             .clientDelay(0)
             .size(cubismDiv.width());
+
+        $(window).resize(function(e) {
+            $(this).unbind(e);
+            cubismDiv.empty();
+            context.stop();
+            cubismCharts(scope);
+        });
 
         // Maybe there's a neater way to do this with d3?
         $(document).bind("DOMNodeRemoved", function(e) {
