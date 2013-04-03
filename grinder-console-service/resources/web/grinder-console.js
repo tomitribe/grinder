@@ -367,6 +367,8 @@ jQuery(function($) {
         });
     }
 
+    var selectedStatistic = TESTS_STATISTIC;
+
     function cubismCharts(scope) {
         var cubismDiv = $("#cubism");
 
@@ -419,8 +421,6 @@ jQuery(function($) {
                 notifySample = undefined;
             }
         });
-
-        var selectedStatistic = TESTS_STATISTIC;
 
         // A function that updates the bound d3 data.
         var newData = function(statisticsHolders) {
