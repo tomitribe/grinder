@@ -409,7 +409,10 @@ jQuery(function($) {
             .enter().append("div")
             .attr("class", function(d) { return d + " axis"; })
             .each(function(d) {
-                d3.select(this).call(context.axis().orient(d)); });
+                d3.select(this).call(
+                        context.axis()
+                        .orient(d)
+                        .ticks(context.size() / 100)); });
 
         d3.select("#cubism")
             .append("div")
