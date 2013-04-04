@@ -266,33 +266,32 @@ jQuery(function($) {
                     var values = [];
 
                     start = +start; // Date -> timestamp.
-                    var x, ss;
 
-                    var previousBetween = function() {
+                    // A cursor that iterators backwards through the stats.
+                    // Returns all values within a time range.
+                    var previousRange = function() {
                         var d = stats.length - 1;
 
                         return function(s, e) {
-                            x = stats[d];
+                            var x = stats[d];
+                            result = [];
 
                             while (x && x[0] >= s) {
                                 d -= 1;
                                 if (x[0] < e) {
-                                    return x[1];
+                                    result.push(x[1]);
                                 }
 
                                 x = stats[d];
                             }
+
+                            return result;
                         };
                     }();
 
                     for (var i = +stop; i > start; i-= step) {
-                        ss = [];
-
-                        while (x = previousBetween(i - step, i)) {
-                            ss.push(x);
-                        }
-
-                        values.unshift(average(ss, statistic));
+                        values.unshift(
+                            average(previousRange(i - step, i), statistic));
                     }
 
                     callback(null, values);
