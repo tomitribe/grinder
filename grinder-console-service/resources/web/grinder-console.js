@@ -216,8 +216,11 @@ jQuery(function($) {
 
     const TESTS_STATISTIC = 0;
     const TOTAL_TEST = "Total";
+    // Half an hour at default sample interval of 1s.
+    const MAX_SAMPLE_VALUES_PER_TEST = 1800;
 
-    var notifySample = undefined; // TEMPORARY
+    // Simple listener to decouple statistic collection from graph rendering.
+    var notifySample = undefined;
 
     function cubismSampleListener(scope) {
 
@@ -225,7 +228,7 @@ jQuery(function($) {
         //
         // The returned object has the following fields:
         //   test          - the test number, or TOTAL_TEST.
-        //   metric(c, s)  - create a cubism metric for context c and
+        //   metric(c,s)   - create a cubism metric for context c and
         //                   statistic s.
         //   add(t,s)      - adds a new sample s at timestamp t.
         //
@@ -259,10 +262,6 @@ jQuery(function($) {
 
             var metric_fn = function(statistic) {
                 return function(start, stop, step, callback) {
-                    //if (test === 0) {
-                    //    console.log(start, stop, step);
-                    //};
-
                     var values = [];
 
                     start = +start; // Date -> timestamp.
@@ -274,7 +273,7 @@ jQuery(function($) {
 
                         return function(s, e) {
                             var x = stats[d];
-                            result = [];
+                            var result = [];
 
                             while (x && x[0] >= s) {
                                 d -= 1;
@@ -324,11 +323,11 @@ jQuery(function($) {
                 add : function(timestamp, sample) {
                     stats.push([timestamp, sample]);
 
-                    // TODO: Trim old stats.
-
-                    //if (test === 0) {
-                    //    console.log(stats.length);
-                    //};
+                    // If we use a more advanced structure, we might
+                    // also limit based on time.
+                    if (stats.length > MAX_SAMPLE_VALUES_PER_TEST * 1.1) {
+                        stats = stats.slice(-MAX_SAMPLE_VALUES_PER_TEST);
+                    }
                 }
             };
         }
@@ -366,6 +365,7 @@ jQuery(function($) {
         });
     }
 
+    const CUBISM_STEP_MILLISECONDS = 2000;
     var selectedStatistic = TESTS_STATISTIC;
 
     function cubismCharts(scope) {
@@ -376,7 +376,7 @@ jQuery(function($) {
         }
 
         var context = cubism.context()
-            .step(2000)
+            .step(CUBISM_STEP_MILLISECONDS)
             .serverDelay(0)
             .clientDelay(0)
             .size(cubismDiv.width());
