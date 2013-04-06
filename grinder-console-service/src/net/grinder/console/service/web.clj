@@ -22,8 +22,8 @@
 (ns net.grinder.console.service.web
   "Compojure application that provides the console web UI."
   (:use
-    [compojure [core :only [GET POST PUT context routes]]
-               [route :only [not-found resources]]]
+    [compojure [core :only [ANY GET POST PUT context routes]]
+               [route :only [resources]]]
     [hiccup core def element form page
             [middleware :only [wrap-base-url]]
             [util :only [to-str to-uri]]]
@@ -164,10 +164,6 @@
             (.getExpressionViews (.getIntervalStatisticsView sample-model-views))))
         ]])))
 
-(defn- render-files [{:keys [process-control]}]
-  "files")
-
-
 (defn- render-text-field
   [k v d & [attributes]]
   (text-field
@@ -274,7 +270,6 @@
                :summary-fn #'render-process-summary}]
   [:data {:render-fn #'render-data
           :summary-fn #'render-data-summary}]
-  [:file-distribution {:render-fn #'render-files}]
   [:console-properties {:render-fn #'render-properties-form}]])
 
 (defn- section-url [section]
@@ -322,7 +317,6 @@
            sample-model
            sample-model-views
            properties
-           file-distribution
            console-resources]
     :as state}]
 
@@ -414,7 +408,7 @@
           (page (content (t :about)
                   (.getStringFromFile console-resources "about.text" true))))
 
-        (not-found "Whoop!!!"))
+        (ANY "*" [] (redirect (str hiccup.util/*base-url* "/"))))
 
       wrap-base-url
       compojure.handler/api)))
