@@ -22,19 +22,22 @@
 
 (ns net.grinder.console.service.rest
   "Compojure application that provides the console REST API."
-  (:use [compojure [core :only [GET POST PUT context routes]]
-                   [route :only [not-found]]]
-        [ring.middleware.format-params :only [wrap-restful-params]]
-        [ring.middleware.format-response :only [wrap-restful-response]])
+  (:use [compojure
+         [core :only [GET POST PUT context routes]]
+         [route :only [not-found]]]
+        [ring.middleware
+         [params :only [wrap-params]]
+         [keyword-params :only [wrap-keyword-params]]]
+        [ring.middleware
+         [format-params :only [wrap-restful-params]]
+         [format-response :only [wrap-restful-response]]])
   (:require
-    [compojure.handler]
-    [net.grinder.console.model [files :as files]
-                               [processes :as processes]
-                               [properties :as properties]
-                               [recording :as recording]])
-  (:import
-    net.grinder.common.GrinderBuild
-  ))
+    [net.grinder.console.model
+     [files :as files]
+     [processes :as processes]
+     [properties :as properties]
+     [recording :as recording]])
+  (:import net.grinder.common.GrinderBuild))
 
 
 (defn- to-body
@@ -103,6 +106,7 @@
       (context "/recording" [] (recording-routes sample-model sample-model-views))
       (not-found "Resource not found")
       )
-    compojure.handler/api
-    (wrap-restful-params)
-    (wrap-restful-response)))
+    wrap-keyword-params
+    wrap-params
+    wrap-restful-params
+    wrap-restful-response))

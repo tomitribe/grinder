@@ -22,23 +22,28 @@
 (ns net.grinder.console.service.web
   "Compojure application that provides the console web UI."
   (:use
-    [compojure [core :only [ANY GET POST PUT context routes]]
-               [route :only [resources]]]
+    [compojure
+     [core :only [ANY GET POST PUT context routes]]
+     [route :only [resources]]]
     [hiccup core def element form page
-            [middleware :only [wrap-base-url]]
-            [util :only [to-str to-uri]]]
+     [middleware :only [wrap-base-url]]
+     [util :only [to-str to-uri]]]
     [net.grinder.console.service.translate :only [t make-wrap-with-translation]]
     [org.httpkit.server :only [with-channel send!]]
+    [ring.middleware
+     [params :only [wrap-params]]
+     [keyword-params :only [wrap-keyword-params]]]
     [ring.util [response :only [redirect redirect-after-post response]]])
   (:require
-    [compojure.handler]
     [clojure.tools [logging :as log]]
-    [net.grinder.console.model [files :as files]
-                               [processes :as processes]
-                               [properties :as properties]
-                               [recording :as recording]]
-    [net.grinder.console.web [livedata :as livedata]
-                             [ringutil :as ringutil]])
+    [net.grinder.console.model
+     [files :as files]
+     [processes :as processes]
+     [properties :as properties]
+     [recording :as recording]]
+    [net.grinder.console.web
+     [livedata :as livedata]
+     [ringutil :as ringutil]])
   (:import
     java.awt.Rectangle
     net.grinder.console.ConsoleFoundation
@@ -411,4 +416,5 @@
         (ANY "*" [] (redirect (str hiccup.util/*base-url* "/"))))
 
       wrap-base-url
-      compojure.handler/api)))
+      wrap-keyword-params
+      wrap-params)))

@@ -12,7 +12,11 @@
                  [net.sf.grinder/grinder-core "3.12-SNAPSHOT" :scope "provided"]
                  [org.clojure/clojure "1.4.0"]
                  [org.clojure/tools.logging "0.2.3"]
-                 [ring/ring-core "1.1.6"]
+                 [ring/ring-core "1.1.6"
+                  ; we don't use multipart-params, cookies, sessions.
+                  :exclusions [[commons-io] ; no multipart params.
+                               [commons-fileupload] ; no multipart params.
+                               [clj-time]]]
                  [ring-middleware-format "0.2.0"]]
   :profiles {:dev {:dependencies
                  [[ring/ring-devel "1.1.6"]
