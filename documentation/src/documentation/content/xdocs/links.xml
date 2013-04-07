@@ -13,6 +13,20 @@
   <title>Related Software Projects</title>
 
   <table class="noborder">
+
+    <tr>
+      <td>
+        <a href="https://bitbucket.org/travis_bear/grinder_to_graphite">Grinder to Graphite</a>
+      </td>
+
+      <td></td>
+
+      <td>
+        Grinder to Graphite (g2g) is a tool that analyzes the logs
+        from your Grinder tests, and sends the data into Graphite
+        where it can be visualized in a variety of ways.
+      </td>
+    </tr>
     
     <tr>
       <td>
