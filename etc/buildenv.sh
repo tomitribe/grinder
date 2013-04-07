@@ -1,5 +1,5 @@
 export ANT_HOME=/opt/ant/apache-ant-1.7.1
-export JAVA_HOME=/opt/mw-1035/jdk160_24/
+export JAVA_HOME=/opt/hotspot/jdk1.6.0_30/
 export PATH=${ANT_HOME}/bin:${JAVA_HOME}/bin:$PATH
 
 # Clover home also needs to be set in localpaths.properties.
