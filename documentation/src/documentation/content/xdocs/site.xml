@@ -365,7 +365,7 @@ See http://forrest.apache.org/docs/linking.html for more info
 
     <perfmetrix href="http://www.perfmetrix.com"/>
 
-    <picocontainer href="http://picocontainer.org/">
+    <picocontainer href="http://picocontainer.codehaus.org/">
     </picocontainer>
 
     <python href="http://www.python.org/">

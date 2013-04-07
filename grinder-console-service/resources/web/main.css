@@ -4,6 +4,16 @@ body {
   font-family: Arial, Helvetica, Verdana, sans-serif;
 }
 
+a {
+	color: #A0A0FF;
+}
+
+a:active,
+a:hover {
+	color: #C0C0FF;
+  outline: 0;
+}
+
 #wrapper {
   margin-right: auto;
   margin-left: auto;

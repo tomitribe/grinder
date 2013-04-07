@@ -51,7 +51,7 @@ The Grinder includes the jEdit Syntax highlighting package
 license and copyright details.
 
 The Grinder includes Apache XMLBeans (http://xmlbeans.apache.org),
-under the terms of the Apache Software License Version 2.0.
+under the terms of the Apache License Version 2.0.
 
    =========================================================================
    ==  NOTICE file corresponding to section 4(d) of the Apache License,   ==
@@ -100,27 +100,65 @@ http://g.oswego.edu/dl/concurrency-interest/.
 The Grinder includes SLF4J (http://www.slf4j.org/). See the file
 LICENSE-SLF4J for license and copyright details.
 
-The Grinder includes Logback (http://logback.qos.ch/), under the terms
-of the Eclipse Public License, Version 1.0.
-
-The Grinder includes Clojure (http://clojure.org) under the terms of
-the Eclipse Public License, Version 1.0.
-
-The Grinder includes Ring (https://github.com/mmcgrana/ring). See the
+The Grinder includes Ring (https://github.com/mmcgrana/ring/). See the
 file LICENSE-Ring for license and copyright details.
 
-The Grinder includes Compojure
-(https://github.com/weavejester/compojure) under the terms of the
+The Grinder includes Cheshire
+(https://github.com/dakrone/cheshire/). See the file LICENSE-Cheshire
+for license and copyright details.
+
+The Grinder includes clj-stacktrace
+(https://github.com/mmcgrana/clj-stacktrace/). See the file
+LICENSE-clj-stacktrace for license and copyright details.
+
+The Grinder includes JQuery (http://jquery.com/). See the file
+LICENSE-JQuery for license and copyright details.
+
+The Grinder includes D3 (http://d3js.org/). See the file LICENSE-D3
+for license and copyright details.
+
+
+The Grinder includes the following components under the terms of the
 Eclipse Public License, Version 1.0.
 
-The Grinder includes ring-middleware-format
-(https://github.com/ngrunwald/ring-middleware-format) under the terms
-of the Eclipse Public License, Version 1.0.
+  Logback (http://logback.qos.ch/)
 
-The Grinder includes Jetty (http://www.eclipse.org/jetty/) under the
-terms of the Eclipse Public License, Version 2.0, with exceptions
-listed in the file LICENSE-Jetty.
+  Clojure (http://clojure.org/)
 
-The Grinder includes Clojure tools.logging
-(https://github.com/clojure/tools.logging) under the terms of the
-Eclipse Public License, Version 1.0.
+  core.cache (https://github.com/clojure/core.cache/)
+
+  core.incubator (https://github.com/clojure/core.incubator/)
+
+  core.memoize (https://github.com/clojure/core.memoize/)
+
+  Compojure (https://github.com/weavejester/compojure/)
+
+  Clout (https://github.com/weavejester/clout/)
+
+  Hiccup (https://github.com/weavejester/clout/)
+
+  ring-middleware-format
+  (https://github.com/ngrunwald/ring-middleware-format/)
+
+  tools.logging (https://github.com/clojure/tools.logging/)
+
+  Tower (https://github.com/ptaoussanis/tower/)
+
+  clj-tools-macro (https://github.com/clojure/tools.macro/)
+
+  timbre (https://github.com/ptaoussanis/timbre/)
+
+
+The Grinder includes the following components under the terms of the
+Apache License, Version 2.0.
+
+  Jackson (http://wiki.fasterxml.com/JacksonHome/)
+
+  HTTP Kit (http://http-kit.org/)
+
+  Commons Codec (http://commons.apache.org/proper/commons-codec/)
+
+  SnakeYAML (http://code.google.com/p/snakeyaml/)
+
+  Cubism.js (http://square.github.io/cubism/)
+
