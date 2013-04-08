@@ -287,6 +287,7 @@
 
 (defelem page [body]
   (html5
+    [:link {:rel "shortcut icon" :href "/favicon.ico"}]
     ;(include-js "lib/jquery-1.9.0.min.js")
     (include-js "lib/jquery-1.9.0.js")
     (include-js "lib/jquery-ui-1.10.0.custom.js")

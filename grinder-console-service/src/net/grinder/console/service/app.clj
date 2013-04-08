@@ -22,13 +22,16 @@
 (ns net.grinder.console.service.app
   "Main Ring application."
   (:use
-    [compojure [core :only [context routes]]]
+    [compojure
+     [core :only [context routes GET]]
+     [response :only [render]]]
     [clj-stacktrace.repl :only [pst-str]])
   (:require
     [net.grinder.console.model [processes :as processes]
                                [recording :as recording]]
     [net.grinder.console.service [rest :as rest]
                                  [web :as web]]
+    [clojure.java.io :as io]
     [clojure.tools [logging :as log]]
     ))
 
@@ -63,6 +66,7 @@
         web-app (web/create-app state)]
     (->
       (routes
+        (GET "/favicon.ico" [] (io/resource "web/images/favicon.ico"))
         (context "/ui" [] web-app)
         rest-app)
        wrap-stacktrace
