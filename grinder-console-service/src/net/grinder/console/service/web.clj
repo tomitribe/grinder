@@ -29,6 +29,8 @@
      [middleware :only [wrap-base-url]]
      [util :only [to-str to-uri]]]
     [net.grinder.console.service.translate :only [t make-wrap-with-translation]]
+    [net.grinder.console.web.ringutil
+     :only [root-relative-url] :rename {root-relative-url rr}]
     [org.httpkit.server :only [with-channel send!]]
     [ring.middleware
      [params :only [wrap-params]]
@@ -289,19 +291,19 @@
   (html5
     [:link {:rel "shortcut icon" :href "/favicon.ico"}]
     ;(include-js "lib/jquery-1.9.0.min.js")
-    (include-js "lib/jquery-1.9.0.js")
-    (include-js "lib/jquery-ui-1.10.0.custom.js")
-    (include-js "lib/d3.v3.js")
-    (include-js "lib/cubism.v1.js")
-    (include-css "lib/jquery-ui-1.10.0.custom.css")
+    (include-js "/lib/jquery-1.9.0.js")
+    (include-js "/lib/jquery-ui-1.10.0.custom.js")
+    (include-js "/lib/d3.v3.js")
+    (include-js "/lib/cubism.v1.js")
+    (include-css "/lib/jquery-ui-1.10.0.custom.css")
 
-    (include-css "resources/main.css")
-    (include-js "resources/grinder-console.js")
+    (include-css "/resources/main.css")
+    (include-js "/resources/grinder-console.js")
 
     [:div {:id :wrapper}
       [:div {:id :header}
        [:div {:id :title} [:h1 "The Grinder"]]
-       [:div {:id :logo} (image "core/logo.png" "Logo")]]
+       [:div {:id :logo} (image "/core/logo.png" "Logo")]]
 
       [:div {:id :sidebar}
        (for [[k {:keys [summary-fn] :as v}] sections]
@@ -370,7 +372,6 @@
             (for [[section {:keys [render-fn]}] sections :when render-fn]
               (GET (section-url section) []
                 (page (content section (apply render-fn [state]))))))
-          ; (spy "get")
           translate)
 
         (context "/content" []
@@ -414,7 +415,7 @@
           (page (content (t :about)
                   (.getStringFromFile console-resources "about.text" true))))
 
-        (ANY "*" [] (redirect (str hiccup.util/*base-url* "/"))))
+        (ANY "*" [] (redirect (rr "/"))))
 
       wrap-base-url
       wrap-keyword-params

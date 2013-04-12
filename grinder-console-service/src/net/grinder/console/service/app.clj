@@ -32,8 +32,7 @@
     [net.grinder.console.service [rest :as rest]
                                  [web :as web]]
     [clojure.java.io :as io]
-    [clojure.tools [logging :as log]]
-    ))
+    [clojure.tools [logging :as log]]))
 
 
 (defn- wrap-request-logging [handler]
@@ -69,8 +68,9 @@
         (GET "/favicon.ico" [] (io/resource "web/images/favicon.ico"))
         (context "/ui" [] web-app)
         rest-app)
-       wrap-stacktrace
-       wrap-request-logging)))
+
+      wrap-stacktrace
+      wrap-request-logging)))
 
 
 (defonce ^:private state (atom nil))

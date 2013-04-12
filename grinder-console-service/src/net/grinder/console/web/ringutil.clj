@@ -24,10 +24,12 @@
   (:use
     [ring.util [response :only [content-type
                                 header
+                                redirect
                                 response]]])
   (:require
     [cheshire.core :as json]
-    [clojure.tools [logging :as log]]))
+    [clojure.tools [logging :as log]]
+    [hiccup.util]))
 
 
 (defn no-cache
@@ -38,17 +40,17 @@
     (header "Pragma" "no-cache")))
 
 (defmacro make-middleware
-  "Produce a handler that executes body with anaphoric binding of rsp to the
-   response."
-  [handler rsp & body]
-  `(fn [req#]
-     (when-let [~rsp (~handler req#)]
+  "Produce middleware that calls handler, then executes body with anaphoric
+   binding of req to the request and rsp to the response."
+  [handler req rsp & body]
+  `(fn [~req]
+     (when-let [~rsp (~handler ~req)]
        ~@body)))
 
 (defn wrap-no-cache
   "Middleware that disables browser caching."
   [handler]
-  (make-middleware handler rsp (no-cache rsp)))
+  (make-middleware handler _req rsp (no-cache rsp)))
 
 (defn json-response
   "Format a clojure structure as a Ring JSON response."
@@ -69,3 +71,15 @@
           "--------------< %s <-----------------%n")
         spyname request response spyname)
       response)))
+
+
+(defn root-relative-url
+  "Convert a relative URL to root relative URL using the current context
+   set up by `hiccup.util/wrap-base-url`."
+  [u]
+
+  (if (.startsWith u "/")
+    (root-relative-url (.substring u 1))
+    (str hiccup.util/*base-url* "/" u)))
+
+

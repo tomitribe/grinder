@@ -20,7 +20,7 @@
 ; OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (ns net.grinder.test.console.web.livedata-tests
-  "Unit tests for net.grinder.console.service.livedata."
+  "Unit tests for net.grinder.console.web.livedata."
 
   (:use
     [clojure.test]
