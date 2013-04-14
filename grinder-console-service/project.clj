@@ -19,7 +19,8 @@
                  [ring-middleware-format "0.2.0"]]
   :profiles {:dev {:dependencies
                  [[ring/ring-devel "1.1.6"]
-                  [org.clojure/tools.trace "0.7.3"]]}}
+                  [org.clojure/tools.trace "0.7.3"]
+                  [ring-mock "0.1.3"]]}}
 
   ; Sonatype discourages repository information in POMs.
   ;:repositories {"sonatype-nexus-snapshots" "https://oss.sonatype.org/content/repositories/snapshots/"

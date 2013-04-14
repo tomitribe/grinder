@@ -23,7 +23,8 @@
   "Unit tests for net.grinder.console.web.ringutil."
 
   (:use
-    [clojure.test])
+    [clojure.test]
+    [ring.mock.request])
   (:require
     [net.grinder.console.web.ringutil :as ru]
     [hiccup.util :as hu]))
@@ -36,7 +37,7 @@
 
 (deftest wrap-no-cache
   (let [f (ru/wrap-no-cache identity)
-        r (f {:uri "abc" :status 404})]
+        r (f (request :get "/"))]
     (is (no-cache-response-p r))))
 
 (deftest json-response
@@ -52,5 +53,3 @@
   (hu/with-base-url "abc/def"
     (is (= "abc/def/foo" (ru/root-relative-url "foo")))
     (is (= "abc/def/foo" (ru/root-relative-url "/foo")))))
-
-(run-tests)
