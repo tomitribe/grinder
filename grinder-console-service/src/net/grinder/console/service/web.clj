@@ -284,7 +284,7 @@
 
 (defelem content [section body]
   (html
-     [:h2 (t section)]
+     ;[:h2 (t section)]
      body))
 
 (defelem page [body]
