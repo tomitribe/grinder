@@ -302,8 +302,8 @@
 
     [:div {:id :wrapper}
       [:div {:id :header}
-       [:div {:id :title} [:h1 "The Grinder"]]
-       [:div {:id :logo} (image "/core/logo.png" "Logo")]]
+       [:div {:id :title}
+        (link-to "/" (image "/core/grinder-logo.png" "The Grinder"))]]
 
       [:div {:id :sidebar}
        (for [[k {:keys [summary-fn] :as v}] sections]

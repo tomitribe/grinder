@@ -27,28 +27,17 @@ a:hover {
 
 #title {
   float: left;
-  width: 70%;
-}
-
-#logo {
-  float: right;
-  width: 20%;
-}
-
-#logo img {
-  float: right;
-  max-width: 10em;
 }
 
 #content {
-  margin-top: 2em;
+  margin-top: 3em;
   margin-right: 1em;
   float: right;
   width: 75%;
 }
 
 #sidebar {
-  margin-top: 1.5em;
+  margin-top: 2.5em;
   padding-right: 1em;
   float: left;
   width: 20%;
