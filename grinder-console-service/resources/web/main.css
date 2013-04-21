@@ -78,6 +78,7 @@ a:hover {
 #content form legend {
   margin-bottom: 1em;
   float: left;
+  width: 100%;
 }
 
 #content form div {
