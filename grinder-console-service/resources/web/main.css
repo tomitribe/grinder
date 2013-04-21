@@ -49,6 +49,7 @@ a:hover {
   margin-top: 0.5em;
   width: 70%;
   font-weight: bold;
+  transition: color 2s,border-color 2s;
 }
 
 #content form>fieldset, table, #charts {
@@ -228,6 +229,11 @@ button.ui-button {
   padding: 0.3em;
 }
 
+button.ui-button.inactive {
+  border: 2px solid #9f9f9f;
+  color: #bfbfbf;
+}
+
 .grinder-button.ui-button-text-icon-primary .ui-button-text {
   padding-left: 3em;
 }
@@ -243,12 +249,17 @@ button.ui-button {
 .ui-button.ui-state-hover {
   background-color: #456789;
   background: linear-gradient(to bottom, #456789 0%, #56789a 8%, #456789 100%);
+  border: 2px solid #bfbfbf !important;
+  color: white !important;
+  transition-delay: 0s;
 }
 
 .ui-button.ui-state-active {
   border: 2px solid white !important;
   background-color: #56789a;
   background: linear-gradient(to bottom, #56789a 0%, #6789ab 8%, #56789a 100%);
+  color: white;
+  transition-delay: 0s;
 }
 
 .ui-icon.start-processes {

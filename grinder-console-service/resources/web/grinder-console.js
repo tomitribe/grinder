@@ -172,6 +172,8 @@ jQuery(function($) {
     function addButtons(scope) {
         content = $("div#content");
 
+        sidebarButtons = $("#sidebar .grinder-button")
+
         $(".grinder-button", scope).each(function() {
             if (this.id) {
 
@@ -190,6 +192,10 @@ jQuery(function($) {
 
                 if (this.classList.contains("replace-content")) {
                     $(this).click(function() {
+                        $(sidebarButtons).addClass("inactive");
+
+                        $(this).removeClass("inactive");
+
                         $.get("/ui/content/" + this.id,
                            function(x) {
                                 content.animate(
