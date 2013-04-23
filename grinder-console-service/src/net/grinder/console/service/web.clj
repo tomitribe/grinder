@@ -254,13 +254,15 @@
                      :consolePort
                      :httpHost
                      :httpPort}]
-                  [(t :swing-console)
-                   #{:externalEditorCommand
-                     :externalEditorArguments
-                     :saveTotalsWithResults
-                     :lookAndFeel
-                     :frameBounds
-                     :resetConsoleWithProcesses}]]
+
+                  ;[(t :swing-console)
+                  ; #{:externalEditorCommand
+                  ;   :externalEditorArguments
+                  ;   :saveTotalsWithResults
+                  ;   :lookAndFeel
+                  ;   :frameBounds
+                  ;   :resetConsoleWithProcesses}]
+                  ]
           ]
       (for [[l ks] groups]
         (render-property-group l (select-keys properties ks) defaults)))
