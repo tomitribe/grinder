@@ -123,23 +123,6 @@ a:hover {
   box-shadow: 2px 2px 5px hsla(0, 0%, 16.6667%, 0.1);
 }
 
-#content input#submit {
-  text-decoration: none;
-  height: 34px;
-  font-size: 1.25em;
-  background-color: #b01c20;
-  border-radius: 4px;
-  color: white;
-  float: right;
-  margin-bottom: 10px;
-  background: linear-gradient(to bottom, rgb(241, 92, 96) 0%, rgb(176, 28, 32)
-    100% );
-  margin-top: 10px;
-  box-shadow: 5px 5px 5px hsla(0, 0%, 26.6667%, 0.8);
-  border: 2px solid #bfbfbf;
-  background-color: #b01c20;
-}
-
 #content .hidden {
   visibility: hidden;
 }

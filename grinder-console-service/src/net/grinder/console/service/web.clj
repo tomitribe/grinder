@@ -112,9 +112,14 @@
       )))
 
 (defn- make-button
-  [id]
-  (html
-    [:button {:class "grinder-button grinder-button-icon" :id id } (t id)]))
+  ([id]
+    (make-button id :post-action))
+
+  ([id action]
+    (html
+      [:button {:class (str "grinder-button grinder-button-icon " (name action))
+                :id id }
+       (t id)])))
 
 (defn- render-processes [{:keys [process-control]}]
   (let [buttons [(make-button :start-processes)
@@ -228,9 +233,8 @@
    ])
 
 (defn- render-properties-form [{:keys [properties console-resources]}]
-  (form-to
+  [:form
     {:id :properties}
-    [:post "./properties" ]
 
     (let [properties (properties/get-properties properties)
           defaults (properties/default-properties console-resources)
@@ -261,12 +265,13 @@
       (for [[l ks] groups]
         (render-property-group l (select-keys properties ks) defaults)))
 
-    (submit-button {:id :submit} (t :set-button))))
+    [:button {:class "grinder-button post-form"
+              :id :set-properties
+              :type :button} (t :set-properties)]])
 
 (defn handle-properties-form [p params]
   (let [expanded (properties/add-missing-boolean-properties params)]
-    (properties/set-properties p expanded)
-    (redirect-after-post "./properties")))
+    (properties/set-properties p expanded)))
 
 
 (defn render-data-summary []
@@ -383,8 +388,13 @@
             ringutil/wrap-no-cache
             translate))
 
-        (POST "/properties" {params :form-params}
-          (handle-properties-form properties params))
+        (context "/form" []
+          (->
+            (POST "/set-properties" {params :form-params}
+              (handle-properties-form properties params)
+              (content :properties (render-properties-form state)))
+            ringutil/wrap-no-cache
+            translate))
 
         (context "/action" []
           (POST "/start-processes" []
@@ -412,7 +422,7 @@
               (recording/zero sample-model))))
 
         (GET "/" []
-          (page (content (t :about)
+          (page (content :about
                   (.getStringFromFile console-resources "about.text" true))))
 
         (ANY "*" [] (redirect (rr "/"))))

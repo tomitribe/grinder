@@ -40,7 +40,7 @@
   :sampling "Sampling"
   :communication "Communication"
   :swing-console "Swing Console"
-  :set-button "Set"
+  :set-properties "Set"
   :ignoreSampleCount "Number of samples to ignore"
   :collectSampleCount "Number of samples to collect"
   :saveTotalsWithResults "Save totals with results"

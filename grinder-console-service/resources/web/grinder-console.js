@@ -27,7 +27,7 @@ jQuery(function($) {
             return this.css("visibility", show ? "visible" : "hidden");
         };
 
-        var submit = $("#submit", scope);
+        var submit = $("#set-properties", scope);
         submit.visible(false);
 
         changeables.each(function() {
@@ -172,16 +172,18 @@ jQuery(function($) {
     function addButtons(scope) {
         content = $("div#content");
 
-        sidebarButtons = $("#sidebar .grinder-button")
+        sidebarButtons = $("#sidebar .grinder-button");
 
         $(".grinder-button", scope).each(function() {
             if (this.id) {
+
+                var isSidebarButton = $.inArray(this, sidebarButtons) >= 0;
 
                 var buttonOptions;
 
                 if (this.classList.contains("grinder-button-icon")) {
                     buttonOptions = {
-                            icons: { primary: this.id }
+                        icons: { primary: this.id }
                     };
                 }
                 else {
@@ -190,31 +192,43 @@ jQuery(function($) {
 
                 $(this).button(buttonOptions);
 
-                if (this.classList.contains("replace-content")) {
-                    $(this).click(function() {
-                        $(sidebarButtons).addClass("inactive");
-
-                        $(this).removeClass("inactive");
-
-                        $.get("/ui/content/" + this.id,
-                           function(x) {
-                                content.animate(
-                                    {opacity: 0},
-                                    "fast",
-                                    function() {
-                                        content.html(x);
-                                        addDynamicBehaviour(content);
-                                        content.animate({opacity: 1}, "fast");
-                                    });
-                           });
+                var replaceContent = function(x) {
+                    content.animate(
+                        {opacity: 0},
+                        "fast",
+                        function() {
+                            content.html(x);
+                            addDynamicBehaviour(content);
+                            content.animate({opacity: 1}, "fast");
                         });
-                }
-                else {
-                    $(this).click(function() {
+                };
+
+                $(this).click(function() {
+                    if (this.classList.contains("replace-content")) {
+                        if (isSidebarButton) {
+                            $(sidebarButtons).addClass("inactive");
+                            $(this).removeClass("inactive");
+                        }
+
+                        $.get("/ui/content/" + this.id, replaceContent);
+                    }
+                    else if (this.classList.contains("post-form") &&
+                             $(this.parentNode).is("form")) {
+
+                        $.post("/ui/form/" + this.id,
+                               $(this.parentNode).serialize(),
+                               replaceContent);
+                    }
+                    else if (this.classList.contains("post-action")) {
                         $.post("/ui/action/" + this.id);
-                    });
-                }
+                    }
+                    else {
+                        console.error("Don't know how to handle click", this);
+                    }
+                });
+
             } else {
+                console.error("WTF", this);
                 $(this).button();
             };
         });
