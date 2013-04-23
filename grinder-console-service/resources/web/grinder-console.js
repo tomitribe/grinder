@@ -30,6 +30,12 @@ jQuery(function($) {
         var submit = $("#set-properties", scope);
         submit.visible(false);
 
+        submit.closest("form").keyup(function(event) {
+            if (event.keyCode == 13) {
+                submit.click();
+            }
+        });
+
         changeables.each(function() {
             if (this.type === "checkbox") {
                 this.modified = function() {
