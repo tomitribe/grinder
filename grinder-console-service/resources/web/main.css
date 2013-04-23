@@ -160,6 +160,9 @@ table.grinder-table {
   color: #434242;
 }
 
+.nowrap {
+  white-space: nowrap;
+}
 
 .process-table td,th {
   text-align: left;

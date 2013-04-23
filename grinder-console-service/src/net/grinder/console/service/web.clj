@@ -145,7 +145,7 @@
         (for [{:keys [test description statistics]} tests]
           [:tr
            [:th test]
-           [:th description]
+           [:th {:class :nowrap} description]
            (for [s statistics] [:td s])
            ])
         [:tr {:class "total-row"}
