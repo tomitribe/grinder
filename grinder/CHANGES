@@ -40,6 +40,10 @@ The Grinder 3.12 (not yet released)
   keyword instead of a string when called with the application/clojure
   content type. For other content types, the string is now lower case.
 
+  Fix bug #235 - incompatibility with Clojure 1.5. Fixed by working
+  around Clojure issue CLJ-1172. Thanks to Nikita Beloglazov for the
+  report and analysis.
+
 
 The Grinder 3.11
 ----------------

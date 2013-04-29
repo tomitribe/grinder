@@ -30,6 +30,7 @@ import net.grinder.scriptengine.ScriptEngineService.ScriptEngine;
 import net.grinder.scriptengine.ScriptEngineService.WorkerRunnable;
 import net.grinder.scriptengine.ScriptExecutionException;
 import clojure.lang.Compiler;
+import clojure.lang.RT;
 
 
 /**
@@ -51,6 +52,7 @@ class ClojureScriptEngine implements ScriptEngine {
     final Object result;
 
     try {
+      RT.load("clojure/core"); // CLJ-1172
       result = Compiler.loadFile(script.getFile().getPath());
     }
     catch (final Exception e) {
