@@ -341,6 +341,20 @@ button.ui-button.inactive {
 
 .horizon .title {
   left: 0;
+  color: #E0E0E0;
+  font-size: 0.9em;
+}
+
+.horizon .test {
+}
+
+.horizon .description {
+  margin-left: 1em;
+}
+
+.horizon .active {
+  color: #404040;
+  font-size: 1em;
 }
 
 .horizon .value {

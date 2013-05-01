@@ -204,7 +204,7 @@ jQuery(function($) {
                         "fast",
                         function() {
                             content.html(x);
-                            addDynamicBehaviour(content);
+                            addDynamicBehaviour(content[0]);
                             content.animate({opacity: 1}, "fast");
                         });
                 };
@@ -261,6 +261,7 @@ jQuery(function($) {
         // The following are added to the metrics returned by metric():
         //   key              - a pair of the test number and statistic.
         //   test             - the test number, or TOTAL_TEST.
+        //   description      - the test description.
         var createStatisticsHolder = function(test, description) {
 
             // We may want to replace this with a binary tree.
@@ -323,12 +324,6 @@ jQuery(function($) {
                 };
             };
 
-            var d = test;
-
-            if (description) {
-                d = d + " [" + description + "]";
-            }
-
             return {
                 test : test,
 
@@ -337,9 +332,10 @@ jQuery(function($) {
                         this._metric.context !== context ||
                         this._statistic !== s) {
 
-                        this._metric = context.metric(metric_fn(s), d);
+                        this._metric = context.metric(metric_fn(s));
                         this._metric.key = [test, s];
                         this._metric.test = test;
+                        this._metric.description = description;
                         this._statistic = s;
                     }
 
@@ -427,8 +423,8 @@ jQuery(function($) {
                       i == null ? null : context.size() - i + "px");
         });
 
-        // Should constrain D3 selection to scope, but how?
-        d3.select("#cubism")
+        d3.select(scope)
+            .select("#cubism")
             .selectAll(".axis")
             .data(["top", "bottom"])
             .enter().append("div")
@@ -465,7 +461,7 @@ jQuery(function($) {
                       function(metric) { return metric.key; });
 
             // Handle new nodes.
-            binding.enter().insert("div", ".bottom")
+            var newTitle = binding.enter().insert("div", ".bottom")
                 .attr("class", "horizon")
                 .call(context.horizon()
                         .format(d3.format(",.3r"))
@@ -476,7 +472,26 @@ jQuery(function($) {
                                  "#FECC5C",
                                  "#FD8D3C",
                                  "#F03B20",
-                                 "#BD0026"]));
+                                 "#BD0026"]))
+                .select(".title");
+
+            newTitle
+                .html(function(m) {
+                   var d = "<span class='test'>" + m.test + "</span>";
+
+                   if (m.description) {
+                     d += "<span class='description'>"
+                         + m.description + "</span>";
+                   }
+
+                   return d;
+                })
+                .on("mouseover", function(d) {
+                    d3.select(this).classed("active", true);
+                })
+                .on("mouseout", function(d) {
+                    d3.select(this).classed("active", false);
+                });
 
             binding.exit().remove();
 
