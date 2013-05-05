@@ -51,7 +51,7 @@
 
       <p>You can check that the console service has started correctly
       by using your browser to access <a
-      href="http://locahost:6373/version">http://locahost:6373/version</a>.
+      href="http://localhost:6373/version">http://localhost:6373/version</a>.
       If the service is running, the browser will display the version
       of The Grinder.</p>
 
