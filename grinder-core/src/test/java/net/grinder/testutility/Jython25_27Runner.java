@@ -43,6 +43,7 @@ public class Jython25_27Runner extends JythonVersionRunner {
                                                        "jython2_5_2.dir",
                                                        "jython2_5_1.dir",
                                                        "jython2_5_0.dir",
+                                                       "jython2_5_4rc1.dir",
                                                        "jython2_7b1.dir");
 
   public Jython25_27Runner(final Class<?> testClass)

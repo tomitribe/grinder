@@ -129,7 +129,7 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <argLine>-javaagent:${project.build.directory}/grinder-dcr-agent.jar
-            -XX:MaxPermSize=256m</argLine>
+            -XX:MaxPermSize=400m</argLine>
           <systemPropertyVariables>
             <grinder.version>${project.version}</grinder.version>
 
@@ -144,6 +144,7 @@
             <jython2_5_1.dir>/opt/jython/jython2.5.1</jython2_5_1.dir>
             <jython2_5_2.dir>/opt/jython/jython2.5.2</jython2_5_2.dir>
             <jython2_5_3.dir>/opt/jython/jython2.5.3</jython2_5_3.dir>
+            <jython2_5_4rc1.dir>/opt/jython/jython2.5.4rc1</jython2_5_4rc1.dir>
             <jython2_7b1.dir>/opt/jython/jython2.7b1</jython2_7b1.dir>
 
             <!-- I considered managing the Jython installations with the
