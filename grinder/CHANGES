@@ -44,6 +44,11 @@ The Grinder 3.12 (not yet released)
   around Clojure issue CLJ-1172. Thanks to Nikita Beloglazov for the
   report and analysis.
 
+  Fix bug #237 - support Jython 2.7b1. You can now use Jython 2.7b1 as
+  an alternative Jython installation, see instructions at
+  http://grinder.sourceforge.net/g3/jython.html. Thanks to Rakesh
+  Kumar for the request.
+
 
 The Grinder 3.11
 ----------------

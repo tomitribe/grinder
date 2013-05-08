@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2012 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // Copyright (C) 2005 Martin Wagner
 // All rights reserved.
 //
@@ -56,9 +56,9 @@ public final class JythonScriptEngineService implements ScriptEngineService {
    * @param dcrContext DCR context.
    * @param scriptLocation Script location.
    */
-  public JythonScriptEngineService(GrinderProperties properties,
-                                   DCRContext dcrContext,
-                                   ScriptLocation scriptLocation) {
+  public JythonScriptEngineService(final GrinderProperties properties,
+                                   final DCRContext dcrContext,
+                                   final ScriptLocation scriptLocation) {
     m_dcrContext = dcrContext;
   }
 
@@ -82,9 +82,16 @@ public final class JythonScriptEngineService implements ScriptEngineService {
         try {
           instrumenters.add(new Jython25Instrumenter(m_dcrContext));
         }
-        catch (WeavingException e) {
+        catch (final WeavingException e) {
           // Jython 2.5 not available, try Jython 2.1/2.2.
-          instrumenters.add(new Jython22Instrumenter(m_dcrContext));
+          try {
+            instrumenters.add(new Jython22Instrumenter(m_dcrContext));
+          }
+          catch (final WeavingException e2) {
+            throw new EngineException(
+              "Could not select an appropriate instrumenter for the " +
+              "version of Jython", e);
+          }
         }
       }
     }
@@ -95,7 +102,7 @@ public final class JythonScriptEngineService implements ScriptEngineService {
   /**
    * {@inheritDoc}
    */
-  @Override public ScriptEngine createScriptEngine(ScriptLocation script)
+  @Override public ScriptEngine createScriptEngine(final ScriptLocation script)
     throws EngineException {
 
     if (m_pyFileMatcher.accept(script.getFile())) {

@@ -31,7 +31,7 @@ import net.grinder.common.GrinderProperties;
 import net.grinder.engine.process.dcr.DCRContextImplementation;
 import net.grinder.scriptengine.DCRContext;
 import net.grinder.scriptengine.Instrumenter;
-import net.grinder.testutility.Jython25Runner;
+import net.grinder.testutility.Jython25_27Runner;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +43,7 @@ import org.python.core.PyInstance;
  *
  * @author Philip Aston
  */
-@RunWith(Jython25Runner.class)
+@RunWith(Jython25_27Runner.class)
 public class TestJythonScriptEngineServiceWithJython25
   extends AbstractJythonScriptEngineServiceTests {
 

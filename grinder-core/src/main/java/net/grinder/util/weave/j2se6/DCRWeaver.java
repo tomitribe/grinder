@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2012 Philip Aston
+// Copyright (C) 2009 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -111,6 +111,10 @@ public final class DCRWeaver implements Weaver {
         }
         catch (final UnmodifiableClassException e) {
           throw new WeavingException("Failed to modify class", e);
+        }
+        catch (final ClassFormatError e) {
+          throw new WeavingException(
+             "Failed to modify class - wrong version of Java?", e);
         }
 
         m_pendingClasses.clear();

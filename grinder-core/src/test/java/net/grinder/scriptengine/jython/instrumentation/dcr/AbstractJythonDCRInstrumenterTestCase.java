@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2012 Philip Aston
+// Copyright (C) 2009 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -339,7 +339,9 @@ public abstract class AbstractJythonDCRInstrumenterTestCase
 
     final Integer[] version = getJythonVersion();
 
-    if (version[0] < 2 || version[1] < 5 || version[2] < 2) {
+    if (version[0] < 2 ||
+        version[0] == 2 && version[1] < 5 ||
+        version[0] == 2 && version[1] == 5 && version[2] < 2) {
       // Up to Jython 2.5.1, static bindings are resolved once...
       assertSame(pyJavaMethod, pyJavaMethod2);
     }

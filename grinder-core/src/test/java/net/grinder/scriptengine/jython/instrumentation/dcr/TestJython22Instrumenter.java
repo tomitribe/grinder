@@ -30,6 +30,7 @@ import net.grinder.scriptengine.CompositeInstrumenter;
 import net.grinder.scriptengine.Instrumenter;
 import net.grinder.scriptengine.java.JavaScriptEngineService;
 import net.grinder.testutility.Jython21_22Runner;
+import net.grinder.util.weave.WeavingException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,7 +45,9 @@ import org.junit.runner.RunWith;
 public class TestJython22Instrumenter
   extends AbstractJythonDCRInstrumenterTestCase {
 
-  private static Instrumenter createInstrumenter() throws EngineException {
+  private static Instrumenter createInstrumenter()
+    throws EngineException, WeavingException {
+
     final List<Instrumenter> instrumenters = new ArrayList<Instrumenter>();
 
     instrumenters.add(

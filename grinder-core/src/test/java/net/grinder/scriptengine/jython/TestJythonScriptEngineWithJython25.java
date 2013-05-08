@@ -22,7 +22,7 @@
 package net.grinder.scriptengine.jython;
 
 import static net.grinder.scriptengine.jython.instrumentation.AbstractJythonInstrumenterTestCase.assertVersion;
-import net.grinder.testutility.Jython25Runner;
+import net.grinder.testutility.Jython25_27Runner;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,7 +33,7 @@ import org.junit.runner.RunWith;
  *
  * @author Philip Aston
  */
-@RunWith(Jython25Runner.class)
+@RunWith(Jython25_27Runner.class)
 public class TestJythonScriptEngineWithJython25 extends TestJythonScriptEngine {
 
   @Test public void testVersion() throws Exception {

@@ -1,4 +1,4 @@
-// Copyright (C) 2011 - 2012 Philip Aston
+// Copyright (C) 2011 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -35,6 +35,7 @@ import net.grinder.scriptengine.DCRContext;
 import net.grinder.scriptengine.Recorder;
 import net.grinder.util.weave.ClassSource;
 import net.grinder.util.weave.ParameterSource;
+import net.grinder.util.weave.WeavingException;
 
 import org.python.core.PyClass;
 import org.python.core.PyFunction;
@@ -53,13 +54,48 @@ import org.python.core.PyReflectedFunction;
  */
 abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
 
+  private Field m_pyMethodFunc;
+  private Field m_pyMethodSelf;
+
+
   /**
    * Constructor.
    *
    * @param context The DCR context.
+   * @throws WeavingException If the available version of Jython is
+   *  incompatible.
    */
-  protected AbstractJythonDCRInstrumenter(final DCRContext context) {
+  protected AbstractJythonDCRInstrumenter(final DCRContext context)
+      throws WeavingException {
     super(context);
+
+    try {
+      //  Jython 2.2, 2.5.
+      m_pyMethodFunc = reflectField(PyMethod.class, "im_func");
+      m_pyMethodSelf = reflectField(PyMethod.class, "im_self");
+    }
+    catch (final NoSuchFieldException e) {
+      try {
+        // Jython 2.7.
+        m_pyMethodFunc = reflectField(PyMethod.class, "__func__");
+        m_pyMethodSelf = reflectField(PyMethod.class, "__self__");
+      }
+      catch (final NoSuchFieldException e2) {
+        throw new WeavingException(
+            "Failed to reflect PyMethod - unsupported Jython version", e2);
+      }
+    }
+  }
+
+  private Field reflectField(final Class<?> clazz, final String fieldName)
+      throws WeavingException, NoSuchFieldException {
+    try {
+      return clazz.getField(fieldName);
+    }
+    catch (final SecurityException e) {
+      throw new WeavingException(
+         "Failed to reflect Jython implementation - security manager?", e);
+    }
   }
 
   /**
@@ -104,6 +140,32 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
     return result;
   }
 
+  protected static final Object reflectField(final Field field, final Object o)
+      throws NonInstrumentableTypeException {
+
+    try {
+      return field.get(o);
+    }
+    catch (final IllegalArgumentException e) {
+      throw new NonInstrumentableTypeException("Reflect " + o.getClass(), e);
+    }
+    catch (final IllegalAccessException e) {
+      throw new NonInstrumentableTypeException("Reflect " + o.getClass(), e);
+    }
+  }
+
+  protected final PyObject func(final PyMethod method)
+    throws NonInstrumentableTypeException {
+
+    return (PyObject) reflectField(m_pyMethodFunc, method);
+  }
+
+  protected final PyObject self(final PyMethod method)
+      throws NonInstrumentableTypeException {
+
+    return (PyObject) reflectField(m_pyMethodSelf, method);
+  }
+
   @Override protected boolean instrument(final Object target,
                                          final Recorder recorder,
                                          final InstrumentationFilter filter)
@@ -125,7 +187,9 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
         // PyMethod is used for bound and unbound Python methods, and
         // bound Java methods.
 
-        if (pyMethod.im_func instanceof PyReflectedFunction) {
+        final PyObject theFunc = func(pyMethod);
+
+        if (theFunc instanceof PyReflectedFunction) {
 
           // Its Java.
 
@@ -135,8 +199,8 @@ abstract class AbstractJythonDCRInstrumenter extends AbstractDCRInstrumenter {
           // Here, we defensively cope with unbound methods, but not
           // constructors.
           transform(recorder,
-                    (PyReflectedFunction)pyMethod.im_func,
-                    pyMethod.im_self.__tojava__(Object.class));
+                    (PyReflectedFunction) theFunc,
+                    self(pyMethod).__tojava__(Object.class));
         }
         else {
           transform(recorder, pyMethod);

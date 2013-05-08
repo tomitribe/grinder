@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2011 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -30,7 +30,7 @@ import net.grinder.engine.process.dcr.DCRContextImplementation;
 import net.grinder.scriptengine.CompositeInstrumenter;
 import net.grinder.scriptengine.Instrumenter;
 import net.grinder.scriptengine.java.JavaScriptEngineService;
-import net.grinder.testutility.Jython25Runner;
+import net.grinder.testutility.Jython25_27Runner;
 import net.grinder.testutility.RandomStubFactory;
 
 import org.junit.Test;
@@ -40,11 +40,11 @@ import org.python.core.PyProxy;
 
 
 /**
- * Unit tests for {@link JythonInstrumenter}.
+ * Unit tests for {@link Jython25Instrumenter}.
  *
  * @author Philip Aston
  */
-@RunWith(Jython25Runner.class)
+@RunWith(Jython25_27Runner.class)
 public class TestJython25Instrumenter
   extends AbstractJythonDCRInstrumenterTestCase {
 

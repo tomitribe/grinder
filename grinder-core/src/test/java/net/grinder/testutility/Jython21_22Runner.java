@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 Philip Aston
+// Copyright (C) 2011 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -42,7 +42,7 @@ public class Jython21_22Runner extends JythonVersionRunner {
   private static final List<String> s_homes =
       getHomes("jython2_1.dir", "jython2_2_1.dir");
 
-  public Jython21_22Runner(Class<?> testClass)
+  public Jython21_22Runner(final Class<?> testClass)
     throws InitializationError, ClassNotFoundException, MalformedURLException {
     super(testClass, s_homes);
   }

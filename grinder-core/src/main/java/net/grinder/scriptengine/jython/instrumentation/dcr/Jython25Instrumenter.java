@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2012 Philip Aston
+// Copyright (C) 2009 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -57,7 +57,8 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
    * Constructor.
    *
    * @param context The DCR context.
-   * @throws WeavingException If it looks like Jython 2.5 isn't available.
+   * @throws WeavingException If the available version of Jython is
+   *  incompatible with this instrumenter.
    */
   public Jython25Instrumenter(final DCRContext context)
     throws WeavingException  {
@@ -279,20 +280,23 @@ public final class Jython25Instrumenter extends AbstractJythonDCRInstrumenter {
     // cope with other types of callable. I guess I could identify
     // PyFunction's and dispatch on their im_code should this become an issue.
 
-    if (target.im_self == null) {
+    final PyObject theFunc = func(target);
+    final PyObject theSelf = self(target);
+
+    if (theSelf == null) {
       // Unbound method.
-      instrumentPublicMethodsByName(target.im_func,
+      instrumentPublicMethodsByName(theFunc,
                                     "__call__",
                                     recorder,
                                     false);
     }
     else {
-      instrumentPublicMethodsByName(target.im_func.getClass(),
+      instrumentPublicMethodsByName(theFunc.getClass(),
                                     "__call__",
                                     ParameterSource.FIRST_PARAMETER,
-                                    target.im_func,
+                                    theFunc,
                                     ParameterSource.THIRD_PARAMETER,
-                                    target.im_self,
+                                    theSelf,
                                     recorder,
                                     false);
     }

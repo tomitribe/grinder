@@ -1,4 +1,4 @@
-// Copyright (C) 2012 Philip Aston
+// Copyright (C) 2012 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -28,7 +28,7 @@ import org.junit.runners.model.InitializationError;
 
 
 /**
- * JUnit runner for Jython 2.5 installations.
+ * JUnit runner for Jython 2.5 and 2.7 installations.
  *
  * <p>
  * To use, annotate the test class with {@code @RunWith(Jython25Runner)}.
@@ -37,14 +37,15 @@ import org.junit.runners.model.InitializationError;
  *
  * @author Philip Aston
  */
-public class Jython25Runner extends JythonVersionRunner {
+public class Jython25_27Runner extends JythonVersionRunner {
 
   private static final List<String> s_homes = getHomes("jython2_5_3.dir",
                                                        "jython2_5_2.dir",
                                                        "jython2_5_1.dir",
-                                                       "jython2_5_0.dir");
+                                                       "jython2_5_0.dir",
+                                                       "jython2_7b1.dir");
 
-  public Jython25Runner(final Class<?> testClass)
+  public Jython25_27Runner(final Class<?> testClass)
     throws InitializationError, ClassNotFoundException, MalformedURLException {
     super(testClass, s_homes);
   }

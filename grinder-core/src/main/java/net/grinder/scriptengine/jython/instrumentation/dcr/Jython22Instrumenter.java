@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2012 Philip Aston
+// Copyright (C) 2009 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -25,6 +25,7 @@ import net.grinder.script.NonInstrumentableTypeException;
 import net.grinder.scriptengine.DCRContext;
 import net.grinder.scriptengine.Recorder;
 import net.grinder.util.weave.ParameterSource;
+import net.grinder.util.weave.WeavingException;
 
 import org.python.core.PyClass;
 import org.python.core.PyFunction;
@@ -45,8 +46,11 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
    * Constructor.
    *
    * @param context The DCR context.
+   * @throws WeavingException If the available version of Jython is
+   *  incompatible with this instrumenter.
    */
-  public Jython22Instrumenter(final DCRContext context) {
+  public Jython22Instrumenter(final DCRContext context)
+      throws WeavingException {
     super(context);
   }
 
@@ -139,20 +143,23 @@ public final class Jython22Instrumenter extends AbstractJythonDCRInstrumenter {
     // cope with other types of callable. I guess I could identify
     // PyFunction's and dispatch on their im_code should this become an issue.
 
-    if (target.im_self == null) {
+    final PyObject theFunc = func(target);
+    final PyObject theSelf = self(target);
+
+    if (theSelf == null) {
       // Unbound method.
-      instrumentPublicMethodsByName(target.im_func,
+      instrumentPublicMethodsByName(theFunc,
                                     "__call__",
                                     recorder,
                                     false);
     }
     else {
-      instrumentPublicMethodsByName(target.im_func.getClass(),
+      instrumentPublicMethodsByName(theFunc.getClass(),
                                     "__call__",
                                     ParameterSource.FIRST_PARAMETER,
-                                    target.im_func,
+                                    theFunc,
                                     ParameterSource.SECOND_PARAMETER,
-                                    target.im_self,
+                                    theSelf,
                                     recorder,
                                     false);
     }
