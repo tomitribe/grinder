@@ -53,25 +53,25 @@
   "Return a map representing a ConsoleProperties.
    If f is supplied, it is used to transform the values, otherwise
    the Java property values are returned. A typical value of f is
-   coerce-value."
+   coerce-value. The map keys are keywords."
   [^ConsoleProperties properties & [f]]
   (let [p (dissoc (bean properties) :class :distributionFileFilterPattern)
         t (or f identity)]
     (into {} (for [[k,v] p] [k (t v)]))))
 
 (defn default-properties
-  [resources & more]
+  [& more]
   (get-properties (ConsoleProperties/DEFAULTS) more))
 
 (def ^:private property-descriptors
-  "A map of property names to property descriptors for the ConsoleProperties
-   class."
+  "A map of property names (as keywords) to property descriptors for the
+   ConsoleProperties class."
   (into
     {}
     (for [^PropertyDescriptor p
           (.getPropertyDescriptors
             (Introspector/getBeanInfo ConsoleProperties))]
-      [(.getName p) p])))
+      [(keyword (.getName p)) p])))
 
 (defmulti box
   "Convert a property value v from a Clojure data type to the desired data
@@ -131,7 +131,7 @@
   [^ConsoleProperties properties m]
   (into {}
     (for [[k v] m]
-      (if-let [pd (property-descriptors (if (keyword? k) (name k) k))]
+      (if-let [pd (property-descriptors (keyword k))]
         (try
           (set-property properties pd v)
           (catch Exception e
@@ -140,16 +140,23 @@
                      e))))
         (illegal "No property '%s'" k)))))
 
-(defn add-missing-boolean-properties
-  "Assoc a false value for any boolean property not found in the map.
-   This is a workaround for maps received from form submissions. Unchecked
-   checkboxes do not add a property to the form parameters."
+(defn- ensure-keys-keywords
   [m]
-  (let [falsies (into {}
-                  (for [[k v] property-descriptors
-                        :when (= Boolean/TYPE (.getPropertyType v))]
-                    [k false]))]
-    (merge falsies m)))
+  (into {}
+    (for [[k v] m] [(keyword k) v])))
+
+(defn add-default-properties
+  "`m` is a map of properties to String values. Replace properties that are
+   missing, or that have nil, or white space only values, with the appropriate
+   default value."
+  [m]
+  (let [mk (ensure-keys-keywords m)]
+    (merge-with
+      (fn [v d]
+        (if (or (nil? v) (.isEmpty (.trim v)))
+              d
+              v))
+      mk (select-keys (default-properties) (keys mk)))))
 
 (defn save
   "Save the properties to disk."

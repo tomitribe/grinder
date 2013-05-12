@@ -46,8 +46,7 @@
                      :propertiesFile "foo/bah"
                      :distributionDirectory "lah/dah"
                      :frameBounds [1 2 3 4]}
-        [only-input only-output both :as res]
-        (roundtrip properties)]
+        [only-input only-output both :as res] (roundtrip properties)]
     (is (nil? only-input))
     (is (= properties both))))
 
@@ -76,7 +75,6 @@
       (is (thrown? IllegalArgumentException
                    (properties/set-properties cp properties))))))
 
-
 (deftest test-save
   (with-console-properties cp f
     (let [r (properties/save cp)]
@@ -84,3 +82,18 @@
       (is (= :success (properties/save cp)))
       (let [saved (slurp f)]
         (is (re-find #"grinder.console.consolePort=9999" saved))))))
+
+(deftest add-default-properties
+  (is (= {} (properties/add-default-properties {})))
+
+  (with-console-properties cp f
+    (let [good {:collectSampleCount "22"
+                :lookAndFeel "fubar" }
+          props (merge good
+                  {:consolePort ""
+                   :sampleInterval nil})
+          good-ks (keys good)
+          defaults (select-keys (properties/default-properties) (keys props))
+          result (properties/add-default-properties props)]
+      (is (= (apply dissoc defaults good-ks) (apply dissoc result good-ks)))
+      (is (= good (select-keys result good-ks))))))

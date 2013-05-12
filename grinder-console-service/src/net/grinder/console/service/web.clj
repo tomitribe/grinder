@@ -232,17 +232,17 @@
       (render-property k v (defaults k))])
    ])
 
-(defn- render-properties-form [{:keys [properties console-resources]}]
+(defn- render-properties-form [{:keys [properties]}]
   [:form
     {:id :properties}
 
     (let [properties (properties/get-properties properties)
-          defaults (properties/default-properties console-resources)
+          defaults (properties/default-properties)
           groups [[(t :file-distribution)
                    #{;:scanDistributionFilesPeriod
                      :distributionDirectory
                      :propertiesFile
-                     ; :distributionFileFilterExpression
+                     ;:distributionFileFilterExpression
                      }]
                   [(t :sampling)
                    #{:significantFigures
@@ -272,7 +272,12 @@
               :type :button} (t :set-properties)]])
 
 (defn handle-properties-form [p params]
-  (let [expanded (properties/add-missing-boolean-properties params)]
+  (let [expanded (-> params
+                   properties/add-default-properties
+                   )]
+    ; Currently don't have any, but if/when we do, we'll need  to add default
+    ; values for check boxes present in the form.
+    ; E.g (merge { "saveTotalsWithResults" "false" } params)
     (properties/set-properties p expanded)))
 
 
