@@ -21,6 +21,8 @@
 
 package net.grinder.communication;
 
+import static net.grinder.communication.CommunicationDefaults.ALL_INTERFACES;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -72,8 +74,8 @@ public final class Acceptor {
   /**
    * Constructor.
    *
-   * @param addressString The TCP address to listen on. Zero-length
-   * string => listen on all interfaces.
+   * @param addressString The TCP address to listen on. If equal to
+   * {@link CommunicationDefaults#ALL_INTERFACES}, listen on all interfaces.
    * @param port The TCP port to listen to. 0 => use any free port.
    * @param numberOfThreads Number of acceptor threads.
    * @param timeAuthority Knows the time.
@@ -88,7 +90,7 @@ public final class Acceptor {
 
     m_timeAuthority = timeAuthority;
 
-    if (addressString.length() > 0) {
+    if (addressString.length() > 0 && !ALL_INTERFACES.equals(addressString)) {
       try {
         m_serverSocket =
           new ServerSocket(port, 50, InetAddress.getByName(addressString));

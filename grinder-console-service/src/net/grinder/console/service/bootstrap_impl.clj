@@ -29,6 +29,7 @@
     [org.httpkit.server :as httpkit]
     [net.grinder.console.service.app :as app])
   (:import
+    net.grinder.communication.CommunicationDefaults
     net.grinder.console.model.ConsoleProperties
     java.beans.PropertyChangeListener))
 
@@ -49,7 +50,9 @@
   (or (stop-http stop-server error-handler)
       (try
         (log/debugf "Starting HTTP server at %s:%s" host port)
-        (httpkit/run-server app {:host host :port port :join? false})
+        (if (= CommunicationDefaults/ALL_INTERFACES host)
+          (httpkit/run-server app {:port port :join? false})
+          (httpkit/run-server app {:ip host :port port :join? false}))
         (catch Exception e
           (.handleException
             error-handler

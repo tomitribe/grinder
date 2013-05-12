@@ -37,6 +37,7 @@ import static org.mockito.Mockito.verify;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 
 import net.grinder.common.TimeAuthority;
@@ -58,19 +59,20 @@ public class TestAcceptor {
 
   @Test public void testConstructor() throws Exception {
 
-    final InetAddress[] localAddresses =
-      InetAddress.getAllByName(InetAddress.getLocalHost().getHostName());
-
-    final String[] testAddresses = new String[localAddresses.length + 2];
+    final List<String> testAddresses = new ArrayList<String>();
 
     // Loop back.
-    testAddresses[0] = InetAddress.getByName(null).getHostName();
+    testAddresses.add(InetAddress.getByName(null).getHostName());
 
-    // All addresses.
-    testAddresses[1] = "";
+    // All interfaces.
+    testAddresses.add("");
 
-    for (int i=0; i<localAddresses.length; ++i) {
-      testAddresses[i + 2] = localAddresses[i].getHostName();
+    // All interfaces.
+    testAddresses.add(CommunicationDefaults.ALL_INTERFACES);
+
+    for (final InetAddress localAddress :
+      InetAddress.getAllByName(InetAddress.getLocalHost().getHostName())) {
+      testAddresses.add(localAddress.getHostName());
     }
 
     final int port = findFreePort();

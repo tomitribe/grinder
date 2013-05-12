@@ -21,6 +21,7 @@
 
 package net.grinder.console.model;
 
+import static net.grinder.communication.CommunicationDefaults.ALL_INTERFACES;
 import static net.grinder.testutility.AssertUtilities.assertNotEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -200,8 +201,11 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     catch (final DisplayMessageConsoleException e) {
     }
 
+    properties.setConsoleHost(ALL_INTERFACES);
+    assertEquals(ALL_INTERFACES, properties.getConsoleHost());
+
     properties.setConsoleHost("");
-    assertEquals("", properties.getConsoleHost());
+    assertEquals(ALL_INTERFACES, properties.getConsoleHost());
   }
 
   @Test public void testConsolePort() throws Exception {
@@ -278,7 +282,11 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     }
 
     properties.setHttpHost("");
-    assertEquals("", properties.getHttpHost());
+    assertEquals(ALL_INTERFACES, properties.getHttpHost());
+
+    properties.setHttpHost(ALL_INTERFACES);
+    assertEquals(ALL_INTERFACES, properties.getHttpHost());
+
   }
 
   @Test public void testHttpPort() throws Exception {

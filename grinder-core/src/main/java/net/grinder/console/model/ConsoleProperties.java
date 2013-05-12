@@ -21,6 +21,8 @@
 
 package net.grinder.console.model;
 
+import static net.grinder.communication.CommunicationDefaults.ALL_INTERFACES;
+
 import java.awt.Rectangle;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -220,10 +222,11 @@ public final class ConsoleProperties {
 
   private final StringProperty m_consoleHost =
     new StringProperty(CONSOLE_HOST_PROPERTY,
-                       CommunicationDefaults.CONSOLE_HOST);
+                     CommunicationDefaults.CONSOLE_HOST);
 
   private final IntProperty m_consolePort =
-    new IntProperty(CONSOLE_PORT_PROPERTY, CommunicationDefaults.CONSOLE_PORT);
+    new IntProperty(CONSOLE_PORT_PROPERTY,
+                    CommunicationDefaults.CONSOLE_PORT);
 
   private final StringProperty m_httpHost =
       new StringProperty(HTTP_HOST_PROPERTY,
@@ -447,10 +450,12 @@ public final class ConsoleProperties {
   /**
    * Get the console host as a string.
    *
-   * @return The address.
+   * @return The address. The special value of
+   * {@link CommunicationDefaults#ALL_INTERFACES} indicates all local
+   * interfaces.
    */
   public String getConsoleHost() {
-    return m_consoleHost.get();
+    return normaliseAddress(m_consoleHost.get());
   }
 
   /**
@@ -465,12 +470,15 @@ public final class ConsoleProperties {
    * @param address The address, as a string.
    * @throws ConsoleException If the address is invalid.
    */
-  private void checkAddress(final String address) throws ConsoleException {
-    if (address.length() > 0) {    // Empty string => all local hosts.
+  private String checkAddress(final String address) throws ConsoleException {
+
+    final String convertedAddress = normaliseAddress(address);
+
+    if (!ALL_INTERFACES.equals(convertedAddress)) {
       final InetAddress newAddress;
 
       try {
-        newAddress = InetAddress.getByName(address);
+        newAddress = InetAddress.getByName(convertedAddress);
       }
       catch (final UnknownHostException e) {
         throw new DisplayMessageConsoleException(
@@ -482,6 +490,12 @@ public final class ConsoleProperties {
           m_resources, "invalidHostAddressError.text");
       }
     }
+
+    return convertedAddress;
+  }
+
+  private String normaliseAddress(final String address) {
+    return "".equals(address) ? CommunicationDefaults.ALL_INTERFACES : address;
   }
 
   /**
@@ -507,13 +521,13 @@ public final class ConsoleProperties {
   /**
    * Set the console host.
    *
-   * @param s Either a machine name or the IP address.
-   * @throws ConsoleException If the address is not
-   * valid.
+   * @param s Either a machine name or the IP address. Use the
+   * empty string, or the value of {@link CommunicationDefaults#ALL_INTERFACES}
+   * to specify all local interfaces.
+   * @throws ConsoleException If the address is not valid.
    */
   public void setConsoleHost(final String s) throws ConsoleException {
-    checkAddress(s);
-    m_consoleHost.set(s);
+    m_consoleHost.set(checkAddress(s));
   }
 
   /**
@@ -539,22 +553,24 @@ public final class ConsoleProperties {
   /**
    * Get the HTTP host as a string.
    *
-   * @return The address.
+   * @return The address. The special value of
+   * {@link CommunicationDefaults#ALL_INTERFACES} indicates all local
+   * interfaces.
    */
   public String getHttpHost() {
-    return m_httpHost.get();
+    return normaliseAddress(m_httpHost.get());
   }
 
   /**
    * Set the HTTP host.
    *
-   * @param s Either a machine name or the IP address.
-   * @throws ConsoleException If the address is not
-   * valid.
+   * @param s Either a machine name or the IP address. Use the
+   * empty string, or the value of {@link CommunicationDefaults#ALL_INTERFACES}
+   * to specify all local interfaces.
+   * @throws ConsoleException If the address is not valid.
    */
   public void setHttpHost(final String s) throws ConsoleException {
-    checkAddress(s);
-    m_httpHost.set(s);
+    m_httpHost.set(checkAddress(s));
   }
 
   /**
