@@ -22,7 +22,7 @@
     <em>process</em> (or program):
     <em><a href="site:processes/workers">worker processes</a></em>,
     <em><a href="site:processes/agents">agent processes</a></em>,
-    and the <em> <a href="site:console">console</a></em>.
+    and the <em> <a href="site:console/overview">console</a></em>.
     The responsibilities of each of the process types are:</p>
 
     <ul>
@@ -46,6 +46,7 @@
         <strong>The Console</strong>
         <ul>
           <li>Coordinates the other processes.</li>
+          <li>Hosts several types of user and machine interface.</li>
           <li>Collates and displays statistics.</li>
           <li>Provides script editing and distribution.</li>
         </ul>

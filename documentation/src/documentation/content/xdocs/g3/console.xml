@@ -4,13 +4,25 @@
 
 <document>
 <header>
-<title>The Console User Interface</title>
+<title>The Classic Console User Interface</title>
 </header>
 <body>
 
-  <p>Follow <a href="site:getting-started/howtostart">these instructions</a> to start the console.</p>
+    <note>Eventually we expect to retire the classic user interface in
+    favour of the <a href="site:console/webui">web console</a>.</note>
 
-  <figure src="../images/console-screenshot-g3.png" width="778" height="551" alt="The Console"/>
+  <section id="starting">
+    <title>Starting the console</title>
+
+    <p>You can start the console on one of the test machines as follows.</p>
+<source class="sh">
+java net.grinder.Console
+</source>
+
+    <p>After a short delay, the main console window will appear.</p>
+
+    <figure src="../images/console-screenshot-g3.png" width="778" height="551" alt="The Console"/>
+  </section>
 
   <section id="process-controls">
     <title>Process controls</title>

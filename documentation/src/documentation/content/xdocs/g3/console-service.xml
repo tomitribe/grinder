@@ -9,7 +9,7 @@
   </header>
   <body>
 
-    <section id="intro">
+    <section id="console-service-intro">
       <title>Overview</title>
       
       <p>The console service provides an interface for automating The
@@ -36,8 +36,9 @@
       <title>Configuration</title>
       
       <p>The console hosts an HTTP server that runs the console
-      service. When the console is started, the server listens for
-      HTTP requests on port 6373. For most users, the console service
+      service and the <a href="site:console/webui">web interface</a>.
+      When the console is started, the server listens for HTTP
+      requests on port 6373. For most users, the console service
       should work out of the box with no further configuration.</p>
 
       <p>If port 6373 is unavailable, an error message will be
@@ -55,12 +56,45 @@
       If the service is running, the browser will display the version
       of The Grinder.</p>
 
-      <section id="headless">
-	<title>Running without a GUI</title>
+      <section id="security">
+        <title>Remote access and security considerations</title>
+        <warning>
+          You are responsible for your system's security.
+        </warning>
+        <p>For convenience, the default configuration listens on all
+        interfaces. You can replace <em>localhost</em> in the URL with
+        an externally accessible host name or IP address, and access
+        the console service or the web interface from another
+        computer on the network.</p>
 
-	<p>If you don't use the graphical <a href="site:console/ui">user
+        <p> Remote control is part of the rationale for both the
+        console service and the web interface, but the requirement for
+        remote access is more general. The console process must be
+        exernally accessible so that it can be contacted by agent and
+        worker processes running on other machines.</p>
+
+        <p>However, remote access opens up the possibility of
+        accidental or mallicious misuse by other networked computers.
+        It is a particularly bad idea to open any port of any of The
+        Grinder's processes to the Internet. The Grinder code is not
+        written nor tested to withstand mallicious attacks, as
+        required for Internet facing software such as web servers. An
+        attacker might potentially find a way to use The Grinder as a
+        vector. Neither the console service nor the web interface
+        require a user to authenticate. The communication is not
+        encrypted. At the very least, an attacker could easily disrupt
+        your testing. At worst, they might be able to gain full
+        control over your computers and network. You should configure
+        your operating systems, network components, and firewalls to
+        restrict access appropriately.</p>
+      </section>
+
+      <section id="headless">
+	<title>Running without a GUI window</title>
+
+	<p>If you don't use the classic <a href="site:console/ui">user
 	interface</a>, you can start the console in in a terminal mode
-	by passing a <code>-headless</code> option as follows.</p>
+	by passing the <code>-headless</code> option as follows.</p>
     
 	<source class="text">
 	  java -classpath lib/grinder.jar net.grinder.Console -headless
