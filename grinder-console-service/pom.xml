@@ -15,7 +15,7 @@
   <packaging>clojure</packaging>
   <version>3.12-SNAPSHOT</version>
   <name>grinder-console-service</name>
-  <description>Web and REST API to The Grinder console.</description>
+  <description>Web interface and REST API to The Grinder console.</description>
   <url>http://grinder.sourceforge.net</url>
   <build>
     <sourceDirectory>src</sourceDirectory>
