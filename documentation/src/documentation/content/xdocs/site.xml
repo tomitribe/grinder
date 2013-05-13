@@ -260,7 +260,7 @@ See http://forrest.apache.org/docs/linking.html for more info
       </mvn>
     </grinder>
 
-    <grinder-analyzer href="http://sourceforge.net/project/showfiles.php?group_id=160220"/>
+    <grinder-analyzer href="http://track.sourceforge.net/"/>
 
     <grinder-groovy href="http://code.google.com/p/grinder-maven-plugin"/>
 
