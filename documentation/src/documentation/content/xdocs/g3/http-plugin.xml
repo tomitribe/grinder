@@ -144,8 +144,8 @@ control.setProxyServer("localhost", 8001)
     is useful to set proxies on a per URL basis.</p>
 
 <source class="jython">
-proxyURL1 = HTTPPluginControl.getThreadConnection("http://<em>url1</em>")
-proxyURL2 = HTTPPluginControl.getThreadConnection("http://<em>url2</em>")
+proxyURL1 = HTTPPluginControl.getThreadConnection("http://url1")
+proxyURL2 = HTTPPluginControl.getThreadConnection("http://url2")
 proxyURL1.setProxyServer("localhost", 8001)
 proxyURL2.setProxyServer("localhost", 8002)
 </source>
@@ -181,7 +181,7 @@ class TestRunner:
     The method takes the settings as header-name/value pairs</p>
 <source class="jython">
 control = HTTPPluginControl.getConnectionDefaults()
-control.setDefaultHeaders(NVPair("<em>(header-name)</em>", "<em>(value)</em>"),))
+control.setDefaultHeaders(NVPair("header-name", "value"),))
 </source>
     <p>Typical headers you might want to set here are <code>Accept</code> and its <code>Accept-*</code>
     relatives, <code>Connection</code>, <code>From</code>, <code>User-Agent</code>, etc.</p>
@@ -218,7 +218,7 @@ control.setFollowRedirects(0)
     you can set the local IP address used by the HTTPPlugin for outbound connections.</p>
 <source class="jython">
 control = HTTPPluginControl.getConnectionDefaults()
-control.setLocalAddress("<em>(local IP Address)</em>")
+control.setLocalAddress("192.168.1.77")
 </source>
   </section>
 
@@ -314,7 +314,7 @@ decompression libraries from your script.</p>
      <p>The HTTPUtilities class can create an NVPair for an HTTP Basic Authorization header using the following method:</p>
 <source class="jython">
 httpUtilities = HTTPPluginControl.getHTTPUtilities()
-httpUtilities.basicAuthorizationHeader('<em>username</em>', '<em>password</em>')
+httpUtilities.basicAuthorizationHeader('username', 'password')
 </source>
 
      <p>Include the header with each HTTPRequest that requires the authentication.</p>
@@ -342,7 +342,7 @@ httpUtilities.getLastResponse()
     This utility can be invoked using the following method:</p>
 <source class="jython">
 httpUtilities = HTTPPluginControl.getHTTPUtilities()
-httpUtilities.valueFromLocationURI(<em>tokenName</em>)
+httpUtilities.valueFromLocationURI(tokenName)
 </source>
     <p> If there is no match, an empty string is returned rather than
         <code>null</code>. This makes scripts more robust (as they don't need to
@@ -358,7 +358,7 @@ httpUtilities.valueFromLocationURI(<em>tokenName</em>)
     This utility can be invoked using the following method:</p>
 <source class="jython">
 httpUtilities = HTTPPluginControl.getHTTPUtilities()
-httpUtilities.valueFromBodyURI(<em>tokenName</em>)
+httpUtilities.valueFromBodyURI(tokenName)
 </source>
     <p>This returns the first value if one is found, or <code>null</code>.</p>
     <p>This must be called from a worker thread, if not it throws a GrinderException.</p>
