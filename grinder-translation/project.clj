@@ -1,0 +1,18 @@
+(defproject net.sf.grinder/grinder-translation "3.12-SNAPSHOT"
+  :parent [net.sf.grinder/grinder-parent "3.12-SNAPSHOT"]
+  :description "Translation services for The Grinder."
+  :url "http://grinder.sourceforge.net"
+  :dependencies [[com.taoensso/tower "1.2.0"]
+                 [net.sf.grinder/grinder-core "3.12-SNAPSHOT"]
+                 [org.clojure/clojure "1.4.0"]
+                 [org.clojure/tools.logging "0.2.3"]]
+  :profiles {:dev {:dependencies
+                 []}}
+
+  ; Sonatype discourages repository information in POMs.
+  ;:repositories {"sonatype-nexus-snapshots" "https://oss.sonatype.org/content/repositories/snapshots/"
+  ;               "sonatype-nexus-staging" "https://oss.sonatype.org/service/local/staging/deploy/maven2/"}
+
+  :min-lein-version "2.0.0")
+
+

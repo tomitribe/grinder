@@ -570,6 +570,7 @@
     <module>grinder-httpclient</module>
     <module>grinder-swing-console</module>
     <module>grinder-test-support</module>
+    <module>grinder-translation</module>
     <module>grinder-xmlbeans</module>
   </modules>
 
