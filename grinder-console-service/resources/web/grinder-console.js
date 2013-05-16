@@ -234,7 +234,6 @@ jQuery(function($) {
                 });
 
             } else {
-                console.error("WTF", this);
                 $(this).button();
             };
         });
@@ -524,6 +523,7 @@ jQuery(function($) {
             var s = v.status;
             var d = $("#data-summary");
 
+            // TODO: Requires translation.
             d.html(s.description);
 
             if (s.state != data_state) {
@@ -541,6 +541,7 @@ jQuery(function($) {
         poller.subscribe(scope, "threads", undefined, function(k, v) {
             var p = $("#process-summary");
 
+            // TODO: Requires translation.
             p.html("<span>a:" + v.agents + " </span>" +
                    "<span>w:" + v.workers + " </span>" +
                    "<span>t:" + v.threads + " </span>");

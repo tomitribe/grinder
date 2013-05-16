@@ -22,16 +22,18 @@
 (ns net.grinder.test.console.service.translate-tests
   "Unit tests for net.grinder.console.service.translate."
   (:use [clojure.test])
-  (:require [net.grinder.console.service.translate :as translate])
-  (:require [taoensso.tower :as tower]))
+  (:require
+    [net.grinder.console.service.translate :as translate]
+    [taoensso.tower :as tower])
+  (:import net.grinder.common.Translatable))
 
 (def tb "net.grinder.test.console.service.TestBundle")
 
 (deftest to-resource-bundle-keys
   (are [x k] (= x (#'translate/to-resource-bundle-keys k))
-    ["foo.label"] :foo
-    ["foo.label"] :blah/foo
-    ["x.label"] :x
+    ["foo.label" "foo.text"] :foo
+    ["foo.label" "foo.text"] :blah/foo
+    ["x.label" "x.text"] :x
     ))
 
 (deftest resource-bundle-result
@@ -84,6 +86,7 @@
           "Hello World" :hello
           "Hello World" [:hello]
           "Hello World" [:x :hello :y]
+          "Hello World" (reify Translatable (getTranslationKey [this] "hello"))
           "missing for en" :not-there
           )
         (is "Hi World" (translate/t :hi "World"))

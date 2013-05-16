@@ -23,7 +23,9 @@
   "Internationalisation."
   (:use [taoensso.tower.ring :only [make-wrap-i18n-middleware]])
   (:require [taoensso.tower :as tower])
-  (:import [java.util MissingResourceException ResourceBundle]))
+  (:import
+    [java.util MissingResourceException ResourceBundle]
+    net.grinder.common.Translatable))
 
 (def ^:dynamic *resource-bundle-name* nil)
 
@@ -35,6 +37,7 @@
   (let [kw-name (name k)]
     [
      (str kw-name ".label")
+     (str kw-name ".text")
      ]))
 
 (defn- resource-bundle-result
@@ -58,21 +61,36 @@
   `(binding [*resource-bundle-name* ~resource-bundle-name]
      ~@body))
 
+(defmulti tkeys
+  "Convert an object into a keyword to use for translation."
+  class)
+
+(defmethod tkeys clojure.lang.Keyword [k] k)
+
+(defmethod tkeys java.lang.String [^String s] (keyword s))
+
+(defmethod tkeys Translatable [^Translatable t]
+  (keyword (.getTranslationKey t)))
+
 (defn t
   "Extends `tower/t` so that if the key is missing, the last part of the
    key is looked up using the Java resource bundle and the current tower
-   locale."
+   locale.
+
+   This method is more relaxed than `tower/t` in its interpretation of
+   the supplied keys. As well as keywords, it accepts Strings, and
+   implementations of `net.grinder.common.Translatable`. See `tkeys`."
   ([k-or-ks & interpolation-args]
     (when-let [pattern (t k-or-ks)]
        (apply tower/format-msg pattern interpolation-args)))
 
   ([k-or-ks]
-    (let [kchoices*   (if (vector? k-or-ks) k-or-ks [k-or-ks])
-          kchoices    (take-while keyword? kchoices*)]
+    (let [kchoices* (if (vector? k-or-ks) k-or-ks [k-or-ks])
+          kchoices  (apply vector (map tkeys kchoices*))]
       (or
-        (tower/t (conj kchoices* nil))
+        (tower/t (conj kchoices nil))
         (some resource-bundle-result kchoices)
-        (tower/t kchoices*)
+        (tower/t kchoices)
         ))))
 
 (defn make-wrap-with-translation

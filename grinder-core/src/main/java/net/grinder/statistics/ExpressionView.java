@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2011 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,8 @@
 
 package net.grinder.statistics;
 
+import net.grinder.common.Translatable;
+
 
 /**
  * <p>
@@ -30,31 +32,31 @@ package net.grinder.statistics;
  * <p>
  * Statistic expressions are composed of statistic names (see
  * {@link StatisticsIndexMap}) in a simple post-fix format using the symbols
- * <code>+</code>, <code>-</code>, <code>/</code> and <code>*</code>,
+ * {@code +}, {@code -}, {@code /} and {@code *},
  * which have their usual meanings, in conjunction with simple statistic names
  * or sub-expressions. Precedence can be controlled by grouping expressions in
  * parentheses. For example, the error rate is
- * <code>(* (/ errors period) 1000)</code> errors per second.
+ * {@code (* (/ errors period) 1000)} errors per second.
  * </p>
  *
  * <p>
  * Sample statistics, such as <em>timedTests</em>, must be introduced with
- * one of <code>sum</code>, <code>count</code>, or <code>variance</code>,
+ * one of {@code sum}, {@code count}, or {@code variance}
  * depending on the attribute of interest.
  * </p>
  *
  * <p>
- * For example, the statistic expression <code>(/ (sum timedTests)
- * (count timedTests))</code>
- * represents the mean test time in milliseconds.
+ * For example, the statistic expression {@code (/ (sum timedTests)
+ * (count timedTests))} represents the mean test time in milliseconds.
  *
  * @author Philip Aston
  */
-public final class ExpressionView {
+public final class ExpressionView implements Translatable {
 
   private static int s_creationOrder;
 
   private final String m_displayName;
+  private final String m_translationKey;
   private final String m_expressionString;
   private final boolean m_showForCompositeStatistics;
   private final int m_hashCode;
@@ -62,10 +64,10 @@ public final class ExpressionView {
 
   private final StatisticExpression m_expression;
 
-  ExpressionView(String displayName,
-                 String expressionString,
-                 StatisticExpression expression,
-                 boolean showForCompositeStatistics) {
+  ExpressionView(final String displayName,
+                 final String expressionString,
+                 final StatisticExpression expression,
+                 final boolean showForCompositeStatistics) {
     m_displayName = displayName;
     m_expressionString = expressionString;
     m_showForCompositeStatistics = showForCompositeStatistics;
@@ -74,6 +76,8 @@ public final class ExpressionView {
     m_hashCode =
       m_displayName.hashCode() ^
       (expressionString != null ? m_expressionString.hashCode() : 0);
+
+    m_translationKey = "statistic." + m_displayName.replaceAll("\\s+", "_");
 
     // Code outside this package can only obtain ExpressionViews through a
     // StatisticExpressionFactory instance, and in turn this factory must be
@@ -84,6 +88,14 @@ public final class ExpressionView {
     synchronized (ExpressionView.class) {
       m_creationOrder = s_creationOrder++;
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  @Override
+  public String getTranslationKey() {
+    return m_translationKey;
   }
 
   /**
@@ -107,7 +119,7 @@ public final class ExpressionView {
   /**
    * Return the expression string.
    *
-   * @return The string, or <code>null</code> if this view was built directly
+   * @return The string, or @code null} if this view was built directly
    *         from a {@link StatisticExpression}.
    */
   public String getExpressionString() {
@@ -119,19 +131,17 @@ public final class ExpressionView {
    * Many views (particularly those representing aggregate time, or averages)
    * are ambiguous for composite statistics, so we don't show them.
    *
-   * @return <code>true</code> => show this view for composite statistics.
+   * @return {@code true} => show this view for composite statistics.
    */
   public boolean getShowForCompositeStatistics() {
     return m_showForCompositeStatistics;
   }
 
   /**
-   * Value based equality.
-   *
-   * @param other An <code>Object</code> to compare.
-   * @return <code>true</code> => <code>other</code> is equal to this object.
+   * {@inheritDoc}
    */
-  public boolean equals(Object other) {
+  @Override
+  public boolean equals(final Object other) {
     if (other == this) {
       return true;
     }
@@ -155,20 +165,19 @@ public final class ExpressionView {
   }
 
   /**
-   * Implement {@link Object#hashCode}.
-   *
-   * @return an <code>int</code> value
+   * {@inheritDoc}
    */
+  @Override
   public int hashCode() {
     return m_hashCode;
   }
 
   /**
-   * Return a <code>String</code> representation of this
-   * <code>ExpressionView</code>.
+   * Return a {@code String} representation of this {@code ExpressionView}.
    *
-   * @return The <code>String</code>
+   * @return The {@code String}.
    */
+  @Override
   public String toString() {
     final StringBuilder result = new StringBuilder(32);
     result.append("ExpressionView(");

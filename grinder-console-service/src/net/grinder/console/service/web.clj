@@ -54,7 +54,7 @@
 (defn- state [type p]
   (let [s (:state p)]
     [s
-     (t [(keyword (str (name s) "-" (name type))) s])]))
+     (t [(str (name s) "-" (name type)) s])]))
 
 (defmulti render-process-state #(first %&))
 
@@ -129,6 +129,8 @@
       [:div {:class "process-controls"} (for [b buttons] b) ]
       (render-process-table process-control))))
 
+; TODO translate table headers
+; TODO why isn't test-number etc. translated?
 (defn- render-data-table [sample-model sample-model-views]
   (let [{:keys [status columns tests totals] :as data}
         (recording/data sample-model sample-model-views :as-text true)]
@@ -172,8 +174,9 @@
 
         (drop-down :chart-statistic
           (map-indexed
-            (fn [i ^ExpressionView v] [(.getDisplayName v) i])
-            (.getExpressionViews (.getIntervalStatisticsView sample-model-views))))
+            (fn [i ^ExpressionView v] [(t v) i])
+            (.getExpressionViews
+              (.getIntervalStatisticsView sample-model-views))))
         ]])))
 
 (defn- render-text-field

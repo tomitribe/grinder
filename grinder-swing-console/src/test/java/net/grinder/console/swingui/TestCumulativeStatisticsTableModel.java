@@ -203,8 +203,8 @@ public class TestCumulativeStatisticsTableModel extends AbstractFileTestCase {
                                          m_resources,
                                          m_swingDispatcherFactory);
 
-    m_resources.put("statistic.Errors", "Blah");
-    m_resources.put("statistic.Mean_Test_Time_(ms)", "meantime");
+    m_resources.put("statistic.Errors.label", "Blah");
+    m_resources.put("statistic.Mean_Test_Time_(ms).label", "meantime");
 
     assertEquals(7, model.getColumnCount());
 

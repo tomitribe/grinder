@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2007 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -22,21 +22,21 @@
 
 package net.grinder.statistics;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
+
 
 
 /**
- * Unit test case for <code>StatisticExpressionFactoryImplementation</code>.
+ * Unit test case for {@link ExpressionView}
  *
  * @author Philip Aston
- * @see StatisticsSet
  */
-public class TestExpressionView extends TestCase {
+public class TestExpressionView  {
 
-  public TestExpressionView(String name) {
-    super(name);
-  }
-
+  @Test
   public void testConstruction() throws Exception {
     final StatisticExpressionFactory statisticExpressionFactory =
       StatisticsServicesImplementation.getInstance()
@@ -58,6 +58,7 @@ public class TestExpressionView extends TestCase {
     assertTrue(view.getExpression() != null);
   }
 
+  @Test
   public void testEquality() throws Exception {
     final StatisticExpressionFactory statisticExpressionFactory =
       StatisticsServicesImplementation.getInstance()
@@ -79,6 +80,7 @@ public class TestExpressionView extends TestCase {
     assertTrue(!views[0].equals(new Object()));
   }
 
+  @Test
   public void testToString() throws Exception {
     final String displayName = "My view";
     final String expressionString = "(+ userLong0 userLong1)";
@@ -103,5 +105,21 @@ public class TestExpressionView extends TestCase {
 
     final String string2 = view2.toString();
     assertTrue(string2.indexOf(displayName) >= 0);
+  }
+
+  @Test
+  public void testTranslatable() throws Exception {
+    final String displayName = "My view";
+    final String expressionString = "(+ userLong0 userLong1)";
+
+    final StatisticExpressionFactory statisticExpressionFactory =
+      StatisticsServicesImplementation.getInstance()
+      .getStatisticExpressionFactory();
+
+    final ExpressionView expressionView =
+      statisticExpressionFactory
+      .createExpressionView(displayName, expressionString, false);
+
+    assertEquals("statistic.My_view", expressionView.getTranslationKey());
   }
 }

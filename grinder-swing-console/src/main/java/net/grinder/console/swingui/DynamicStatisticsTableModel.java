@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2011 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -120,9 +120,7 @@ abstract class DynamicStatisticsTableModel
       for (int i = 0; i < m_columnLabels.length; ++i) {
         final String resource =
           m_resources.getString(
-            "statistic." +
-            m_columnViews[i].getDisplayName().replaceAll("\\s+", "_"),
-            false);
+            m_columnViews[i].getTranslationKey() + ".label", false);
 
         m_columnLabels[i] =
           resource != null ?
