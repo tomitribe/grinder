@@ -18,6 +18,12 @@
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
+      <artifactId>grinder-translation</artifactId>
+      <version>3.12-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>${project.groupId}</groupId>
       <artifactId>grinder-dcr-agent</artifactId>
       <version>3.12-SNAPSHOT</version>
       <scope>provided</scope>
@@ -168,7 +174,6 @@
 
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>1.5</version>
         <executions>
           <execution>
             <phase>package</phase>
@@ -189,6 +194,7 @@
                   <include>org.codehaus.jsr166-mirror:extra166y</include>
                 </includes>
               </artifactSet>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
             </configuration>
           </execution>
         </executions>

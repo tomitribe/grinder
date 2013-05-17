@@ -8,7 +8,7 @@
                  [compojure "1.1.3"]
                  [http-kit "2.0.1"]
                  [hiccup "1.0.2"]
-                 [net.sf.grinder/grinder-translation "3.12-SNAPSHOT"]
+                 [net.sf.grinder/grinder-core "3.12-SNAPSHOT"]
                  [org.clojure/clojure "1.4.0"]
                  [org.clojure/tools.logging "0.2.3"]
                  [ring/ring-core "1.1.6"

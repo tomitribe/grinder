@@ -3,11 +3,10 @@
   :description "Translation services for The Grinder."
   :url "http://grinder.sourceforge.net"
   :dependencies [[com.taoensso/tower "1.2.0"]
-                 [net.sf.grinder/grinder-core "3.12-SNAPSHOT"]
                  [org.clojure/clojure "1.4.0"]
                  [org.clojure/tools.logging "0.2.3"]]
-  :profiles {:dev {:dependencies
-                 []}}
+  :profiles {:dev {:dependencies []}}
+  :java-source-paths ["src/main/java"]
 
   ; Sonatype discourages repository information in POMs.
   ;:repositories {"sonatype-nexus-snapshots" "https://oss.sonatype.org/content/repositories/snapshots/"
