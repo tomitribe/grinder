@@ -288,6 +288,14 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- TODO - upgrade to ASM 4
+           (Even 3.3.1 requires code changes)
+      <dependency>
+        <groupId>org.ow2.asm</groupId>
+        <artifactId>asm</artifactId>
+        <version>4.1</version>
+      </dependency>
+      -->
       <dependency>
         <groupId>asm</groupId>
         <artifactId>asm</artifactId>
@@ -306,7 +314,7 @@
       <dependency>
         <groupId>org.clojure</groupId>
         <artifactId>clojure</artifactId>
-        <version>1.4.0</version>
+        <version>1.5.1</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.jsr166-mirror</groupId>
@@ -316,7 +324,7 @@
       <dependency>
         <groupId>org.picocontainer</groupId>
         <artifactId>picocontainer</artifactId>
-        <version>2.13.6</version>
+        <version>2.14.3</version>
       </dependency>
       <dependency>
         <groupId>org.python</groupId>
@@ -326,12 +334,12 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.6.4</version>
+        <version>1.7.5</version>
       </dependency>
       <dependency>
         <groupId>ch.qos.logback</groupId>
         <artifactId>logback-classic</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.13</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.janino</groupId>
@@ -345,6 +353,8 @@
       </dependency>
 
       <dependency>
+        <!-- TODO - upgrade to 3.11
+             It breaks some core tests. -->
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>4.5</version>
@@ -353,7 +363,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-all</artifactId>
-        <version>1.9.0</version>
+        <version>1.9.5</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
@@ -505,6 +515,11 @@
           <groupId>org.apache.portals.jetspeed-2</groupId>
           <artifactId>jetspeed-unpack-maven-plugin</artifactId>
           <version>2.2.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>2.0</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>

@@ -1,4 +1,4 @@
-// Copyright (C) 2011 - 2012 Philip Aston
+// Copyright (C) 2011 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -22,9 +22,9 @@
 package net.grinder.engine.process;
 
 import static java.util.Arrays.asList;
-import static junit.framework.Assert.assertEquals;
 import static net.grinder.testutility.AssertUtilities.assertContains;
 import static net.grinder.testutility.FileUtilities.createFile;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -84,7 +84,7 @@ public class TestScriptEngineContainer extends AbstractJUnit4FileTestCase {
                     ScriptEngineService.class.getName())),
          Collections.<String>emptySet(),
          false) {
-        @Override public Enumeration<URL> getResources(String name)
+        @Override public Enumeration<URL> getResources(final String name)
           throws IOException {
           // Be evil.
           throw new IOException("");
@@ -95,12 +95,12 @@ public class TestScriptEngineContainer extends AbstractJUnit4FileTestCase {
       constructInClassLoader(blockingLoader);
       fail("Expected EngineException");
     }
-    catch (InvocationTargetException e) {
+    catch (final InvocationTargetException e) {
       assertTrue(e.getCause() instanceof EngineException);
     }
   }
 
-  private final void constructInClassLoader(ClassLoader loader)
+  private final void constructInClassLoader(final ClassLoader loader)
     throws Exception {
 
     final Class<?> c =
@@ -142,7 +142,7 @@ public class TestScriptEngineContainer extends AbstractJUnit4FileTestCase {
       constructInClassLoader(blockingLoader);
       fail("Expected EngineException");
     }
-    catch (InvocationTargetException e) {
+    catch (final InvocationTargetException e) {
       assertTrue(e.getCause() instanceof EngineException);
       assertTrue(e.getCause().getCause() instanceof ClassNotFoundException);
     }
@@ -174,7 +174,7 @@ public class TestScriptEngineContainer extends AbstractJUnit4FileTestCase {
       constructInClassLoader(blockingLoader);
       fail("Expected EngineException");
     }
-    catch (InvocationTargetException e) {
+    catch (final InvocationTargetException e) {
       assertTrue(e.getCause() instanceof EngineException);
       assertContains(e.getCause().getMessage(), "does not implement");
     }
@@ -213,7 +213,7 @@ public class TestScriptEngineContainer extends AbstractJUnit4FileTestCase {
       container.getScriptEngine(new ScriptLocation(new File("foo.xxx")));
       fail("Expected EngineException");
     }
-    catch (EngineException e) {
+    catch (final EngineException e) {
       assertContains(e.getMessage(), "No suitable script engine");
     }
   }

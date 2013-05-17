@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2009 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,13 +21,15 @@
 
 package net.grinder.util.thread;
 
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.TimerTask;
 
 import net.grinder.common.UncheckedInterruptedException;
 import net.grinder.testutility.Time;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
+import org.junit.Test;
 
 
 /**
@@ -35,8 +37,9 @@ import junit.framework.TestCase;
  *
  * @author Philip Aston
  */
-public class TestMonitor extends TestCase {
+public class TestMonitor {
 
+  @Test
   public void testWaitNoInterruptException() throws Exception {
     final Condition monitor = new Condition();
 
@@ -81,6 +84,7 @@ public class TestMonitor extends TestCase {
     thread4.join();
 
     assertTrue(new Time(100, 200) {
+      @Override
       public void doIt() throws Exception {
         wait2.run();
       }
@@ -93,17 +97,17 @@ public class TestMonitor extends TestCase {
     private Throwable m_threw;
     private boolean m_waiting;
 
-    public DoWait(Condition monitor) {
+    public DoWait(final Condition monitor) {
       this(monitor, -1);
     }
 
-    private DoWait(Condition monitor, long time) {
+    private DoWait(final Condition monitor, final long time) {
       super();
       m_monitor = monitor;
       m_time = time;
     }
 
-    public void waitUntilWaiting(boolean b) throws InterruptedException {
+    public void waitUntilWaiting(final boolean b) throws InterruptedException {
       synchronized (m_monitor) {
         while (m_waiting != b) {
           m_monitor.wait();
@@ -111,6 +115,7 @@ public class TestMonitor extends TestCase {
       }
     }
 
+    @Override
     public void run() {
       m_threw = null;
 
@@ -126,7 +131,7 @@ public class TestMonitor extends TestCase {
             m_monitor.waitNoInterrruptException();
           }
         }
-        catch (Throwable t) {
+        catch (final Throwable t) {
           m_threw = t;
         }
         finally {
@@ -138,12 +143,12 @@ public class TestMonitor extends TestCase {
 
     public void assertSuccess() throws InterruptedException {
       waitUntilWaiting(false);
-      Assert.assertNull(m_threw);
+      assertNull(m_threw);
     }
 
-    public void assertException(Class<?> c) throws InterruptedException {
+    public void assertException(final Class<?> c) throws InterruptedException {
       waitUntilWaiting(false);
-      Assert.assertTrue(c.isAssignableFrom(m_threw.getClass()));
+      assertTrue(c.isAssignableFrom(m_threw.getClass()));
     }
   }
 }

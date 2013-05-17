@@ -1,4 +1,4 @@
-// Copyright (C) 2011 Philip Aston
+// Copyright (C) 2011 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -80,7 +80,8 @@ public class TestExternalLogger {
       new ArrayList<InvocationOnMock>();
 
     final InvocationListener listeners = new InvocationListener() {
-      public void reportInvocation(MethodInvocationReport report) {
+      @Override
+      public void reportInvocation(final MethodInvocationReport report) {
         invocations.add((InvocationOnMock) report.getInvocation());
       }
     };
@@ -93,7 +94,7 @@ public class TestExternalLogger {
 
     final Method[] allMethods = Logger.class.getDeclaredMethods();
 
-    for (Method m : allMethods) {
+    for (final Method m : allMethods) {
       final Class<?>[] parameterTypes = m.getParameterTypes();
 
       if (parameterTypes.length > 0 && parameterTypes[0].equals(Marker.class)) {
@@ -109,7 +110,7 @@ public class TestExternalLogger {
       try {
         delegateMethod = Logger.class.getMethod(m.getName(), delegateTypes);
       }
-      catch (NoSuchMethodException e) {
+      catch (final NoSuchMethodException e) {
         continue;
       }
 
@@ -117,7 +118,7 @@ public class TestExternalLogger {
 
       final List<Object> parameters = new ArrayList<Object>();
 
-      for (Class<?> type : parameterTypes) {
+      for (final Class<?> type : parameterTypes) {
         parameters.add(randomObjectFactory.generateParameter(type));
       }
 
@@ -132,7 +133,15 @@ public class TestExternalLogger {
 
       assertSame(m_marker, invokedArguments[0]);
 
-      for (Object p : parameters) {
+      if (delegateMethod.isVarArgs()) {
+        // Mockito expands varargs.
+        final Object[] vs = (Object[]) parameters.remove(parameters.size() - 1);
+        for (final Object v : vs) {
+          parameters.add(v);
+        }
+      }
+
+      for (final Object p : parameters) {
         assertSame(p, invokedArguments[++i]);
       }
     }

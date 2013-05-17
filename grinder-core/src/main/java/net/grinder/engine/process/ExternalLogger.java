@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -37,8 +37,8 @@ final class ExternalLogger extends MarkerIgnoringBase {
   private final Logger m_delegate;
   private final ThreadContextLocator m_threadContextLocator;
 
-  public ExternalLogger(Logger processLogger,
-                        ThreadContextLocator threadContextLocator) {
+  public ExternalLogger(final Logger processLogger,
+                        final ThreadContextLocator threadContextLocator) {
 
     m_delegate = processLogger;
     m_threadContextLocator = threadContextLocator;
@@ -71,35 +71,37 @@ final class ExternalLogger extends MarkerIgnoringBase {
   /**
    * {@inheritDoc}
    */
-  @Override public void trace(String msg) {
+  @Override public void trace(final String msg) {
     m_delegate.trace(getMarker(), msg);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void trace(String format, Object arg) {
+  @Override public void trace(final String format, final Object arg) {
     m_delegate.trace(getMarker(), format, arg);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void trace(String format, Object arg1, Object arg2) {
+  @Override public void trace(final String format,
+                              final Object arg1,
+                              final Object arg2) {
     m_delegate.trace(getMarker(), format, arg1, arg2);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void trace(String format, Object[] argArray) {
+  @Override public void trace(final String format, final Object... argArray) {
     m_delegate.trace(getMarker(), format, argArray);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void trace(String msg, Throwable t) {
+  @Override public void trace(final String msg, final Throwable t) {
     m_delegate.trace(getMarker(), msg, t);
   }
 
@@ -113,35 +115,37 @@ final class ExternalLogger extends MarkerIgnoringBase {
   /**
    * {@inheritDoc}
    */
-  @Override public void debug(String msg) {
+  @Override public void debug(final String msg) {
     m_delegate.debug(getMarker(), msg);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void debug(String format, Object arg) {
+  @Override public void debug(final String format, final Object arg) {
     m_delegate.debug(getMarker(), format, arg);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void debug(String format, Object arg1, Object arg2) {
+  @Override public void debug(final String format,
+                              final Object arg1,
+                              final Object arg2) {
     m_delegate.debug(getMarker(), format, arg1, arg2);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void debug(String format, Object[] argArray) {
+  @Override public void debug(final String format, final Object... argArray) {
     m_delegate.debug(getMarker(), format, argArray);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void debug(String msg, Throwable t) {
+  @Override public void debug(final String msg, final Throwable t) {
     m_delegate.debug(getMarker(), msg, t);
   }
 
@@ -155,35 +159,37 @@ final class ExternalLogger extends MarkerIgnoringBase {
   /**
    * {@inheritDoc}
    */
-  @Override public void info(String msg) {
+  @Override public void info(final String msg) {
     m_delegate.info(getMarker(), msg);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void info(String format, Object arg) {
+  @Override public void info(final String format, final Object arg) {
     m_delegate.info(getMarker(), format, arg);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void info(String format, Object arg1, Object arg2) {
+  @Override public void info(final String format,
+                             final Object arg1,
+                             final Object arg2) {
     m_delegate.info(getMarker(), format, arg1, arg2);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void info(String format, Object[] argArray) {
+  @Override public void info(final String format, final Object... argArray) {
     m_delegate.info(getMarker(), format, argArray);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void info(String msg, Throwable t) {
+  @Override public void info(final String msg, final Throwable t) {
     m_delegate.info(getMarker(), msg, t);
   }
 
@@ -197,35 +203,37 @@ final class ExternalLogger extends MarkerIgnoringBase {
   /**
    * {@inheritDoc}
    */
-  @Override public void warn(String msg) {
+  @Override public void warn(final String msg) {
     m_delegate.warn(getMarker(), msg);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void warn(String format, Object arg) {
+  @Override public void warn(final String format, final Object arg) {
     m_delegate.warn(getMarker(), format, arg);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void warn(String format, Object arg1, Object arg2) {
+  @Override public void warn(final String format,
+                             final Object arg1,
+                             final Object arg2) {
     m_delegate.warn(getMarker(), format, arg1, arg2);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void warn(String format, Object[] argArray) {
+  @Override public void warn(final String format, final Object... argArray) {
     m_delegate.warn(getMarker(), format, argArray);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void warn(String msg, Throwable t) {
+  @Override public void warn(final String msg, final Throwable t) {
     m_delegate.warn(getMarker(), msg, t);
   }
 
@@ -239,35 +247,37 @@ final class ExternalLogger extends MarkerIgnoringBase {
   /**
    * {@inheritDoc}
    */
-  @Override public void error(String msg) {
+  @Override public void error(final String msg) {
     m_delegate.error(getMarker(), msg);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void error(String format, Object arg) {
+  @Override public void error(final String format, final Object arg) {
     m_delegate.error(getMarker(), format, arg);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void error(String format, Object arg1, Object arg2) {
+  @Override public void error(final String format,
+                              final Object arg1,
+                              final Object arg2) {
     m_delegate.error(getMarker(), format, arg1, arg2);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void error(String format, Object[] argArray) {
+  @Override public void error(final String format, final Object... argArray) {
     m_delegate.error(getMarker(), format, argArray);
   }
 
   /**
    * {@inheritDoc}
    */
-  @Override public void error(String msg, Throwable t) {
+  @Override public void error(final String msg, final Throwable t) {
     m_delegate.error(getMarker(), msg, t);
   }
 }

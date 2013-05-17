@@ -1,4 +1,4 @@
-// Copyright (C) 2003 - 2012 Philip Aston
+// Copyright (C) 2003 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,10 +21,10 @@
 
 package net.grinder.communication;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
 import static net.grinder.testutility.AssertUtilities.assertContains;
 import static net.grinder.testutility.AssertUtilities.assertNotEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.InputStream;
 import java.io.ObjectOutputStream;

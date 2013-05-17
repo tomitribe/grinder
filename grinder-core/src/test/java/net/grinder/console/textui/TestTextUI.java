@@ -212,6 +212,7 @@ public class TestTextUI {
     m_sampleModelStubFactory.setResult(
       "getState",
       new SampleModel.State() {
+          @Override
           public String getDescription() {
             return "no pressure son";
           }

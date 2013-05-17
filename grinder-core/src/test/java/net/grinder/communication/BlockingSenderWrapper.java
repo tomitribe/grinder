@@ -1,4 +1,4 @@
-// Copyright (C) 2006 - 2012 Philip Aston
+// Copyright (C) 2006 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,7 +21,7 @@
 
 package net.grinder.communication;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 
 /**
@@ -33,11 +33,13 @@ public class BlockingSenderWrapper implements BlockingSender {
 
   private final Sender m_delegate;
 
-  public BlockingSenderWrapper(Sender sender) {
+  public BlockingSenderWrapper(final Sender sender) {
     m_delegate = sender;
   }
 
-  public Message blockingSend(Message message) throws CommunicationException {
+  @Override
+  public Message blockingSend(final Message message)
+      throws CommunicationException {
 
     final MessageRequiringResponse messageRequringResponse =
       new MessageRequiringResponse(message);
@@ -47,10 +49,13 @@ public class BlockingSenderWrapper implements BlockingSender {
     final Sender captureResponse =
       new Sender() {
 
-        public void send(Message theMessage) throws CommunicationException {
+        @Override
+        public void send(final Message theMessage)
+            throws CommunicationException {
           response[0] = theMessage;
         }
 
+        @Override
         public void shutdown() {
           Assert.fail("Should not be called");
         }
@@ -64,6 +69,7 @@ public class BlockingSenderWrapper implements BlockingSender {
     return response[0];
   }
 
+  @Override
   public void shutdown() {
     m_delegate.shutdown();
   }
