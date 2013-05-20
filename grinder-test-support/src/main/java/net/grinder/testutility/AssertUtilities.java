@@ -45,70 +45,11 @@ import org.junit.Assert;
  */
 public class AssertUtilities extends Assert {
 
-  public static void assertArraysEqual(Object[] a, Object[] b) {
-    assertArraysEqual("", a, b);
-  }
-
-  public static void assertArraysEqual(String message, Object[] a,
-                                       Object[] b) {
-    if (!message.equals("")) {
-      message = message + ": ";
-    }
-
-    if (a != null || b != null) {
-      assertNotNull(message + "first is not null", a);
-      assertNotNull(message + "second is not null", b);
-
-      // If statement is to shut up eclipse null warning.
-      if (a != null && b != null) {
-        assertEquals(message + "arrays of equal length", a.length, b.length);
-
-        for (int i = 0; i < a.length; ++i) {
-          assertEquals(message + "element " + i + " equal", a[i], b[i]);
-        }
-      }
-    }
-  }
-
-  public static void assertArraysEqual(byte[] a, byte[] b) {
-    assertArraysEqual("", a, b);
-  }
-
-  public static void assertArraysEqual(String message, byte[] a, byte[] b) {
-
-    if (!message.equals("")) {
-      message = message + ": ";
-    }
-
-    if (a != null || b != null) {
-      assertNotNull(message + "first is not null", a);
-      assertNotNull(message + "second is not null", b);
-
-      // If statement is to shut up eclipse null warning.
-      if (a != null && b != null) {
-        assertEquals(message + "arrays of equal length", a.length, b.length);
-
-        for (int i = 0; i < a.length; ++i) {
-          assertEquals(message + "element " + i + " equal", a[i], b[i]);
-        }
-      }
-    }
-  }
-
   public static void assertArrayContainsAll(Object[] array1, Object[] array2) {
     final List<Object> list1 = Arrays.asList(array1);
     final List<Object> list2 = Arrays.asList(array2);
     assertTrue("" + list1 + " contains " + list2,
       new HashSet<Object>(list1).containsAll(list2));
-  }
-
-  public static void assertNotEquals(Object o1, Object o2) {
-    if (o1 == null) {
-      assertNotNull(o2);
-    }
-    else {
-      assertTrue("'" + o1 + "' is not equal to '" + o2 + "'", !o1.equals(o2));
-    }
   }
 
   public static void assertStartsWith(String text, String value) {

@@ -159,7 +159,7 @@ public final class CallData extends Assert implements CallAssertions {
     // etc., or even which class the method belongs to.
     assertEquals(methodName, getMethodName());
 
-    AssertUtilities. assertArraysEqual(
+    assertArrayEquals(
       "Expected " + parametersToString(parameters) +
       " but was " + parametersToString(getParameters()),
       parameters, getParameters());

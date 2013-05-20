@@ -1,4 +1,4 @@
-// Copyright (C) 2012 Philip Aston
+// Copyright (C) 2012 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -73,5 +73,8 @@ public class TestParametersFromProperties {
     assertFalse(parameters.isCommonHeader("Bah"));
     assertFalse(parameters.isMirroredHeader("Foo "));
     assertFalse(parameters.isMirroredHeader("Bah"));
+
+    System.clearProperty("HTTPPlugin.additionalHeaders");
+
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2009 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -23,11 +23,10 @@ package net.grinder.testutility;
 
 import java.util.ArrayList;
 
-import junit.framework.Assert;
-
 import org.apache.xmlbeans.XmlError;
 import org.apache.xmlbeans.XmlObject;
 import org.apache.xmlbeans.XmlOptions;
+import org.junit.Assert;
 
 
 /**
@@ -36,7 +35,7 @@ import org.apache.xmlbeans.XmlOptions;
  * @author Philip Aston
  */
 public class XMLBeansUtilities {
-  public static final void validate(XmlObject o) {
+  public static final void validate(final XmlObject o) {
     final ArrayList<XmlError> errors = new ArrayList<XmlError>();
 
     if (!o.validate(new XmlOptions().setErrorListener(errors))) {

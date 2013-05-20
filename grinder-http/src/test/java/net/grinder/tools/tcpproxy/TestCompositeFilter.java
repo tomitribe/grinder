@@ -1,4 +1,4 @@
-// Copyright (C) 2005 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,9 +21,13 @@
 
 package net.grinder.tools.tcpproxy;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
-import net.grinder.testutility.AssertUtilities;
+import org.junit.Test;
+
 
 
 /**
@@ -31,7 +35,7 @@ import net.grinder.testutility.AssertUtilities;
  *
  * @author Philip Aston
  */
-public class TestCompositeFilter extends TestCase {
+public class TestCompositeFilter {
 
   private final MyFilterStubFactory m_filter1StubFactory =
     new MyFilterStubFactory();
@@ -48,6 +52,7 @@ public class TestCompositeFilter extends TestCase {
                           new EndPoint("bah", 2),
                           false);
 
+  @Test
   public void testGetFilters() throws Exception {
     final CompositeFilter composite = new CompositeFilter();
 
@@ -55,15 +60,16 @@ public class TestCompositeFilter extends TestCase {
 
     composite.add(m_filter1);
 
-    AssertUtilities.assertArraysEqual(
+    assertArrayEquals(
       new Object[] { m_filter1 }, composite.getFilters());
 
     composite.add(m_filter2);
 
-    AssertUtilities.assertArraysEqual(
+    assertArrayEquals(
       new Object[] { m_filter1, m_filter2 }, composite.getFilters());
   }
 
+  @Test
   public void testHandle() throws Exception {
     final CompositeFilter composite = new CompositeFilter();
 
@@ -118,6 +124,7 @@ public class TestCompositeFilter extends TestCase {
                                        new Integer(100));
   }
 
+  @Test
   public void testConnectionOpened() throws Exception {
     final CompositeFilter composite = new CompositeFilter();
     composite.add(m_filter1);
@@ -133,6 +140,7 @@ public class TestCompositeFilter extends TestCase {
     m_filter2StubFactory.assertNoMoreCalls();
   }
 
+  @Test
   public void testConnectionClosed() throws Exception {
     final CompositeFilter composite = new CompositeFilter();
     composite.add(m_filter1);
@@ -148,6 +156,7 @@ public class TestCompositeFilter extends TestCase {
     m_filter2StubFactory.assertNoMoreCalls();
   }
 
+  @Test
   public void testToString() throws Exception {
     final CompositeFilter composite = new CompositeFilter();
     composite.add(m_filter1);

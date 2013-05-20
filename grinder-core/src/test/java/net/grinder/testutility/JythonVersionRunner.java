@@ -161,7 +161,7 @@ public abstract class JythonVersionRunner extends Suite {
       super(klass);
 
       m_pythonHome = pythonHome;
-      m_jythonJarURL = new URL("file://" + pythonHome + "/jython.jar");;
+      m_jythonJarURL = new URL("file://" + pythonHome + "/jython.jar");
     }
 
     @Override
@@ -186,6 +186,7 @@ public abstract class JythonVersionRunner extends Suite {
       return super.testName(method) + " [" + m_pythonHome + "]";
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected Statement methodBlock(final FrameworkMethod method) {
       final ClassLoader loader;

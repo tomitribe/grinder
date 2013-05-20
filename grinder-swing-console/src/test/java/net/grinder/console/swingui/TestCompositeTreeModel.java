@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2009 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,7 +21,13 @@
 
 package net.grinder.console.swingui;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -34,14 +40,16 @@ import net.grinder.testutility.CallData;
 import net.grinder.testutility.DelegatingStubFactory;
 import net.grinder.testutility.RandomStubFactory;
 
+import org.junit.Test;
 
 /**
  * Unit tests for {@link CompositeTreeModel}.
  *
  * @author Philip Aston
  */
-public class TestCompositeTreeModel extends TestCase {
+public class TestCompositeTreeModel {
 
+  @Test
   public void testConstruction() throws Exception {
     final CompositeTreeModel compositeTreeModel = new CompositeTreeModel();
     assertNotNull(compositeTreeModel.getRoot());
@@ -49,9 +57,10 @@ public class TestCompositeTreeModel extends TestCase {
 
     final CompositeTreeModel compositeTreeModel2 = new CompositeTreeModel();
     AssertUtilities.assertNotEquals(compositeTreeModel.getRoot(),
-                                    compositeTreeModel2.getRoot());
+      compositeTreeModel2.getRoot());
   }
 
+  @Test
   public void testGetChildMethods() throws Exception {
     final CompositeTreeModel compositeTreeModel = new CompositeTreeModel();
 
@@ -71,9 +80,9 @@ public class TestCompositeTreeModel extends TestCase {
 
     final TreeModel delegateModel1 = createTreeModel();
     final DelegatingStubFactory<DefaultTreeModel> delegateModelStubFactory1 =
-      DelegatingStubFactory.create(createTreeModel());
+        DelegatingStubFactory.create(createTreeModel());
     final TreeModel instrumentedDelegateModel1 =
-      delegateModelStubFactory1.getStub();
+        delegateModelStubFactory1.getStub();
 
     compositeTreeModel.addTreeModel(instrumentedDelegateModel1, true);
 
@@ -93,9 +102,9 @@ public class TestCompositeTreeModel extends TestCase {
 
     assertNull(compositeTreeModel.getChild(root, 1));
     assertEquals("Child2",
-                 compositeTreeModel.getChild(delegateRoot1, 1).toString());
+      compositeTreeModel.getChild(delegateRoot1, 1).toString());
     delegateModelStubFactory1.assertSuccess("getChild", delegateRoot1,
-                                            new Integer(1));
+      new Integer(1));
 
     assertEquals(1, compositeTreeModel.getChildCount(root));
     assertEquals(2, compositeTreeModel.getChildCount(delegateRoot1));
@@ -120,25 +129,26 @@ public class TestCompositeTreeModel extends TestCase {
     assertEquals(3, compositeTreeModel.getChildCount(root));
 
     assertEquals("Child1",
-                 compositeTreeModel.getChild(delegateRoot1, 0).toString());
+      compositeTreeModel.getChild(delegateRoot1, 0).toString());
     delegateModelStubFactory1.assertSuccess("getChild", delegateRoot1,
-                                            new Integer(0));
+      new Integer(0));
     assertEquals("Child1", compositeTreeModel.getChild(root, 1).toString());
     assertEquals("Child2", compositeTreeModel.getChild(root, 2).toString());
 
     final Object otherChild2 = delegateModel2.getChild(delegateRoot2, 1);
 
     assertEquals(1, delegateModel2.getIndexOfChild(delegateRoot2,
-                                                   otherChild2));
+      otherChild2));
     assertEquals(2, compositeTreeModel.getIndexOfChild(root, otherChild2));
   }
 
+  @Test
   public void testListeners() throws Exception {
     final CompositeTreeModel compositeTreeModel = new CompositeTreeModel();
     final Object root = compositeTreeModel.getRoot();
 
     final RandomStubFactory<TreeModelListener> listener1StubFactory =
-      RandomStubFactory.create(TreeModelListener.class);
+        RandomStubFactory.create(TreeModelListener.class);
     listener1StubFactory.setIgnoreObjectMethods();
 
     compositeTreeModel.addTreeModelListener(listener1StubFactory.getStub());
@@ -148,12 +158,12 @@ public class TestCompositeTreeModel extends TestCase {
 
     final DefaultTreeModel delegateModel = createTreeModel();
     final DefaultMutableTreeNode delegateRoot =
-      (DefaultMutableTreeNode)delegateModel.getRoot();
+        (DefaultMutableTreeNode) delegateModel.getRoot();
 
     compositeTreeModel.addTreeModel(delegateModel, false);
 
     final RandomStubFactory<TreeModelListener> listener2StubFactory =
-      RandomStubFactory.create(TreeModelListener.class);
+        RandomStubFactory.create(TreeModelListener.class);
     listener2StubFactory.setIgnoreObjectMethods();
 
     compositeTreeModel.addTreeModelListener(listener2StubFactory.getStub());
@@ -162,36 +172,35 @@ public class TestCompositeTreeModel extends TestCase {
     delegateModel.insertNodeInto(child3, delegateRoot, 2);
 
     final CallData insertCallData =
-      listener1StubFactory.assertSuccess("treeNodesInserted",
-                                         TreeModelEvent.class);
+        listener1StubFactory.assertSuccess("treeNodesInserted",
+          TreeModelEvent.class);
 
     final TreeModelEvent insertEvent =
-      (TreeModelEvent)insertCallData.getParameters()[0];
+        (TreeModelEvent) insertCallData.getParameters()[0];
 
-    AssertUtilities.assertArraysEqual(
-      new Object[] { root, }, insertEvent.getPath());
+    assertArrayEquals(new Object[] { root, }, insertEvent.getPath());
 
     listener1StubFactory.assertNoMoreCalls();
     listener2StubFactory.assertSuccess("treeNodesInserted",
-                                       TreeModelEvent.class);
+      TreeModelEvent.class);
     listener2StubFactory.assertNoMoreCalls();
 
     compositeTreeModel.removeTreeModelListener(listener1StubFactory.getStub());
 
     final DefaultMutableTreeNode grandChild2 =
-      new DefaultMutableTreeNode("Grandchild2");
+        new DefaultMutableTreeNode("Grandchild2");
     delegateModel.insertNodeInto(grandChild2, child3, 0);
 
     listener1StubFactory.assertNoMoreCalls();
 
     final CallData insertCallData2 =
-      listener2StubFactory.assertSuccess("treeNodesInserted",
-                                         TreeModelEvent.class);
+        listener2StubFactory.assertSuccess("treeNodesInserted",
+          TreeModelEvent.class);
 
     final TreeModelEvent insertEvent2 =
-      (TreeModelEvent)insertCallData2.getParameters()[0];
+        (TreeModelEvent) insertCallData2.getParameters()[0];
 
-    AssertUtilities.assertArraysEqual(
+    assertArrayEquals(
       new Object[] { root, child3 }, insertEvent2.getPath());
 
     // Removing twice should be a no-op.
@@ -203,7 +212,7 @@ public class TestCompositeTreeModel extends TestCase {
     final DefaultMutableTreeNode child1 = new DefaultMutableTreeNode("Child1");
     final DefaultMutableTreeNode child2 = new DefaultMutableTreeNode("Child2");
     final DefaultMutableTreeNode grandChild =
-      new DefaultMutableTreeNode("Grandchild");
+        new DefaultMutableTreeNode("Grandchild");
     child1.add(grandChild);
     root.add(child1);
     root.add(child2);

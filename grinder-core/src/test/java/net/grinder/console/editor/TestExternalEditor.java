@@ -1,4 +1,4 @@
-// Copyright (C) 2007 - 2009 Philip Aston
+// Copyright (C) 2007 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,11 @@
 
 package net.grinder.console.editor;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.beans.PropertyChangeListener;
 import java.io.File;
 
@@ -28,9 +33,11 @@ import net.grinder.console.common.Resources;
 import net.grinder.console.common.ResourcesImplementation;
 import net.grinder.console.distribution.AgentCacheState;
 import net.grinder.console.distribution.FileChangeWatcher;
-import net.grinder.testutility.AbstractFileTestCase;
-import net.grinder.testutility.AssertUtilities;
-import net.grinder.testutility.RandomStubFactory;
+import net.grinder.testutility.AbstractJUnit4FileTestCase;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 
 /**
@@ -38,7 +45,7 @@ import net.grinder.testutility.RandomStubFactory;
  *
  * @author Philip Aston
  */
-public class TestExternalEditor extends AbstractFileTestCase {
+public class TestExternalEditor extends AbstractJUnit4FileTestCase {
 
   private static final String s_testClasspath =
     System.getProperty("java.class.path");
@@ -47,12 +54,15 @@ public class TestExternalEditor extends AbstractFileTestCase {
     new ResourcesImplementation(
       "net.grinder.console.common.resources.Console");
 
-  private final RandomStubFactory<FileChangeWatcher>
-    m_fileChangeWatcherStubFactory =
-      RandomStubFactory.create(FileChangeWatcher.class);
-  private final FileChangeWatcher m_fileChangeWatcher =
-    m_fileChangeWatcherStubFactory.getStub();
+  @Mock
+  private FileChangeWatcher m_fileChangeWatcher;
 
+  @Before
+  public void setUp() {
+    initMocks(this);
+  }
+
+  @Test
   public void testFileToCommandLine() throws Exception {
     final File commandFile = new File("foo");
     final File file = new File("lah");
@@ -61,7 +71,7 @@ public class TestExternalEditor extends AbstractFileTestCase {
       new ExternalEditor(null, null, commandFile, "bah dah");
     final String[] result1 = externalEditor1.fileToCommandLine(file);
 
-    AssertUtilities.assertArraysEqual(
+    assertArrayEquals(
       new String[] { commandFile.getAbsolutePath(),
                      "bah",
                      "dah",
@@ -73,7 +83,7 @@ public class TestExternalEditor extends AbstractFileTestCase {
       new ExternalEditor(null, null, commandFile, "-f '%f'");
     final String[] result2 = externalEditor2.fileToCommandLine(file);
 
-    AssertUtilities.assertArraysEqual(
+    assertArrayEquals(
       new String[] { commandFile.getAbsolutePath(),
                      "-f", "'" + file.getAbsolutePath() + "'", },
       result2);
@@ -83,22 +93,26 @@ public class TestExternalEditor extends AbstractFileTestCase {
       new ExternalEditor(null, null, commandFile, null);
     final String[] result3 = externalEditor3.fileToCommandLine(file);
 
-    AssertUtilities.assertArraysEqual(
+    assertArrayEquals(
       new String[] { commandFile.getAbsolutePath(), file.getAbsolutePath(), },
       result3);
   }
 
+  @Test
   public void testOpen() throws Exception {
     final long[] lastInvalidAfter = new long[1];
 
     final AgentCacheState cacheState =
       new AgentCacheState() {
 
-        public void addListener(PropertyChangeListener listener) {}
+        @Override
+        public void addListener(final PropertyChangeListener listener) {}
 
+        @Override
         public boolean getOutOfDate() { return false; }
 
-        public void setNewFileTime(long invalidAfter) {
+        @Override
+        public void setNewFileTime(final long invalidAfter) {
           lastInvalidAfter[0] = invalidAfter;
         }};
 

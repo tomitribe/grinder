@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2012 Philip Aston
+// Copyright (C) 2009 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,7 +21,18 @@
 
 package net.grinder.util.weave.j2se6;
 
-import static net.grinder.testutility.AssertUtilities.assertArraysEqual;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,10 +50,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-import net.grinder.testutility.CallData;
-import net.grinder.testutility.CallRecorder;
-import net.grinder.testutility.RandomStubFactory;
 import net.grinder.util.weave.ClassSource;
 import net.grinder.util.weave.ParameterSource;
 import net.grinder.util.weave.Weaver.TargetSource;
@@ -50,26 +57,58 @@ import net.grinder.util.weave.WeavingException;
 import net.grinder.util.weave.agent.ExposeInstrumentation;
 import net.grinder.util.weave.j2se6.DCRWeaver.ClassFileTransformerFactory;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 
 /**
  * Unit tests for {@link ASMTransformerFactory}.
  *
  * @author Philip Aston
  */
-public class TestASMTransformerFactory extends TestCase {
+public class TestASMTransformerFactory {
 
-  private final PointCutRegistryStubFactory m_pointCutRegistryStubFactory =
-    new PointCutRegistryStubFactory();
-  private final PointCutRegistry m_pointCutRegistry =
-    m_pointCutRegistryStubFactory.getStub();
+  private final PointCuts m_pointCuts = new PointCuts();
 
-  @Override protected void tearDown() throws Exception {
-    super.tearDown();
-    m_pointCutRegistryStubFactory.clear();
+  @Mock
+  private  PointCutRegistry m_pointCutRegistry;
+
+  @Before
+  public void setUp() throws Exception {
+    initMocks(this);
+
+    when(
+      m_pointCutRegistry.getConstructorPointCutsForClass(isA(String.class))
+      ).thenAnswer(new Answer<Map<Constructor<?>, List<WeavingDetails>>>() {
+
+        @Override
+        public Map<Constructor<?>, List<WeavingDetails>>
+          answer(final InvocationOnMock invocation) throws Throwable {
+          return m_pointCuts.getConstructor((String)invocation.getArguments()[0]);
+        }});
+
+    when(
+      m_pointCutRegistry.getMethodPointCutsForClass(isA(String.class))
+      ).thenAnswer(new Answer<Map<Method, List<WeavingDetails>>>() {
+
+        @Override
+        public Map<Method, List<WeavingDetails>>
+          answer(final InvocationOnMock invocation) throws Throwable {
+          return m_pointCuts.getMethod((String)invocation.getArguments()[0]);
+        }});
   }
 
-  private static final CallRecorder s_callRecorder = new CallRecorder();
+  @After public void tearDown() throws Exception {
+    verifyNoMoreInteractions(s_callRecorder);
+    reset(s_callRecorder);
+  }
 
+  @Test
   public void testFactory() throws Exception {
     final ClassFileTransformerFactory transformerFactory =
       new ASMTransformerFactory(MyAdvice.class);
@@ -77,6 +116,7 @@ public class TestASMTransformerFactory extends TestCase {
     assertNotNull(transformerFactory.create(m_pointCutRegistry));
   }
 
+  @Test
   public void testFactoryWithBadAdvice() throws Exception {
     try {
       new ASMTransformerFactory(BadAdvice1.class);
@@ -121,6 +161,7 @@ public class TestASMTransformerFactory extends TestCase {
     return instrumentation;
   }
 
+  @Test
   public void testWithAgent() throws Exception {
     final Instrumentation instrumentation = getInstrumentation();
     assertTrue(instrumentation.isRetransformClassesSupported());
@@ -128,16 +169,16 @@ public class TestASMTransformerFactory extends TestCase {
     final ClassFileTransformerFactory transformerFactory =
       new ASMTransformerFactory(MyAdvice.class);
 
-    m_pointCutRegistryStubFactory.addMethod(A.class, "m1", "loc1");
-    m_pointCutRegistryStubFactory.addMethod(A.class, "m2", "loc2");
-    m_pointCutRegistryStubFactory.addMethod(A.class, "m4", "loc4");
+    m_pointCuts.addMethod(A.class, "m1", "loc1");
+    m_pointCuts.addMethod(A.class, "m2", "loc2");
+    m_pointCuts.addMethod(A.class, "m4", "loc4");
 
     final ClassFileTransformer transformer =
       transformerFactory.create(m_pointCutRegistry);
 
     final A anotherA = new A();
     anotherA.m1();
-    s_callRecorder.assertNoMoreCalls();
+    verifyNoMoreInteractions(s_callRecorder);
 
     instrumentation.addTransformer(transformer, true);
     instrumentation.retransformClasses(new Class[] { A.class, A2.class });
@@ -145,14 +186,12 @@ public class TestASMTransformerFactory extends TestCase {
     final A a = new A();
     assertEquals(1, a.m1());
 
-    s_callRecorder.assertSuccess("enter", a, "loc1");
-    s_callRecorder.assertSuccess("exit", a, "loc1", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(a, "loc1");
+    verify(s_callRecorder).exit(a, "loc1", true);
 
     anotherA.m1();
-    s_callRecorder.assertSuccess("enter", anotherA, "loc1");
-    s_callRecorder.assertSuccess("exit", anotherA, "loc1", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(anotherA, "loc1");
+    verify(s_callRecorder).exit(anotherA, "loc1", true);
 
     try {
       a.m2();
@@ -161,9 +200,11 @@ public class TestASMTransformerFactory extends TestCase {
     catch (final RuntimeException e) {
     }
 
-    s_callRecorder.assertSuccess("enter", a, "loc2");
-    s_callRecorder.assertSuccess("exit", a, "loc2", false);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(a, "loc2");
+    verify(s_callRecorder).exit(a, "loc2", false);
+
+    verifyNoMoreInteractions(s_callRecorder);
+    reset(s_callRecorder);
 
     try {
       a.m4();
@@ -172,35 +213,34 @@ public class TestASMTransformerFactory extends TestCase {
     catch (final RuntimeException e) {
     }
 
-    s_callRecorder.assertSuccess("enter", a, "loc4");
-    s_callRecorder.assertSuccess("enter", a, "loc2");
-    s_callRecorder.assertSuccess("exit", a, "loc2", false);
-    s_callRecorder.assertSuccess("exit", a, "loc4", false);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(a, "loc4");
+    verify(s_callRecorder).enter(a, "loc2");
+    verify(s_callRecorder).exit(a, "loc2", false);
+    verify(s_callRecorder).exit(a, "loc4", false);
 
-    m_pointCutRegistryStubFactory.addMethod(A.class, "m1", "locX");
+    m_pointCuts.addMethod(A.class, "m1", "locX");
 
     instrumentation.retransformClasses(new Class[] { A.class, A2.class });
 
     a.m1();
-    // We only support more than one advice per method.
-    s_callRecorder.assertSuccess("enter", a, "loc1");
-    s_callRecorder.assertSuccess("enter", a, "locX");
-    s_callRecorder.assertSuccess("exit", a, "locX", true);
-    s_callRecorder.assertSuccess("exit", a, "loc1", true);
-    s_callRecorder.assertNoMoreCalls();
+    // We only support than one advice per method.
+    verify(s_callRecorder).enter(a, "loc1");
+    verify(s_callRecorder).enter(a, "locX");
+    verify(s_callRecorder).exit(a, "locX", true);
+    verify(s_callRecorder).exit(a, "loc1", true);
 
     instrumentation.removeTransformer(transformer);
   }
 
+  @Test
   public void testTwoTransformations() throws Exception {
     final Instrumentation instrumentation = getInstrumentation();
 
     final ClassFileTransformerFactory transformerFactory =
       new ASMTransformerFactory(MyAdvice.class);
 
-    m_pointCutRegistryStubFactory.addMethod(A.class, "m1", "loc1");
-    m_pointCutRegistryStubFactory.addMethod(A.class, "m2", "loc2");
+    m_pointCuts.addMethod(A.class, "m1", "loc1");
+    m_pointCuts.addMethod(A.class, "m2", "loc2");
 
     final ClassFileTransformer transformer1 =
       transformerFactory.create(m_pointCutRegistry);
@@ -212,15 +252,11 @@ public class TestASMTransformerFactory extends TestCase {
 
     instrumentation.retransformClasses(new Class[] { A.class, });
 
-
     final A a = new A();
     assertEquals(1, a.m1());
 
-    s_callRecorder.assertSuccess("enter", a, "loc1");
-    s_callRecorder.assertSuccess("enter", a, "loc1");
-    s_callRecorder.assertSuccess("exit", a, "loc1", true);
-    s_callRecorder.assertSuccess("exit", a, "loc1", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder, times(2)).enter(a, "loc1");
+    verify(s_callRecorder, times(2)).exit(a, "loc1", true);
 
     try {
       a.m2();
@@ -229,28 +265,25 @@ public class TestASMTransformerFactory extends TestCase {
     catch (final RuntimeException e) {
     }
 
-    s_callRecorder.assertSuccess("enter", a, "loc2");
-    s_callRecorder.assertSuccess("enter", a, "loc2");
-    s_callRecorder.assertSuccess("exit", a, "loc2", false);
-    s_callRecorder.assertSuccess("exit", a, "loc2", false);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder, times(2)).enter(a, "loc2");
+    verify(s_callRecorder, times(2)).exit(a, "loc2", false);
 
     assertTrue(instrumentation.removeTransformer(transformer2));
     assertTrue(instrumentation.removeTransformer(transformer1));
     instrumentation.retransformClasses(new Class[] { A.class, });
-    s_callRecorder.assertNoMoreCalls();
 
     instrumentation.removeTransformer(transformer1);
     instrumentation.removeTransformer(transformer2);
   }
 
+  @Test
   public void testSerializationNotBroken() throws Exception {
     final Instrumentation instrumentation = getInstrumentation();
 
     final ClassFileTransformerFactory transformerFactory =
       new ASMTransformerFactory(MyAdvice.class);
 
-    m_pointCutRegistryStubFactory.addMethod(SerializableA.class, "m1", "loc1");
+    m_pointCuts.addMethod(SerializableA.class, "m1", "loc1");
 
     final ClassFileTransformer transformer =
       transformerFactory.create(m_pointCutRegistry);
@@ -258,7 +291,6 @@ public class TestASMTransformerFactory extends TestCase {
     final SerializableA a = new SerializableA();
 
     assertEquals(1, a.m1());
-    s_callRecorder.assertNoMoreCalls();
 
     final byte[] originalBytes = serialize(a);
 
@@ -267,71 +299,68 @@ public class TestASMTransformerFactory extends TestCase {
 
     assertEquals(1, a.m1());
 
-    s_callRecorder.assertSuccess("enter", a, "loc1");
-    s_callRecorder.assertSuccess("exit", a, "loc1", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(a, "loc1");
+    verify(s_callRecorder).exit(a, "loc1", true);
 
     final byte[] bytes = serialize(a);
 
-    assertArraysEqual(originalBytes, bytes);
+    assertArrayEquals(originalBytes, bytes);
 
     instrumentation.removeTransformer(transformer);
   }
 
+  @Test
   public void testConstructors() throws Exception {
     final Instrumentation instrumentation = getInstrumentation();
 
     final ClassFileTransformerFactory transformerFactory =
       new ASMTransformerFactory(MyAdvice.class);
 
-    m_pointCutRegistryStubFactory.addConstructor(
+    m_pointCuts.addConstructor(
       A2.class, A2.class.getDeclaredConstructor(Integer.TYPE), "loc1");
 
     final ClassFileTransformer transformer =
       transformerFactory.create(m_pointCutRegistry);
 
     new A2(1);
-    s_callRecorder.assertNoMoreCalls();
 
     instrumentation.addTransformer(transformer, true);
     instrumentation.retransformClasses(new Class[] { A2.class, });
 
     new A2(1);
 
-    s_callRecorder.assertSuccess("enter", A2.class, "loc1");
-    s_callRecorder.assertSuccess("exit", A2.class, "loc1", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(A2.class, "loc1");
+    verify(s_callRecorder).exit(A2.class, "loc1", true);
 
     new A3();
-    s_callRecorder.assertNoMoreCalls();
 
-    m_pointCutRegistryStubFactory.addConstructor(
+    m_pointCuts.addConstructor(
       A3.class, A3.class.getDeclaredConstructor(), "loc2");
     instrumentation.retransformClasses(new Class[] { A3.class, A2.class });
 
     new A3();
 
-    s_callRecorder.assertSuccess("enter", A3.class, "loc2");
-    s_callRecorder.assertSuccess("exit", A3.class, "loc2", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(A3.class, "loc2");
+    verify(s_callRecorder).exit(A3.class, "loc2", true);
 
     instrumentation.removeTransformer(transformer);
   }
 
+  @Test
   public void testOverloading() throws Exception {
     final Instrumentation instrumentation = getInstrumentation();
 
     final ClassFileTransformerFactory transformerFactory =
       new ASMTransformerFactory(MyAdvice.class);
 
-    m_pointCutRegistryStubFactory.addConstructor(
+    m_pointCuts.addConstructor(
       A4.class, A4.class.getDeclaredConstructor(), "loc1");
-    m_pointCutRegistryStubFactory.addConstructor(
+    m_pointCuts.addConstructor(
       A4.class, A4.class.getDeclaredConstructor(String.class), "loc2");
 
-    m_pointCutRegistryStubFactory.addMethod(
+    m_pointCuts.addMethod(
       A4.class, A4.class.getDeclaredMethod("m1", Integer.TYPE), "loc3");
-    m_pointCutRegistryStubFactory.addMethod(
+    m_pointCuts.addMethod(
       A4.class, A4.class.getDeclaredMethod("m1", String.class), "loc4");
 
     final ClassFileTransformer transformer =
@@ -342,30 +371,29 @@ public class TestASMTransformerFactory extends TestCase {
 
     final A4 a = new A4("abc");
 
-    s_callRecorder.assertSuccess("enter", A4.class, "loc2");
-    s_callRecorder.assertSuccess("enter", A4.class, "loc1");
-    s_callRecorder.assertSuccess("exit", A4.class, "loc1", true);
-    s_callRecorder.assertSuccess("exit", A4.class, "loc2", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(A4.class, "loc2");
+    verify(s_callRecorder).enter(A4.class, "loc1");
+    verify(s_callRecorder).exit(A4.class, "loc1", true);
+    verify(s_callRecorder).exit(A4.class, "loc2", true);
 
     a.m1(1);
 
-    s_callRecorder.assertSuccess("enter", a, "loc3");
-    s_callRecorder.assertSuccess("enter", a, "loc4");
-    s_callRecorder.assertSuccess("exit", a, "loc4", true);
-    s_callRecorder.assertSuccess("exit", a, "loc3", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(a, "loc3");
+    verify(s_callRecorder).enter(a, "loc4");
+    verify(s_callRecorder).exit(a, "loc4", true);
+    verify(s_callRecorder).exit(a, "loc3", true);
 
     instrumentation.removeTransformer(transformer);
   }
 
+  @Test
   public void testStaticMethods() throws Exception {
     final Instrumentation instrumentation = getInstrumentation();
 
     final ClassFileTransformerFactory transformerFactory =
       new ASMTransformerFactory(MyAdvice.class);
 
-    m_pointCutRegistryStubFactory.addMethod(
+    m_pointCuts.addMethod(
       A2.class, A2.class.getDeclaredMethod("m3"), "loc1");
 
     final ClassFileTransformer transformer =
@@ -376,29 +404,29 @@ public class TestASMTransformerFactory extends TestCase {
 
     assertEquals(3, A2.m3());
 
-    s_callRecorder.assertSuccess("enter", A2.class, "loc1");
-    s_callRecorder.assertSuccess("exit", A2.class, "loc1", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(A2.class, "loc1");
+    verify(s_callRecorder).exit(A2.class, "loc1", true);
 
     instrumentation.removeTransformer(transformer);
   }
 
+  @Test
   public void testVariedByteCode() throws Exception {
     final Instrumentation instrumentation = getInstrumentation();
 
     final ClassFileTransformerFactory transformerFactory =
       new ASMTransformerFactory(MyAdvice.class);
 
-    m_pointCutRegistryStubFactory.addConstructor(
+    m_pointCuts.addConstructor(
       A5.class, A5.class.getDeclaredConstructor(Integer.TYPE), "loc1");
 
-    m_pointCutRegistryStubFactory.addMethod(
+    m_pointCuts.addMethod(
       A5.class, A5.class.getDeclaredMethod("m1", Integer.TYPE), "loc3");
-    m_pointCutRegistryStubFactory.addMethod(
+    m_pointCuts.addMethod(
       A5.class, A5.class.getDeclaredMethod("m1", String.class), "loc4");
-    m_pointCutRegistryStubFactory.addMethod(
+    m_pointCuts.addMethod(
       A5.class, A5.class.getDeclaredMethod("m2"), "loc5");
-    m_pointCutRegistryStubFactory.addMethod(
+    m_pointCuts.addMethod(
       A5.class, A5.class.getDeclaredMethod("m3"), "loc6");
 
     final ClassFileTransformer transformer =
@@ -409,28 +437,27 @@ public class TestASMTransformerFactory extends TestCase {
 
     final A5 a = new A5(10);
 
-    s_callRecorder.assertSuccess("enter", A5.class, "loc1");
-    s_callRecorder.assertSuccess("exit", A5.class, "loc1", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(A5.class, "loc1");
+    verify(s_callRecorder).exit(A5.class, "loc1", true);
 
     assertEquals(-11d, a.m1(1), 0.01d);
 
-    s_callRecorder.assertSuccess("enter", a, "loc3");
-    s_callRecorder.assertSuccess("enter", a, "loc4");
-    s_callRecorder.assertSuccess("exit", a, "loc4", true);
-    s_callRecorder.assertSuccess("exit", a, "loc3", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter(a, "loc3");
+    verify(s_callRecorder).enter(a, "loc4");
+    verify(s_callRecorder).exit(a, "loc4", true);
+    verify(s_callRecorder).exit(a, "loc3", true);
 
     instrumentation.removeTransformer(transformer);
   }
 
+  @Test
   public void testTargetSource() throws Exception {
     final Instrumentation instrumentation = getInstrumentation();
 
     final ClassFileTransformerFactory transformerFactory =
       new ASMTransformerFactory(MyAdvice.class);
 
-    m_pointCutRegistryStubFactory.addMethod(
+    m_pointCuts.addMethod(
       A4.class,
       A4.class.getDeclaredMethod("m1", String.class),
       "X",
@@ -446,12 +473,10 @@ public class TestASMTransformerFactory extends TestCase {
 
     a.m1("Hello");
 
-    s_callRecorder.assertSuccess("enter", "Hello", "X");
-    s_callRecorder.assertSuccess("exit", "Hello", "X", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter("Hello", "X");
+    verify(s_callRecorder).exit("Hello", "X", true);
 
-
-    m_pointCutRegistryStubFactory.addMethod(
+    m_pointCuts.addMethod(
       A4.class,
       A4.class.getDeclaredMethod("m1", String.class),
       "Y",
@@ -461,11 +486,10 @@ public class TestASMTransformerFactory extends TestCase {
 
     a.m1("Goodbye");
 
-    s_callRecorder.assertSuccess("enter", "Goodbye", "X");
-    s_callRecorder.assertSuccess("enter", a, "Y");
-    s_callRecorder.assertSuccess("exit", a, "Y", true);
-    s_callRecorder.assertSuccess("exit", "Goodbye", "X", true);
-    s_callRecorder.assertNoMoreCalls();
+    verify(s_callRecorder).enter("Goodbye", "X");
+    verify(s_callRecorder).enter(a, "Y");
+    verify(s_callRecorder).exit(a, "Y", true);
+    verify(s_callRecorder).exit("Goodbye", "X", true);
 
     instrumentation.removeTransformer(transformer);
   }
@@ -585,48 +609,48 @@ public class TestASMTransformerFactory extends TestCase {
     }
   }
 
+  private static interface CallRecorderI {
+
+    void enter(
+      final Object reference,
+      final String location);
+
+    void enter(
+      final Object reference,
+      final Object reference2,
+      final String location);
+
+    void exit(
+      final Object reference,
+      final String location,
+      final boolean success);
+
+    void exit(
+      final Object reference,
+      final Object reference2,
+      final String location,
+      final boolean success);
+  }
+
+  private static final CallRecorderI s_callRecorder =
+      Mockito.mock(CallRecorderI.class);
+
   public static final class MyAdvice {
-    private static final Method ENTER_METHOD;
-    private static final Method EXIT_METHOD;
-
-    static {
-      try {
-        ENTER_METHOD = MyAdvice.class.getMethod(
-          "enter", Object.class, String.class);
-        EXIT_METHOD = MyAdvice.class.getMethod(
-          "exit", Object.class, String.class, Boolean.TYPE);
-      }
-      catch (final Exception e) {
-        throw new ExceptionInInitializerError(e);
-      }
-    }
-
     public static void enter(final Object reference, final String location) {
-      s_callRecorder.record(new CallData(ENTER_METHOD,
-                                         null,
-                                         reference,
-                                         location));
+      s_callRecorder.enter(reference, location);
     }
 
     public static void enter(final Object reference,
                              final Object reference2,
                              final String location) {
-      s_callRecorder.record(new CallData(ENTER_METHOD,
-                                         null,
-                                         reference,
-                                         reference2,
-                                         location));
+      s_callRecorder.enter(reference, reference2, location);
     }
 
     public static void exit(final Object reference,
                             final String location,
                             final boolean success) {
 
-      s_callRecorder.record(new CallData(EXIT_METHOD,
-                                         null,
-                                         reference,
-                                         location,
-                                         success));
+      s_callRecorder.exit(reference, location, success);
     }
 
     public static void exit(final Object reference,
@@ -634,12 +658,7 @@ public class TestASMTransformerFactory extends TestCase {
                             final String location,
                             final boolean success) {
 
-      s_callRecorder.record(new CallData(EXIT_METHOD,
-                                         null,
-                                         reference,
-                                         reference2,
-                                         location,
-                                         success));
+      s_callRecorder.exit(reference, reference2, location, success);
     }
   }
 
@@ -672,11 +691,13 @@ public class TestASMTransformerFactory extends TestCase {
   public static final class BadAdvice4 {
     public static void enter(final Object reference, final String location) { }
 
-    public void exit(final Object reference, final String location, final boolean success) { }
+    public void exit(
+      final Object reference,
+      final String location,
+      final boolean success) { }
   }
 
-  public static final class PointCutRegistryStubFactory
-    extends RandomStubFactory<PointCutRegistry> {
+  private static final class PointCuts {
 
     private final Map<String, Map<Constructor<?>, List<WeavingDetails>>>
       m_constructors =
@@ -685,23 +706,14 @@ public class TestASMTransformerFactory extends TestCase {
     private final Map<String, Map<Method, List<WeavingDetails>>> m_methods =
       new HashMap<String, Map<Method, List<WeavingDetails>>>();
 
-    protected PointCutRegistryStubFactory() {
-      super(PointCutRegistry.class);
-    }
-
-    public void clear() {
-      m_constructors.clear();
-      m_methods.clear();
-    }
 
     public Map<Constructor<?>, List<WeavingDetails>>
-      override_getConstructorPointCutsForClass(final Object stub, final String className) {
-      return m_constructors.get(className);
+      getConstructor(final String key) {
+      return m_constructors.get(key);
     }
 
-    public Map<Method, List<WeavingDetails>>
-      override_getMethodPointCutsForClass(final Object stub, final String className) {
-      return m_methods.get(className);
+    public Map<Method, List<WeavingDetails>> getMethod(final String key) {
+      return m_methods.get(key);
     }
 
     public void addConstructor(final Class<?> theClass,
@@ -775,7 +787,9 @@ public class TestASMTransformerFactory extends TestCase {
     }
   }
 
-  private static <K, V> List<V> getList(final Map<K, List<V>> map, final K key) {
+  private static <K, V> List<V> getList(
+    final Map<K, List<V>> map,
+    final K key) {
 
     final List<V> existing = map.get(key);
 

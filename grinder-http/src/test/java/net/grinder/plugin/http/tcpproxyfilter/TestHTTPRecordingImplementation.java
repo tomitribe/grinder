@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2012 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // Copyright (C) 2007 Venelin Mitov
 // All rights reserved.
 //
@@ -22,6 +22,7 @@
 
 package net.grinder.plugin.http.tcpproxyfilter;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -48,7 +49,6 @@ import net.grinder.plugin.http.xml.HttpRecordingDocument;
 import net.grinder.plugin.http.xml.PageType;
 import net.grinder.plugin.http.xml.RequestType;
 import net.grinder.plugin.http.xml.TokenReferenceType;
-import net.grinder.testutility.AssertUtilities;
 import net.grinder.testutility.XMLBeansUtilities;
 import net.grinder.tools.tcpproxy.ConnectionDetails;
 import net.grinder.tools.tcpproxy.EndPoint;
@@ -152,13 +152,13 @@ public class TestHTTPRecordingImplementation {
     // Request 1
     final RequestType request1 =
       m_httpRecording.addRequest(m_connectionDetails1, "GET", "/");
-    for (int i = 0; i < userComments.length; i++) {
-      request1.addComment(userComments[i]);
+    for (final String userComment : userComments) {
+      request1.addComment(userComment);
     }
     assertEquals("/", request1.getUri().getUnparsed());
     assertEquals("GET", request1.getMethod().toString());
     assertEquals("GET /", request1.getDescription());
-    AssertUtilities.assertArraysEqual(userComments, request1.getCommentArray());
+    assertArrayEquals(userComments, request1.getCommentArray());
     assertEquals("END CLICK Sign In", request1.getCommentArray(3));
     assertFalse(request1.isSetSleepTime());
     request1.addNewResponse();
@@ -222,7 +222,8 @@ public class TestHTTPRecordingImplementation {
     assertEquals(2, page0.getRequestArray().length);
     assertEquals(result.getBaseUriArray(0).getUriId(),
                  page0.getRequestArray(1).getUri().getExtends());
-    assertEquals("/foo.gif", page0.getRequestArray(1).getUri().getPath().getTextArray(0));
+    assertEquals("/foo.gif",
+      page0.getRequestArray(1).getUri().getPath().getTextArray(0));
     assertFalse(page0.getRequestArray(1).isSetAnnotation());
 
     final PageType page1 = result.getPageArray(1);
@@ -258,7 +259,7 @@ public class TestHTTPRecordingImplementation {
     assertEquals("POST /", request2.getDescription());
     assertEquals("/", request2.getUri().getPath().getTextArray(0));
     assertEquals(0, request2.getUri().getPath().getTokenReferenceArray().length);
-    AssertUtilities.assertArraysEqual(new String[] {"&"}, request2.getUri().getQueryString().getTextArray());
+    assertArrayEquals(new String[] {"&"}, request2.getUri().getQueryString().getTextArray());
     assertEquals("token_foo2", request2.getUri().getQueryString().getTokenReferenceArray(1).getTokenId());
     assertEquals("bah", request2.getUri().getQueryString().getTokenReferenceArray(1).getNewValue());
     assertEquals("lah?;blah", request2.getUri().getFragment());
@@ -266,7 +267,7 @@ public class TestHTTPRecordingImplementation {
     final RequestType request3 =
       m_httpRecording.addRequest(m_connectionDetails1, "POST", "/?x=y&fo--o=bah#lah?;blah");
 
-    AssertUtilities.assertArraysEqual(new String[] {"&"}, request3.getUri().getQueryString().getTextArray());
+    assertArrayEquals(new String[] {"&"}, request3.getUri().getQueryString().getTextArray());
     assertEquals("token_foo2", request3.getUri().getQueryString().getTokenReferenceArray(1).getTokenId());
     assertFalse(request3.getUri().getQueryString().getTokenReferenceArray(1).isSetNewValue());
     assertEquals("lah?;blah", request3.getUri().getFragment());
@@ -383,13 +384,13 @@ public class TestHTTPRecordingImplementation {
                  headers.getAuthorizationArray(0).getBasic().getUserid());
   }
 
-  private HeadersType createHeaders(NVPair... nvPairs) {
+  private HeadersType createHeaders(final NVPair... nvPairs) {
     final HeadersType result = HeadersType.Factory.newInstance();
 
-    for (int i = 0; i < nvPairs.length; ++i) {
+    for (final NVPair nvPair : nvPairs) {
       final HeaderType header = result.addNewHeader();
-      header.setName(nvPairs[i].getName());
-      header.setValue(nvPairs[i].getValue());
+      header.setName(nvPair.getName());
+      header.setValue(nvPair.getValue());
     }
 
     return result;
@@ -497,7 +498,8 @@ public class TestHTTPRecordingImplementation {
     assertFalse(m_httpRecording.tokenReferenceExists("foo", "somewhere"));
     assertNull(m_httpRecording.getLastValueForToken("foo"));
 
-    final TokenReferenceType tokenReference = TokenReferenceType.Factory.newInstance();
+    final TokenReferenceType tokenReference =
+        TokenReferenceType.Factory.newInstance();
     tokenReference.setSource("somewhere");
     m_httpRecording.setTokenReference("foo", "bah", tokenReference);
 

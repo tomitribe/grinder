@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2010 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -33,8 +33,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import junit.framework.Assert;
 import net.grinder.common.UncheckedInterruptedException;
+
+import org.junit.Assert;
+
 import HTTPClient.NVPair;
 
 
@@ -54,7 +56,7 @@ class HTTPRequestHandler extends Assert implements Runnable {
                         Pattern.MULTILINE |
                         Pattern.CASE_INSENSITIVE);
     }
-    catch (Exception e) {
+    catch (final Exception e) {
       throw new ExceptionInInitializerError(e);
     }
   }
@@ -63,7 +65,7 @@ class HTTPRequestHandler extends Assert implements Runnable {
   private String m_lastRequestHeaders;
   private byte[] m_lastRequestBody;
   private String m_body;
-  private AtomicBoolean m_started = new AtomicBoolean();
+  private final AtomicBoolean m_started = new AtomicBoolean();
 
   private long m_responseDelay = 0;
 
@@ -107,7 +109,7 @@ class HTTPRequestHandler extends Assert implements Runnable {
     return text.substring(0, i);
   }
 
-  public final void assertRequestContainsHeader(String line) {
+  public final void assertRequestContainsHeader(final String line) {
     final String text = getLastRequestHeaders();
 
     int start = 0;
@@ -128,7 +130,7 @@ class HTTPRequestHandler extends Assert implements Runnable {
     fail(text + " does not contain " + line);
   }
 
-  public final void assertRequestDoesNotContainHeader(String line) {
+  public final void assertRequestDoesNotContainHeader(final String line) {
     final String text = getLastRequestHeaders();
 
     int start = 0;
@@ -142,6 +144,7 @@ class HTTPRequestHandler extends Assert implements Runnable {
     assertTrue(!text.substring(start).equals(line));
   }
 
+  @Override
   public final void run() {
     try {
       m_started.set(true);
@@ -152,7 +155,7 @@ class HTTPRequestHandler extends Assert implements Runnable {
         try {
           localSocket = m_serverSocket.accept();
         }
-        catch (SocketException e) {
+        catch (final SocketException e) {
           // Socket's been closed, lets quit.
           break;
         }
@@ -225,7 +228,7 @@ class HTTPRequestHandler extends Assert implements Runnable {
         try {
           Thread.sleep(m_responseDelay);
         }
-        catch (InterruptedException e) {
+        catch (final InterruptedException e) {
           throw new UncheckedInterruptedException(e);
         }
 
@@ -245,7 +248,7 @@ class HTTPRequestHandler extends Assert implements Runnable {
         localSocket.close();
       }
     }
-    catch (IOException e) {
+    catch (final IOException e) {
       // Ignore, it might be expected The caller will have to call start()
       // again.
     }
@@ -253,7 +256,7 @@ class HTTPRequestHandler extends Assert implements Runnable {
       try {
         m_serverSocket.close();
       }
-      catch (IOException e) {
+      catch (final IOException e) {
         // Whatever.
       }
     }
@@ -262,10 +265,10 @@ class HTTPRequestHandler extends Assert implements Runnable {
   /**
    * Subclass HTTPRequestHandler to change these default headers.
    */
-  protected void writeHeaders(StringBuffer response) {
+  protected void writeHeaders(final StringBuffer response) {
     response.append("HTTP/1.0 200 OK\r\n");
 
-    for (NVPair pair : m_headers) {
+    for (final NVPair pair : m_headers) {
       response.append(pair.getName()).append(": ").append(pair.getValue());
       response.append("\r\n");
     }
@@ -275,15 +278,15 @@ class HTTPRequestHandler extends Assert implements Runnable {
     m_headers.clear();
   }
 
-  public void addHeader(String name, String value) {
+  public void addHeader(final String name, final String value) {
     m_headers.add(new NVPair(name, value));
   }
 
-  public void setBody(String body) {
+  public void setBody(final String body) {
     m_body = body;
   }
 
-  public void setResponseDelay(long responseDelay) {
+  public void setResponseDelay(final long responseDelay) {
     m_responseDelay = responseDelay;
   }
 }

@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,8 +21,8 @@
 
 package net.grinder.util;
 
-import static net.grinder.testutility.AssertUtilities.assertArraysEqual;
 import static net.grinder.testutility.FileUtilities.createRandomFile;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -148,7 +148,7 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
     final File[] filesAfterTimeT = directory.listContents(
       new FileFilter() {
         @Override
-        public boolean accept(File file) {
+        public boolean accept(final File file) {
           return file.isDirectory() || file.lastModified() > 50000L;
         }
       });
@@ -427,7 +427,7 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
     assertEquals(original, Serializer.serialize(original));
   }
 
-  private static File fromPath(String... elements) {
+  private static File fromPath(final String... elements) {
     File result = null;
 
     for (final String e : elements) {
@@ -437,11 +437,14 @@ public class TestDirectory extends AbstractJUnit4FileTestCase {
     return result;
   }
 
-  private static void assertEqualPaths(String expected, String actual) {
+  private static void assertEqualPaths(
+    final String expected,
+    final String actual) {
+
     final String[] expectedElements = expected.split("/");
     final String[] actualElements = actual.split(File.separator);
 
-    assertArraysEqual(actual + " equals " + expected,
+    assertArrayEquals(actual + " equals " + expected,
                       expectedElements,
                       actualElements);
   }

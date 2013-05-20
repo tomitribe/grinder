@@ -21,6 +21,7 @@
 
 package net.grinder.console.communication;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
@@ -46,7 +47,6 @@ import net.grinder.console.communication.ProcessControl.ProcessReports;
 import net.grinder.console.communication.ProcessStatusImplementation.AgentAndWorkers;
 import net.grinder.engine.agent.StubAgentIdentity;
 import net.grinder.messages.console.AgentAndCacheReport;
-import net.grinder.testutility.AssertUtilities;
 import net.grinder.util.AllocateLowestNumber;
 
 import org.junit.After;
@@ -220,8 +220,8 @@ public class TestProcessStatusImplementation {
         workerIdentityA2, ProcessReport.State.FINISHED, 1, 1),
     };
 
-    AssertUtilities.assertArraysEqual(expectedAgent1WorkerProcessReports,
-                                      agent1WorkerReports);
+    assertArrayEquals(expectedAgent1WorkerProcessReports,
+      agent1WorkerReports);
 
     final WorkerProcessReport[] agent2WorkerReports =
       processReports[1].getWorkerProcessReports();
@@ -232,8 +232,9 @@ public class TestProcessStatusImplementation {
           workerIdentityB1, ProcessReport.State.RUNNING, 1, 1),
       };
 
-    AssertUtilities.assertArraysEqual(expectedAgent2WorkerProcessReports,
-                                      agent2WorkerReports);
+    assertArrayEquals(
+      expectedAgent2WorkerProcessReports,
+      agent2WorkerReports);
 
     updateTask.run();
 
@@ -293,7 +294,7 @@ public class TestProcessStatusImplementation {
         workerIdentityA1, ProcessReport.State.RUNNING, 5, 10),
     };
 
-    AssertUtilities.assertArraysEqual(
+    assertArrayEquals(
       expectedAgent1WorkerProcessReports2,
       processReports2[0].getWorkerProcessReports());
 
@@ -302,7 +303,7 @@ public class TestProcessStatusImplementation {
         workerIdentityB1, ProcessReport.State.RUNNING, 1, 1),
     };
 
-    AssertUtilities.assertArraysEqual(
+    assertArrayEquals(
       expectedAgent2WorkerProcessReports2,
       processReports2[1].getWorkerProcessReports());
 
@@ -311,7 +312,7 @@ public class TestProcessStatusImplementation {
         workerIdentityC1, ProcessReport.State.FINISHED, 1, 1),
     };
 
-    AssertUtilities.assertArraysEqual(
+    assertArrayEquals(
       expectedAgent3WorkerProcessReports2,
       processReports2[2].getWorkerProcessReports());
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -22,32 +22,39 @@
 package net.grinder.util;
 
 import static net.grinder.testutility.FileUtilities.createRandomFile;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.util.Random;
 
-import net.grinder.testutility.AbstractFileTestCase;
-import net.grinder.testutility.AssertUtilities;
+import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.Serializer;
 
+import org.junit.Test;
 
 /**
  * Unit test case for {@link FileContents}.
  *
  * @author Philip Aston
  */
-public class TestFileContents extends AbstractFileTestCase {
+public class TestFileContents extends AbstractJUnit4FileTestCase {
+  private static Random s_random = new Random();
 
+  @Test
   public void testConstruction() throws Exception {
 
     final String[] files = {
-      "file1",
-      "another/file",
+                            "file1",
+                            "another/file",
     };
 
-    for (int i=0; i<files.length; ++i) {
-      final File relativePath = new File(files[i]);
+    for (final String file : files) {
+      final File relativePath = new File(file);
       final File fullPath = new File(getDirectory(), relativePath.getPath());
 
       fullPath.getParentFile().mkdirs();
@@ -58,15 +65,15 @@ public class TestFileContents extends AbstractFileTestCase {
       outputStream.close();
 
       final FileContents fileContents =
-        new FileContents(getDirectory(), relativePath);
+          new FileContents(getDirectory(), relativePath);
 
       assertEquals(relativePath, fileContents.getFilename());
-      AssertUtilities.assertArraysEqual(bytes, fileContents.getContents());
+      assertArrayEquals(bytes, fileContents.getContents());
 
       final FileContents fileContents2 = Serializer.serialize(fileContents);
 
       assertEquals(relativePath, fileContents2.getFilename());
-      AssertUtilities.assertArraysEqual(bytes, fileContents2.getContents());
+      assertArrayEquals(bytes, fileContents2.getContents());
 
       final String s = fileContents.toString();
       assertTrue(s.indexOf(relativePath.getPath()) >= 0);
@@ -74,38 +81,37 @@ public class TestFileContents extends AbstractFileTestCase {
     }
   }
 
+  @Test
   public void testBadConstruction() throws Exception {
 
     try {
       new FileContents(getDirectory(), getDirectory());
       fail("Expected FileContentsException");
     }
-    catch (FileContents.FileContentsException e) {
+    catch (final FileContents.FileContentsException e) {
     }
 
     try {
       new FileContents(new File("non existing"), new File("file"));
       fail("Expected FileContentsException");
     }
-    catch (FileContents.FileContentsException e) {
+    catch (final FileContents.FileContentsException e) {
     }
   }
 
+  @Test
   public void testCreate() throws Exception {
 
-    final String[] files = {
-      "file1",
-      "another/file",
-    };
+    final String[] files = { "file1", "another/file", };
 
-    for (int i=0; i<files.length; ++i ) {
-      final File relativePath = new File(files[i]);
+    for (final String file : files) {
+      final File relativePath = new File(file);
       final File fullPath = new File(getDirectory(), relativePath.getPath());
 
       createRandomFile(fullPath);
 
       final FileContents fileContents =
-        new FileContents(getDirectory(), relativePath);
+          new FileContents(getDirectory(), relativePath);
 
       final File outputDirectory = new File(getDirectory(), "output");
       outputDirectory.mkdir();
@@ -113,11 +119,11 @@ public class TestFileContents extends AbstractFileTestCase {
       fileContents.create(new Directory(outputDirectory));
 
       final FileContents fileContents2 =
-        new FileContents(outputDirectory, relativePath);
+          new FileContents(outputDirectory, relativePath);
 
       assertEquals(fileContents.getFilename(), fileContents2.getFilename());
-      AssertUtilities.assertArraysEqual(fileContents.getContents(),
-                                        fileContents2.getContents());
+      assertArrayEquals(fileContents.getContents(),
+        fileContents2.getContents());
     }
   }
 }

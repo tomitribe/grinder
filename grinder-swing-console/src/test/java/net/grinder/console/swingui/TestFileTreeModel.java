@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2009 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,14 @@
 
 package net.grinder.console.swingui;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileFilter;
 
@@ -36,55 +44,59 @@ import net.grinder.console.editor.TextSource;
 import net.grinder.console.editor.TextSource.Factory;
 import net.grinder.console.swingui.FileTreeModel.FileNode;
 import net.grinder.console.swingui.FileTreeModel.Node;
-import net.grinder.testutility.AbstractFileTestCase;
-import net.grinder.testutility.AssertUtilities;
+import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.CallData;
 import net.grinder.testutility.RandomStubFactory;
 
+import org.junit.Test;
 
 /**
  * Unit tests for {@link FileTreeModel}.
  *
  * @author Philip Aston
  */
-public class TestFileTreeModel extends AbstractFileTestCase {
+public class TestFileTreeModel extends AbstractJUnit4FileTestCase {
 
   private RandomStubFactory<Resources> m_resourcesStubFactory =
-    RandomStubFactory.create(Resources.class);
+      RandomStubFactory.create(Resources.class);
+
   private Resources m_resources = m_resourcesStubFactory.getStub();
 
   private RandomStubFactory<Factory> m_textSourceFactoryStubFactory =
-    RandomStubFactory.create(TextSource.Factory.class);
+      RandomStubFactory.create(TextSource.Factory.class);
+
   private TextSource.Factory m_textSourceFactory =
-    m_textSourceFactoryStubFactory.getStub();
+      m_textSourceFactoryStubFactory.getStub();
 
   private RandomStubFactory<AgentCacheState> m_agentCacheStateStubFactory =
-    RandomStubFactory.create(AgentCacheState.class);
-  private AgentCacheState m_agentCacheState =
-    m_agentCacheStateStubFactory.getStub();
+      RandomStubFactory.create(AgentCacheState.class);
 
-  private final RandomStubFactory<FileChangeWatcher>
-    m_fileChangeWatcherStubFactory =
+  private AgentCacheState m_agentCacheState =
+      m_agentCacheStateStubFactory.getStub();
+
+  private final RandomStubFactory<FileChangeWatcher> m_fileChangeWatcherStubFactory =
       RandomStubFactory.create(FileChangeWatcher.class);
+
   private final FileChangeWatcher m_fileChangeWatcher =
-    m_fileChangeWatcherStubFactory.getStub();
+      m_fileChangeWatcherStubFactory.getStub();
 
   final EditorModel m_editorModel = new EditorModel(m_resources,
-                                                    m_textSourceFactory,
-                                                    m_agentCacheState,
-                                                    m_fileChangeWatcher);
+    m_textSourceFactory,
+    m_agentCacheState,
+    m_fileChangeWatcher);
 
   private final FileFilter m_nullFileFilter = new FileFilter() {
-      public boolean accept(File pathname) {
-        return true;
-      }
-    };
+    public boolean accept(File pathname) {
+      return true;
+    }
+  };
 
+  @Test
   public void testWithRootNode() throws Exception {
     final FileTreeModel fileTreeModel =
-      new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
+        new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
 
-    final Node rootNode = (Node)fileTreeModel.getRoot();
+    final Node rootNode = (Node) fileTreeModel.getRoot();
     assertFalse(rootNode instanceof FileNode);
     assertFalse(rootNode.canOpen());
     assertNull(rootNode.getBuffer());
@@ -93,7 +105,7 @@ public class TestFileTreeModel extends AbstractFileTestCase {
     assertEquals(getDirectory().getPath(), rootNode.toString());
 
     final FileTreeModel fileTreeModel2 =
-      new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
+        new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
     assertTrue(rootNode.belongsToModel(fileTreeModel));
     assertFalse(rootNode.belongsToModel(fileTreeModel2));
 
@@ -110,27 +122,27 @@ public class TestFileTreeModel extends AbstractFileTestCase {
     assertEquals(-1, fileTreeModel.getIndexOfChild(rootNode, rootNode));
   }
 
+  @Test
   public void testListener() throws Exception {
     final RandomStubFactory<TreeModelListener> listenerStubFactory1 =
-      RandomStubFactory.create(TreeModelListener.class);
+        RandomStubFactory.create(TreeModelListener.class);
     final RandomStubFactory<TreeModelListener> listenerStubFactory2 =
-      RandomStubFactory.create(TreeModelListener.class);
+        RandomStubFactory.create(TreeModelListener.class);
 
     final FileTreeModel fileTreeModel =
-      new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
+        new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
     fileTreeModel.addTreeModelListener(listenerStubFactory1.getStub());
     fileTreeModel.addTreeModelListener(listenerStubFactory2.getStub());
 
     fileTreeModel.setRootDirectory(getDirectory());
-    final Node rootNode = (Node)fileTreeModel.getRoot();
+    final Node rootNode = (Node) fileTreeModel.getRoot();
 
     final CallData callData =
-      listenerStubFactory1.assertSuccess("treeStructureChanged",
-                                         TreeModelEvent.class);
-    final TreeModelEvent event = (TreeModelEvent)callData.getParameters()[0];
+        listenerStubFactory1.assertSuccess("treeStructureChanged",
+          TreeModelEvent.class);
+    final TreeModelEvent event = (TreeModelEvent) callData.getParameters()[0];
     assertEquals(fileTreeModel, event.getSource());
-    AssertUtilities.assertArraysEqual(rootNode.getPath().getPath(),
-                                      event.getPath());
+    assertArrayEquals(rootNode.getPath().getPath(), event.getPath());
     listenerStubFactory1.assertNoMoreCalls();
     listenerStubFactory2.assertSuccess("treeStructureChanged",
       TreeModelEvent.class);
@@ -160,15 +172,15 @@ public class TestFileTreeModel extends AbstractFileTestCase {
 
     fileTreeModel.valueForPathChanged(rootNode.getPath(), rootNode);
     final CallData callData2 =
-      listenerStubFactory2.assertSuccess("treeNodesChanged",
-                                         TreeModelEvent.class);
-    final TreeModelEvent event2 = (TreeModelEvent)callData2.getParameters()[0];
+        listenerStubFactory2.assertSuccess("treeNodesChanged",
+          TreeModelEvent.class);
+    final TreeModelEvent event2 = (TreeModelEvent) callData2.getParameters()[0];
     assertEquals(fileTreeModel, event2.getSource());
-    AssertUtilities.assertArraysEqual(rootNode.getPath().getPath(),
-                                      event2.getPath());
+    assertArrayEquals(rootNode.getPath().getPath(), event2.getPath());
     listenerStubFactory2.assertNoMoreCalls();
   }
 
+  @Test
   public void testWithFileStructure() throws Exception {
     final File file1 = new File(getDirectory(), "file1");
     assertTrue(file1.createNewFile());
@@ -180,17 +192,17 @@ public class TestFileTreeModel extends AbstractFileTestCase {
     assertTrue(file3.createNewFile());
 
     final FileTreeModel fileTreeModel =
-      new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
+        new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
     final FileTreeModel fileTreeModel2 =
-      new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
+        new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
     fileTreeModel.setRootDirectory(getDirectory());
-    final Node rootNode = (Node)fileTreeModel.getRoot();
+    final Node rootNode = (Node) fileTreeModel.getRoot();
     assertFalse(rootNode.canOpen());
     assertNull(rootNode.getBuffer());
 
     assertEquals(2, fileTreeModel.getChildCount(rootNode));
-    final Node dir1Node = (Node)fileTreeModel.getChild(rootNode, 0);
-    final FileNode file1Node = (FileNode)fileTreeModel.getChild(rootNode, 1);
+    final Node dir1Node = (Node) fileTreeModel.getChild(rootNode, 0);
+    final FileNode file1Node = (FileNode) fileTreeModel.getChild(rootNode, 1);
     assertEquals(file1.getName(), file1Node.toString());
     assertTrue(file1Node.canOpen());
 
@@ -204,15 +216,16 @@ public class TestFileTreeModel extends AbstractFileTestCase {
     assertEquals(1, fileTreeModel.getIndexOfChild(rootNode, file1Node));
     assertEquals(-1, fileTreeModel2.getIndexOfChild(rootNode, file1Node));
 
-    final FileNode file3Node = (FileNode)fileTreeModel.getChild(dir1Node, 1);
+    final FileNode file3Node = (FileNode) fileTreeModel.getChild(dir1Node, 1);
     assertEquals(1, fileTreeModel.getIndexOfChild(dir1Node, file3Node));
   }
 
+  @Test
   public void testRefreshAndFindNode() throws Exception {
     final FileTreeModel fileTreeModel =
-      new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
+        new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
     fileTreeModel.setRootDirectory(getDirectory());
-    final Node rootNode = (Node)fileTreeModel.getRoot();
+    final Node rootNode = (Node) fileTreeModel.getRoot();
 
     final File dir1 = new File(getDirectory(), "dir1");
 
@@ -244,12 +257,12 @@ public class TestFileTreeModel extends AbstractFileTestCase {
     final Node dir1Node = fileTreeModel.findNode(dir1);
     assertEquals(dir1Node, fileTreeModel.getChild(rootNode, 0));
 
-    final FileNode file3Node = (FileNode)fileTreeModel.findNode(file3);
+    final FileNode file3Node = (FileNode) fileTreeModel.findNode(file3);
     assertSame(file3Node, fileTreeModel.getChild(dir1Node, 1));
     assertSame(file3Node, fileTreeModel.findNode(file3));
 
     final RandomStubFactory<TreeModelListener> listenerStubFactory =
-      RandomStubFactory.create(TreeModelListener.class);
+        RandomStubFactory.create(TreeModelListener.class);
     fileTreeModel.addTreeModelListener(listenerStubFactory.getStub());
 
     final File dir3 = new File(dir1, "dir3");
@@ -260,17 +273,17 @@ public class TestFileTreeModel extends AbstractFileTestCase {
 
     assertTrue(dir3.mkdir());
     assertTrue(file4.createNewFile());
-    final FileNode file4Node = (FileNode)fileTreeModel.findNode(file4);
+    final FileNode file4Node = (FileNode) fileTreeModel.findNode(file4);
 
     final CallData callData =
-      listenerStubFactory.assertSuccess("treeStructureChanged",
-                                        TreeModelEvent.class);
+        listenerStubFactory.assertSuccess("treeStructureChanged",
+          TreeModelEvent.class);
     assertEquals("treeStructureChanged", callData.getMethodName());
-    AssertUtilities.assertArraysEqual(new Class[] { TreeModelEvent.class, },
+    assertArrayEquals(new Class[] { TreeModelEvent.class, },
       callData.getParameterTypes());
-    final TreeModelEvent event = (TreeModelEvent)callData.getParameters()[0];
+    final TreeModelEvent event = (TreeModelEvent) callData.getParameters()[0];
     assertEquals(fileTreeModel, event.getSource());
-    AssertUtilities.assertArraysEqual(
+    assertArrayEquals(
       dir1Node.getPath().getPath(),
       event.getPath());
     listenerStubFactory.assertNoMoreCalls();
@@ -278,20 +291,21 @@ public class TestFileTreeModel extends AbstractFileTestCase {
     assertEquals(file4, file4Node.getFile());
   }
 
+  @Test
   public void testFindFileNode() throws Exception {
     final File file1 = new File(getDirectory(), "file1");
     assertTrue(file1.createNewFile());
 
     final FileTreeModel fileTreeModel =
-      new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
+        new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
     fileTreeModel.setRootDirectory(getDirectory());
-    final FileNode file1Node = (FileNode)fileTreeModel.findNode(file1);
+    final FileNode file1Node = (FileNode) fileTreeModel.findNode(file1);
 
     final RandomStubFactory<Buffer> bufferStubFactory1 =
-      RandomStubFactory.create(Buffer.class);
+        RandomStubFactory.create(Buffer.class);
     final Buffer buffer1 = bufferStubFactory1.getStub();
     final RandomStubFactory<Buffer> bufferStubFactory2 =
-      RandomStubFactory.create(Buffer.class);
+        RandomStubFactory.create(Buffer.class);
     final Buffer buffer2 = bufferStubFactory2.getStub();
 
     file1Node.setBuffer(buffer1);
@@ -304,6 +318,7 @@ public class TestFileTreeModel extends AbstractFileTestCase {
     assertEquals(file1Node, fileTreeModel.findFileNode(buffer2));
   }
 
+  @Test
   public void testRefreshChangedDirectoriesListener() throws Exception {
     final File dir1 = new File(getDirectory(), "dir1");
     assertTrue(dir1.mkdir());
@@ -315,23 +330,23 @@ public class TestFileTreeModel extends AbstractFileTestCase {
     assertTrue(file3.createNewFile());
 
     final FileTreeModel fileTreeModel =
-      new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
+        new FileTreeModel(m_editorModel, m_nullFileFilter, getDirectory());
     fileTreeModel.setRootDirectory(getDirectory());
 
     final RandomStubFactory<TreeModelListener> listenerStubFactory =
-      RandomStubFactory.create(TreeModelListener.class);
+        RandomStubFactory.create(TreeModelListener.class);
     final TreeModelListener listener =
-      listenerStubFactory.getStub();
+        listenerStubFactory.getStub();
     fileTreeModel.addTreeModelListener(listener);
 
     final FileChangeWatcher.FileChangedListener filesChangedListener =
-      fileTreeModel.new RefreshChangedDirectoriesListener();
+        fileTreeModel.new RefreshChangedDirectoriesListener();
 
     filesChangedListener.filesChanged(new File[0]);
     listenerStubFactory.assertNoMoreCalls();
 
     filesChangedListener.filesChanged(new File[] { file2, dir1, });
     listenerStubFactory.assertSuccess("treeStructureChanged",
-                                      TreeModelEvent.class);
+      TreeModelEvent.class);
   }
 }
