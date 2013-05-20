@@ -285,6 +285,9 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
     catch (final JythonScriptExecutionException e) {
       assertContains(e.getShortMessage(), "a problem");
     }
+    finally {
+      scriptEngine.shutdown();
+    }
   }
 
   @Test public void testWorkerRunnableBadRunner3() throws Exception {
@@ -308,6 +311,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
 
     // Try it again, __del__ should now be disabled.
     runnable.shutdown();
+
+    scriptEngine.shutdown();
   }
 
   @Test public void testNewWorkerRunnableWithTestRunner() throws Exception {
@@ -356,6 +361,8 @@ public class TestJythonScriptEngine extends AbstractJUnit4FileTestCase {
     catch (final JythonScriptExecutionException e) {
       assertContains(e.getMessage(), "is not callable");
     }
+
+    scriptEngine.shutdown();
   }
 
   public static void callback(final Object o) {

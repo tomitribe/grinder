@@ -26,28 +26,28 @@ import java.util.List;
 
 import org.junit.runners.model.InitializationError;
 
-
 /**
  * JUnit runner for Jython 2.5 and 2.7 installations.
  *
  * <p>
- * To use, annotate the test class with {@code @RunWith(Jython25Runner)}.
- * A new classloader will be used for each test.
+ * To use, annotate the test class with {@code @RunWith(Jython25Runner)}. A new
+ * classloader will be used for each test.
  * </p>
  *
  * @author Philip Aston
  */
 public class Jython25_27Runner extends JythonVersionRunner {
 
-  private static final List<String> s_homes = getHomes("jython2_5_3.dir",
-                                                       "jython2_5_2.dir",
-                                                       "jython2_5_1.dir",
-                                                       "jython2_5_0.dir",
-                                                       "jython2_5_4rc1.dir",
-                                                       "jython2_7b1.dir");
+  private static final List<String> HOMES = getHomes(
+    "jython2_5_3.dir",
+    "jython2_5_2.dir",
+    "jython2_5_1.dir",
+    "jython2_5_0.dir",
+    "jython2_5_4rc1.dir",
+    "jython2_7b1.dir");
 
   public Jython25_27Runner(final Class<?> testClass)
-    throws InitializationError, ClassNotFoundException, MalformedURLException {
-    super(testClass, s_homes);
+      throws InitializationError, ClassNotFoundException, MalformedURLException {
+    super(testClass, HOMES);
   }
 }

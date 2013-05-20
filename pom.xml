@@ -353,7 +353,7 @@
       </dependency>
 
       <dependency>
-        <!-- TODO - upgrade to 3.11
+        <!-- TODO - upgrade to 4.11
              It breaks some core tests. -->
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>

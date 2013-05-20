@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2012 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // Copyright (C) 2005 Martin Wagner
 // All rights reserved.
 //
@@ -23,6 +23,7 @@
 package net.grinder.scriptengine.jython;
 
 import java.io.File;
+import java.lang.reflect.Method;
 
 import net.grinder.engine.common.EngineException;
 import net.grinder.engine.common.ScriptLocation;
@@ -96,49 +97,56 @@ final class JythonScriptEngine implements ScriptEngine {
     }
 
     m_systemState = new PySystemState();
-    m_interpreter = new PythonInterpreter(null, m_systemState);
-
-    m_interpreter.exec("class ___DieQuietly___: pass");
-    m_dieQuietly = (PyClass) m_interpreter.get("___DieQuietly___");
-
-    String version;
 
     try {
-      version = PySystemState.class.getField("version").get(null).toString();
+      m_interpreter = new PythonInterpreter(null, m_systemState);
+
+      m_interpreter.exec("class ___DieQuietly___: pass");
+      m_dieQuietly = (PyClass) m_interpreter.get("___DieQuietly___");
+
+      String version;
+
+      try {
+        version = PySystemState.class.getField("version").get(null).toString();
+      }
+      catch (final Exception e) {
+        version = "Unknown";
+      }
+
+      m_version = version;
+
+      // Prepend the script directory to the Python path. This matches the
+      // behaviour of the Jython interpreter.
+      m_systemState.path.insert(0,
+        new PyString(script.getFile().getParent()));
+
+      // Additionally, add the working directory to the Python path. I think
+      // this will always be the same as the worker's CWD. Users expect to be
+      // able to import from the directory the agent is running in or (when the
+      // script has been distributed), the distribution directory.
+      m_systemState.path.insert(1,
+        new PyString(script.getDirectory().getFile().getPath()));
+
+      try {
+        // Run the test script, script does global set up here.
+        m_interpreter.execfile(script.getFile().getPath());
+      }
+      catch (final PyException e) {
+        throw new JythonScriptExecutionException("initialising test script", e);
+      }
+
+      // Find the callable that acts as a factory for test runner instances.
+      m_testRunnerFactory = m_interpreter.get(TEST_RUNNER_CALLABLE_NAME);
+
+      if (m_testRunnerFactory == null || !m_testRunnerFactory.isCallable()) {
+        throw new JythonScriptExecutionException(
+          "There is no callable (class or function) named '" +
+          TEST_RUNNER_CALLABLE_NAME + "' in " + script);
+      }
     }
-    catch (final Exception e) {
-      version = "Unknown";
-    }
-
-    m_version = version;
-
-    // Prepend the script directory to the Python path. This matches the
-    // behaviour of the Jython interpreter.
-    m_systemState.path.insert(0,
-      new PyString(script.getFile().getParent()));
-
-    // Additionally, add the working directory to the Python path. I think
-    // this will always be the same as the worker's CWD. Users expect to be
-    // able to import from the directory the agent is running in or (when the
-    // script has been distributed), the distribution directory.
-    m_systemState.path.insert(1,
-      new PyString(script.getDirectory().getFile().getPath()));
-
-    try {
-      // Run the test script, script does global set up here.
-      m_interpreter.execfile(script.getFile().getPath());
-    }
-    catch (final PyException e) {
-      throw new JythonScriptExecutionException("initialising test script", e);
-    }
-
-    // Find the callable that acts as a factory for test runner instances.
-    m_testRunnerFactory = m_interpreter.get(TEST_RUNNER_CALLABLE_NAME);
-
-    if (m_testRunnerFactory == null || !m_testRunnerFactory.isCallable()) {
-      throw new JythonScriptExecutionException(
-        "There is no callable (class or function) named '" +
-        TEST_RUNNER_CALLABLE_NAME + "' in " + script);
+    catch (final EngineException e) {
+      shutdown();
+      throw e;
     }
   }
 
@@ -221,15 +229,31 @@ final class JythonScriptEngine implements ScriptEngine {
   @Override
   public void shutdown() throws EngineException {
 
-    final PyObject exitfunc = m_systemState.__findattr__("exitfunc");
+    try {
+      final PyObject exitfunc = m_systemState.__findattr__("exitfunc");
 
-    if (exitfunc != null) {
-      try {
-        exitfunc.__call__();
+      if (exitfunc != null) {
+        try {
+          exitfunc.__call__();
+        }
+        catch (final PyException e) {
+          throw new JythonScriptExecutionException(
+            "calling script exit function", e);
+        }
       }
-      catch (final PyException e) {
-        throw new JythonScriptExecutionException(
-          "calling script exit function", e);
+    }
+    finally {
+      // Later versions PythonInterpreter.cleanup() call
+      // PySystemState.cleanup().
+      try {
+        final Method method = m_systemState.getClass().getMethod("cleanup");
+        method.invoke(m_systemState);
+      }
+      catch (final NoSuchMethodException e) {
+        // Ignore
+      }
+      catch (final Exception e) {
+        throw new EngineException(e.getMessage(), e);
       }
     }
   }

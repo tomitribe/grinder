@@ -28,22 +28,22 @@ import org.junit.runners.model.InitializationError;
 
 
 /**
- * JUnit runner for Jython 2.1 and 2.2 installations.
+ * JUnit runner for Jython 2.2 installations.
  *
  * <p>
- * To use, annotate the test class with {@code @RunWith(Jython21_22Runner)}.
+ * To use, annotate the test class with {@code @RunWith(Jython22Runner)}.
  * A new classloader will be used for each test.
  * </p>
  *
  * @author Philip Aston
  */
-public class Jython21_22Runner extends JythonVersionRunner {
+public class Jython22Runner extends JythonVersionRunner {
 
-  private static final List<String> s_homes =
-      getHomes("jython2_1.dir", "jython2_2_1.dir");
+  private static final List<String> HOMES =
+      getHomes("jython2_2_1.dir");
 
-  public Jython21_22Runner(final Class<?> testClass)
+  public Jython22Runner(final Class<?> testClass)
     throws InitializationError, ClassNotFoundException, MalformedURLException {
-    super(testClass, s_homes);
+    super(testClass, HOMES);
   }
 }

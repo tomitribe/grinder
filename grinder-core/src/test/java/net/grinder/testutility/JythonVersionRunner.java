@@ -1,4 +1,4 @@
-// Copyright (C) 2011 - 2012 Philip Aston
+// Copyright (C) 2011 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -25,6 +25,11 @@ import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -36,14 +41,19 @@ import java.util.Set;
 
 import net.grinder.util.BlockingClassLoader;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.internal.runners.statements.Fail;
+import org.junit.internal.runners.statements.RunAfters;
+import org.junit.internal.runners.statements.RunBefores;
 import org.junit.runner.Description;
 import org.junit.runner.Runner;
-import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.Suite;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
-
+import org.junit.runners.model.Statement;
+import org.junit.runners.model.TestClass;
 
 /**
  * A JUnit test class runner that sets up the context for different Jython
@@ -52,6 +62,25 @@ import org.junit.runners.model.InitializationError;
  * @author Philip Aston
  */
 public abstract class JythonVersionRunner extends Suite {
+  /**
+   * Jython has global state that can't be reset (Jython bug 2053). Currently a
+   * separate classloader, hence a fresh interpreter, is used for every test
+   * class. Applying this annotation to a test ensures that a fresh interpreter
+   * will be used for the test . We don't do this for every test because 1.
+   * efficiency, 2. Jython has classloader leaks (e.g. Jython bug 2054), so we
+   * run out of perm space.
+   *
+   * <p>
+   * We may re-visit sharing of interpreters across test classes further to
+   * reduce the footprint.
+   *
+   * @author Philip Aston
+   */
+  @Retention(RetentionPolicy.RUNTIME)
+  @Target(ElementType.METHOD)
+  public static @interface UseSeparateInterpreter {
+
+  }
 
   protected static List<String> getHomes(final String... homesProperties) {
     final List<String> homes = new ArrayList<String>();
@@ -61,7 +90,7 @@ public abstract class JythonVersionRunner extends Suite {
 
       if (pythonHome == null) {
         System.err.println("***** " + property +
-                           " not set, skipping tests for Jython version.");
+            " not set, skipping tests for Jython version.");
       }
       else {
         final File f = new File(pythonHome);
@@ -80,41 +109,36 @@ public abstract class JythonVersionRunner extends Suite {
   }
 
   private static final Set<String> ISOLATED_CLASSES =
-    new HashSet<String>(asList("net.grinder.*",
-                               "org.python.*",
-                               "grinder.test.*",
-                               "org.mockito.*"));
+      new HashSet<String>(asList("net.grinder.*",
+        "org.python.*",
+        "grinder.test.*",
+        "org.mockito.*"));
 
   private static final Set<String> SHARED_CLASSES =
-    new HashSet<String>(asList("net.grinder.util.weave.agent.*"));
+      new HashSet<String>(asList(
+        "net.grinder.util.weave.agent.*",
+        "org.python.google.*"));
 
   public JythonVersionRunner(final Class<?> testClass,
                              final List<String> pythonHomes)
-    throws ClassNotFoundException, InitializationError, MalformedURLException{
+      throws ClassNotFoundException,
+      InitializationError,
+      MalformedURLException {
 
     super(testClass, createRunners(testClass, pythonHomes));
   }
 
-  private static List<Runner> createRunners(final Class<?> testClass,
-                                            final List<String> pythonHomes)
-   throws ClassNotFoundException, InitializationError, MalformedURLException {
+  private static List<Runner> createRunners(
+    final Class<?> testClass,
+    final List<String> pythonHomes)
+      throws ClassNotFoundException,
+      InitializationError,
+      MalformedURLException {
 
     final List<Runner> runners = new ArrayList<Runner>();
 
     for (final String pythonHome : pythonHomes) {
-      final URL jythonJarURL =
-        new URL("file://" + pythonHome + "/jython.jar");
-
-      final ClassLoader loader =
-        new BlockingClassLoader(Arrays.asList(jythonJarURL),
-                                Collections.<String>emptySet(),
-                                ISOLATED_CLASSES,
-                                SHARED_CLASSES,
-                                true);
-
-      final Class<?> isolatedClass = loader.loadClass(testClass.getName());
-
-      runners.add(new PythonHomeRunner(isolatedClass, pythonHome));
+      runners.add(new PythonRunner(testClass, pythonHome));
     }
 
     if (runners.size() == 0) {
@@ -124,24 +148,31 @@ public abstract class JythonVersionRunner extends Suite {
     return runners;
   }
 
-  private static class PythonHomeRunner extends BlockJUnit4ClassRunner {
+  private static class PythonRunner extends BlockJUnit4ClassRunner {
 
     private final String m_pythonHome;
 
-    public PythonHomeRunner(final Class<?> klass, final String pythonHome)
-      throws InitializationError {
+    private final URL m_jythonJarURL;
+
+    private ClassLoader m_lastLoader;
+
+    public PythonRunner(final Class<?> klass, final String pythonHome)
+        throws InitializationError, MalformedURLException {
       super(klass);
 
       m_pythonHome = pythonHome;
+      m_jythonJarURL = new URL("file://" + pythonHome + "/jython.jar");;
     }
 
-    @Override public Description getDescription() {
+    @Override
+    public Description getDescription() {
       final Class<?> javaClass = getTestClass().getJavaClass();
 
       final Description result =
-        Description.createSuiteDescription(
-          javaClass.getSimpleName() + " [" + m_pythonHome + "]",
-          javaClass.getAnnotations());
+          Description.createSuiteDescription(
+            javaClass.getSimpleName() + " [" +
+                m_pythonHome + "]",
+            javaClass.getAnnotations());
 
       for (final Description child : super.getDescription().getChildren()) {
         result.addChild(child);
@@ -150,25 +181,93 @@ public abstract class JythonVersionRunner extends Suite {
       return result;
     }
 
-    @Override protected String testName(final FrameworkMethod method) {
+    @Override
+    protected String testName(final FrameworkMethod method) {
       return super.testName(method) + " [" + m_pythonHome + "]";
     }
 
-    @Override protected void runChild(final FrameworkMethod method,
-                                      final RunNotifier notifier) {
-      final String oldPythonHome = System.getProperty("python.home");
+    @Override
+    protected Statement methodBlock(final FrameworkMethod method) {
+      final ClassLoader loader;
 
-      System.setProperty("python.home", m_pythonHome);
+      if (m_lastLoader == null ||
+          method.getAnnotation(UseSeparateInterpreter.class) != null) {
+        loader = new BlockingClassLoader(Arrays.asList(m_jythonJarURL),
+          Collections.<String> emptySet(),
+          ISOLATED_CLASSES,
+          SHARED_CLASSES,
+          true);
+        m_lastLoader = loader;
+      }
+      else {
+        loader = m_lastLoader;
+      }
+
+      final Statement isolatedBlock;
 
       try {
-        super.runChild(method, notifier);
+        final Method testMethod = method.getMethod();
+        final Class<?> isolatedClass =
+            loader.loadClass(getTestClass().getName());
+        final TestClass isolatedTestClass = new TestClass(isolatedClass);
+
+        final FrameworkMethod isolatedMethod = new FrameworkMethod(
+          isolatedClass.getMethod(
+            testMethod.getName(),
+            testMethod.getParameterTypes()));
+
+        final Object test =
+            isolatedTestClass.getOnlyConstructor().newInstance();
+
+        Statement statement = methodInvoker(isolatedMethod, test);
+        statement =
+            possiblyExpectingExceptions(isolatedMethod, test, statement);
+        statement = withPotentialTimeout(isolatedMethod, test, statement);
+
+        final List<FrameworkMethod> befores =
+            isolatedTestClass.getAnnotatedMethods(Before.class);
+        statement = new RunBefores(statement, befores, test);
+
+        final List<FrameworkMethod> afters =
+            isolatedTestClass.getAnnotatedMethods(After.class);
+        statement = new RunAfters(statement, afters, test);
+
+        isolatedBlock = statement;
       }
-      finally {
-        if (oldPythonHome != null) {
-          System.setProperty("python.home", oldPythonHome);
+      catch (final Exception e) {
+        return new Fail(e);
+      }
+
+      return new PythonHomeDecorator(m_pythonHome, isolatedBlock);
+    }
+
+    private static final class PythonHomeDecorator extends Statement {
+      private final String m_pythonHome;
+
+      private final Statement m_delegate;
+
+      private PythonHomeDecorator(final String pythonHome,
+                                  final Statement delegate) {
+        m_pythonHome = pythonHome;
+        m_delegate = delegate;
+      }
+
+      @Override
+      public void evaluate() throws Throwable {
+        final String oldPythonHome = System.getProperty("python.home");
+
+        System.setProperty("python.home", m_pythonHome);
+
+        try {
+          m_delegate.evaluate();
         }
-        else {
-          System.clearProperty("python.home");
+        finally {
+          if (oldPythonHome != null) {
+            System.setProperty("python.home", oldPythonHome);
+          }
+          else {
+            System.clearProperty("python.home");
+          }
         }
       }
     }

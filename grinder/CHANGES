@@ -49,6 +49,8 @@ The Grinder 3.12 (not yet released)
   http://grinder.sourceforge.net/g3/jython.html. 2.5.4rc1 should work
   as well. Thanks to Rakesh Kumar for the request.
 
+  Support for Jython 2.1 has been dropped.
+
   Implement feature request #104 - add info about Maven dependencies
   in Clojars repository. The maven site reports have been extended to
   include dependency information. Thanks to Jonas Öhrnell for the

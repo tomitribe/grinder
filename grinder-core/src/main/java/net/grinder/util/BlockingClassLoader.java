@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -49,7 +49,8 @@ public class BlockingClassLoader extends URLClassLoader {
   private final Classes m_isolated;
   private final Classes m_shared;
 
-  private static URL[] join(List<URL> additionalClassPath, URL[] urls) {
+  private static URL[] join(final List<URL> additionalClassPath,
+                            final URL[] urls) {
     final List<URL> classPath = new ArrayList<URL>(additionalClassPath);
     classPath.addAll(asList(urls));
     return classPath.toArray(new URL[classPath.size()]);
@@ -93,12 +94,12 @@ public class BlockingClassLoader extends URLClassLoader {
    * @param respectGrandparents
    *          Only block or isolate classes from the parent class loader.
    */
-  public BlockingClassLoader(URLClassLoader parent,
-                             List<URL> additionalClassPath,
-                             Set<String> blocked,
-                             Set<String> isolated,
-                             Set<String> shared,
-                             boolean respectGrandparents) {
+  public BlockingClassLoader(final URLClassLoader parent,
+                             final List<URL> additionalClassPath,
+                             final Set<String> blocked,
+                             final Set<String> isolated,
+                             final Set<String> shared,
+                             final boolean respectGrandparents) {
     super(join(additionalClassPath, parent.getURLs()), parent);
 
     m_blocked = new Classes(blocked);
@@ -127,11 +128,11 @@ public class BlockingClassLoader extends URLClassLoader {
    * @param respectGrandparents
    *          Only block or isolate classes from the parent class loader.
    */
-  public BlockingClassLoader(List<URL> additionalClassPath,
-                             Set<String> blocked,
-                             Set<String> isolated,
-                             Set<String> shared,
-                             boolean respectGrandparents) {
+  public BlockingClassLoader(final List<URL> additionalClassPath,
+                             final Set<String> blocked,
+                             final Set<String> isolated,
+                             final Set<String> shared,
+                             final boolean respectGrandparents) {
     this((URLClassLoader)BlockingClassLoader.class.getClassLoader(),
          additionalClassPath,
          blocked,
@@ -156,10 +157,10 @@ public class BlockingClassLoader extends URLClassLoader {
    * @param respectGrandparents
    *          Only block or isolate classes from the parent class loader.
    */
-  public BlockingClassLoader(Set<String> blocked,
-                             Set<String> isolated,
-                             Set<String> shared,
-                             boolean respectGrandparents) {
+  public BlockingClassLoader(final Set<String> blocked,
+                             final Set<String> isolated,
+                             final Set<String> shared,
+                             final boolean respectGrandparents) {
     this(Collections.<URL>emptyList(),
          blocked,
          isolated,
@@ -172,7 +173,8 @@ public class BlockingClassLoader extends URLClassLoader {
    *
    * {@inheritDoc}
    */
-  @Override protected Class<?> loadClass(String name, boolean resolve)
+  @Override protected Class<?> loadClass(final String name,
+                                         final boolean resolve)
     throws ClassNotFoundException  {
 
     if (!m_shared.matches(name, false)) {
@@ -182,7 +184,7 @@ public class BlockingClassLoader extends URLClassLoader {
           // We always have a grandparent classloader.
           return Class.forName(name, resolve, getParent().getParent());
         }
-        catch (ClassNotFoundException e) {
+        catch (final ClassNotFoundException e) {
           // Grandparent knows nothing.
         }
       }
@@ -216,7 +218,7 @@ public class BlockingClassLoader extends URLClassLoader {
    *
    * {@inheritDoc}
    */
-  @Override public URL getResource(String name) {
+  @Override public URL getResource(final String name) {
 
     if (!m_shared.matches(name, true)) {
 
@@ -247,7 +249,7 @@ public class BlockingClassLoader extends URLClassLoader {
    * {@inheritDoc}
    */
   @Override
-  public Enumeration<URL> getResources(String name) throws IOException {
+  public Enumeration<URL> getResources(final String name) throws IOException {
 
     if (!m_shared.matches(name, true)) {
 
@@ -276,9 +278,9 @@ public class BlockingClassLoader extends URLClassLoader {
     private final Set<String> m_classNames = new HashSet<String>();
     private final Set<String> m_prefixes = new HashSet<String>();
 
-    public Classes(Set<String> wildcardNames) {
+    public Classes(final Set<String> wildcardNames) {
 
-      for (String name : wildcardNames) {
+      for (final String name : wildcardNames) {
         final int index = name.indexOf('*');
 
         if (index >= 0) {
@@ -290,14 +292,14 @@ public class BlockingClassLoader extends URLClassLoader {
       }
     }
 
-    public boolean matches(String name, boolean isResource) {
+    public boolean matches(final String name, final boolean isResource) {
       final String packageName = isResource ? name.replace('/', '.') : name;
 
       if (m_classNames.contains(name)) {
         return true;
       }
 
-      for (String prefix : m_prefixes) {
+      for (final String prefix : m_prefixes) {
         if (packageName.startsWith(prefix)) {
           return true;
         }

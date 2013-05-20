@@ -90,6 +90,23 @@ grinder.jvm.arguments = -Dpython.home=/opt/jython/jython2.5.3 -Dpython.cachedir=
       place it at the start of the classpath used to start the agent
       process.</p>
 
+      <p>The Grinder is tested for compatibility with the many versions of Jython:
+      <ul>
+        <li>Jython 2.2.1</li>
+        <li>Jython 2.5.0</li>
+        <li>Jython 2.5.1</li>
+        <li>Jython 2.5.2</li>
+        <li>Jython 2.5.3</li>
+        <li>Jython 2.5.4rc1</li>
+        <li>Jython 2.7b1</li>
+      </ul>
+
+      Other versions may work, but versions earlier than 2.2.1 are no
+      longer supported. Please report problems experienced with Jython
+      2.2.1 or later, including versions not in the above list, to the
+      <a href="site:mail/grinder-use">grinder-use</a> mailing
+      list.</p>
+
       <p>If you don't use its standalone option, the Jython installer
       will create a new directory containing the Jython jar file, the
       library modules, examples, and documentation. To use the

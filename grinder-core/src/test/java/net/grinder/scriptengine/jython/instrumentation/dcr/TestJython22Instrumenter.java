@@ -29,7 +29,7 @@ import net.grinder.engine.process.dcr.DCRContextImplementation;
 import net.grinder.scriptengine.CompositeInstrumenter;
 import net.grinder.scriptengine.Instrumenter;
 import net.grinder.scriptengine.java.JavaScriptEngineService;
-import net.grinder.testutility.Jython21_22Runner;
+import net.grinder.testutility.Jython22Runner;
 import net.grinder.util.weave.WeavingException;
 
 import org.junit.Test;
@@ -41,7 +41,7 @@ import org.junit.runner.RunWith;
  *
  * @author Philip Aston
  */
-@RunWith(Jython21_22Runner.class)
+@RunWith(Jython22Runner.class)
 public class TestJython22Instrumenter
   extends AbstractJythonDCRInstrumenterTestCase {
 

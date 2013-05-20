@@ -234,5 +234,6 @@ public class TestScriptEngineContainer extends AbstractJUnit4FileTestCase {
 
     final ScriptEngine scriptEngine = container.getScriptEngine(pyScript);
     assertContains(scriptEngine.getDescription(), "Jython");
+    scriptEngine.shutdown();
   }
 }
