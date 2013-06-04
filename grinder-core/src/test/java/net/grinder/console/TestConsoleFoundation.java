@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2012 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -34,7 +34,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Timer;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -49,7 +48,6 @@ import net.grinder.communication.MessageDispatchRegistry.Handler;
 import net.grinder.console.client.ConsoleConnection;
 import net.grinder.console.client.ConsoleConnectionFactory;
 import net.grinder.console.common.Resources;
-import net.grinder.console.common.StubResources;
 import net.grinder.console.communication.ConsoleCommunication;
 import net.grinder.console.communication.server.DispatchClientCommands;
 import net.grinder.console.model.ConsoleProperties;
@@ -62,6 +60,7 @@ import net.grinder.statistics.ExpressionView;
 import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.statistics.TestStatisticsMap;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
+import net.grinder.translation.Translations;
 
 import org.junit.After;
 import org.junit.Before;
@@ -84,6 +83,10 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
   @Mock private ConsoleCommunication m_consoleCommunication;
   @Mock private Logger m_logger;
 
+  @Mock private Resources m_resources;
+
+  @Mock private Translations m_translations;
+
   @Captor private ArgumentCaptor<Handler<Message>> m_handlerCaptor;
 
   private final ExecutorService m_executor = Executors.newCachedThreadPool();
@@ -95,18 +98,15 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
       .thenReturn(m_messageDispatchRegistry);
   }
 
+  @Override
   @After public void tearDown() {
     m_executor.shutdownNow();
   }
 
-  private final Resources m_resources =
-    new StubResources<Object>(new HashMap<String, Object>() {{
-    }});
-
   @Test public void testConstruction() throws Exception {
 
     final ConsoleFoundation consoleFoundation =
-        new ConsoleFoundation(m_resources, m_logger, true);
+        new ConsoleFoundation(m_resources, m_translations, m_logger, true);
 
     verify(m_logger).info(isA(String.class)); // Text UI version.
     verifyNoMoreInteractions(m_logger);
@@ -118,7 +118,7 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
     final Timer timer = new Timer(true);
 
     final ConsoleProperties consoleProperties =
-      new ConsoleProperties(m_resources, new File(getDirectory(), "props"));
+      new ConsoleProperties(m_translations, new File(getDirectory(), "props"));
 
     // Figure out free local ports.
 
@@ -141,6 +141,7 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
 
     final ConsoleFoundation foundation =
       new ConsoleFoundation(m_resources,
+                            m_translations,
                             m_logger,
                             false,
                             timer,
@@ -150,6 +151,7 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
     verifyNoMoreInteractions(m_logger);
 
     final Future<?> runTask = m_executor.submit(new Runnable() {
+      @Override
       public void run() { foundation.run(); }
     });
 
@@ -168,6 +170,7 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
     final ConsoleConnectionFactory ccf = new ConsoleConnectionFactory();
 
     final Callable<Void> connect = new Callable<Void>() {
+        @Override
         public Void call() throws Exception {
           final ConsoleConnection client = ccf.connect(hostName, port);
           assertEquals(0, client.getNumberOfAgents());
@@ -184,7 +187,7 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
       try {
         task.get(1, TimeUnit.SECONDS);
       }
-      catch (ExecutionException e) {
+      catch (final ExecutionException e) {
         if (i == retries - 1) {
           throw e;
         }

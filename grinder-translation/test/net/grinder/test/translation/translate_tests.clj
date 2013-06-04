@@ -19,13 +19,13 @@
 ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 ; OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(ns net.grinder.test.console.service.translate-tests
+(ns net.grinder.test.translation.translate-tests
   "Unit tests for net.grinder.console.service.translate."
   (:use [clojure.test])
   (:require
-    [net.grinder.console.service.translate :as translate]
+    [net.grinder.translation.translate :as translate]
     [taoensso.tower :as tower])
-  (:import net.grinder.common.Translatable))
+  (:import [net.grinder.translation Translatable Translations]))
 
 (def tb "net.grinder.test.console.service.TestBundle")
 
@@ -120,3 +120,12 @@
             ))
         tr-request)))
     ))
+
+
+(deftest test-java-access
+  (load-test-tower-config)
+  (tower/with-scope :test
+    (let [ts (net.grinder.translation.impl.TranslationsSource.)
+          t (.getTranslations ts (java.util.Locale. "en"))]
+      (is (= "blah" (.translate t "foo" nil))
+        ))))

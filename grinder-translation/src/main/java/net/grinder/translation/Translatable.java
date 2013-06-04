@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2013 Philip Aston
+// Copyright (C) 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -19,35 +19,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package net.grinder.console.common;
-
-
+package net.grinder.translation;
 
 /**
- * Exception that can be displayed through the user interface.
+ * An identifiable object that can be translated into different languages.
  *
  * @author Philip Aston
  */
-public class DisplayMessageConsoleException extends ConsoleException {
+public interface Translatable {
 
   /**
-   * Constructor.
+   * Return a key that can be used to look up the appropriate translation.
    *
-   * @param message Message.
+   * @return The key.
    */
-  public DisplayMessageConsoleException(final String message) {
-    super(message);
-  }
-
-  /**
-   * Constructor.
-   *
-   * @param message Message.
-   * @param cause Nested exception.
-   */
-  public DisplayMessageConsoleException(final String message,
-                                        final Exception cause) {
-    super(message, cause);
-  }
+  String getTranslationKey();
 }
-

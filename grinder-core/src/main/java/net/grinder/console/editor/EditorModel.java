@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2012 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -36,10 +36,10 @@ import net.grinder.common.GrinderProperties;
 import net.grinder.common.GrinderProperties.PersistenceException;
 import net.grinder.console.common.ConsoleException;
 import net.grinder.console.common.DisplayMessageConsoleException;
-import net.grinder.console.common.Resources;
 import net.grinder.console.distribution.AgentCacheState;
 import net.grinder.console.distribution.FileChangeWatcher;
 import net.grinder.console.distribution.FileChangeWatcher.FileChangedListener;
+import net.grinder.translation.Translations;
 import net.grinder.util.ListenerSupport;
 
 
@@ -53,7 +53,7 @@ public final class EditorModel {
   private static final List<String> s_knownScriptTypes =
     asList("py", "clj");
 
-  private final Resources m_resources;
+  private final Translations m_translations;
   private final TextSource.Factory m_textSourceFactory;
   private final AgentCacheState m_agentCacheState;
 
@@ -85,30 +85,31 @@ public final class EditorModel {
   /**
    * Constructor.
    *
-   * @param resources ResourcesImplementation.
+   * @param translations Translations.
    * @param textSourceFactory Factory for {@link TextSource}s.
    * @param agentCacheState Notified when the model updates a file.
    * @param fileChangeWatcher A FileDistribution.
    */
-  public EditorModel(Resources resources,
-                     TextSource.Factory textSourceFactory,
-                     AgentCacheState agentCacheState,
-                     FileChangeWatcher fileChangeWatcher) {
-    m_resources = resources;
+  public EditorModel(final Translations translations,
+                     final TextSource.Factory textSourceFactory,
+                     final AgentCacheState agentCacheState,
+                     final FileChangeWatcher fileChangeWatcher) {
+    m_translations = translations;
     m_textSourceFactory = textSourceFactory;
     m_agentCacheState = agentCacheState;
 
     fileChangeWatcher.addFileChangedListener(new FileChangedListener() {
-      public void filesChanged(File[] files) {
+      @Override
+      public void filesChanged(final File[] files) {
         synchronized (m_fileBuffers) {
-          for (int i = 0; i < files.length; ++i) {
-            final Buffer buffer = getBufferForFile(files[i]);
+          for (final File file : files) {
+            final Buffer buffer = getBufferForFile(file);
 
             if (buffer != null && !buffer.isUpToDate()) {
               fireBufferNotUpToDate(buffer);
             }
 
-            parseSelectedProperties(files[i]);
+            parseSelectedProperties(file);
           }
         }
       }
@@ -130,7 +131,7 @@ public final class EditorModel {
    * Select a new buffer.
    */
   public void selectNewBuffer() {
-    final Buffer buffer = new BufferImplementation(m_resources,
+    final Buffer buffer = new BufferImplementation(m_translations,
                                                    m_textSourceFactory.create(),
                                                    createNewBufferName());
     addBuffer(buffer);
@@ -147,7 +148,7 @@ public final class EditorModel {
    * @throws ConsoleException
    *           If a buffer could not be selected for the file.
    */
-  public Buffer selectBufferForFile(File file) throws ConsoleException {
+  public Buffer selectBufferForFile(final File file) throws ConsoleException {
     final Buffer existingBuffer = getBufferForFile(file);
     final Buffer buffer;
 
@@ -164,7 +165,7 @@ public final class EditorModel {
       }
     }
     else {
-      buffer = new BufferImplementation(m_resources,
+      buffer = new BufferImplementation(m_translations,
                                         m_textSourceFactory.create(),
                                         file);
       buffer.load();
@@ -185,7 +186,7 @@ public final class EditorModel {
    *          The file.
    * @return The buffer; <code>null</code> => there is no buffer for the file.
    */
-  public Buffer getBufferForFile(File file) {
+  public Buffer getBufferForFile(final File file) {
     return m_fileBuffers.get(file);
   }
 
@@ -208,8 +209,8 @@ public final class EditorModel {
   public boolean isABufferDirty() {
     final Buffer[] buffers = getBuffers();
 
-    for (int i = 0; i < buffers.length; ++i) {
-      if (buffers[i].isDirty()) {
+    for (final Buffer buffer : buffers) {
+      if (buffer.isDirty()) {
         return true;
       }
     }
@@ -222,7 +223,7 @@ public final class EditorModel {
    *
    * @param buffer The buffer.
    */
-  public void selectBuffer(Buffer buffer) {
+  public void selectBuffer(final Buffer buffer) {
     final Buffer oldBuffer = getSelectedBuffer();
 
     if (buffer == null || !buffer.equals(oldBuffer)) {
@@ -275,7 +276,8 @@ public final class EditorModel {
 
       m_listeners.apply(
         new ListenerSupport.Informer<Listener>() {
-          public void inform(Listener l) { l.bufferRemoved(buffer); }
+          @Override
+          public void inform(final Listener l) { l.bufferRemoved(buffer); }
         });
     }
   }
@@ -310,7 +312,8 @@ public final class EditorModel {
 
   private void addBuffer(final Buffer buffer) {
     buffer.getTextSource().addListener(new TextSource.Listener() {
-        public void textSourceChanged(boolean dirtyStateChanged) {
+        @Override
+        public void textSourceChanged(final boolean dirtyStateChanged) {
           if (dirtyStateChanged) {
             fireBufferStateChanged(buffer);
           }
@@ -319,7 +322,8 @@ public final class EditorModel {
 
     buffer.addListener(
       new BufferImplementation.Listener() {
-        public void bufferSaved(Buffer savedBuffer, File oldFile) {
+        @Override
+        public void bufferSaved(final Buffer savedBuffer, final File oldFile) {
           final File newFile = savedBuffer.getFile();
 
           m_agentCacheState.setNewFileTime(newFile.lastModified());
@@ -347,14 +351,16 @@ public final class EditorModel {
 
     m_listeners.apply(
       new ListenerSupport.Informer<Listener>() {
-        public void inform(Listener l) { l.bufferAdded(buffer); }
+        @Override
+        public void inform(final Listener l) { l.bufferAdded(buffer); }
       });
   }
 
   private void fireBufferStateChanged(final Buffer buffer) {
     m_listeners.apply(
       new ListenerSupport.Informer<Listener>() {
-        public void inform(Listener l) { l.bufferStateChanged(buffer); }
+        @Override
+        public void inform(final Listener l) { l.bufferStateChanged(buffer); }
       });
   }
 
@@ -365,13 +371,14 @@ public final class EditorModel {
   private void fireBufferNotUpToDate(final Buffer buffer) {
     m_listeners.apply(
       new ListenerSupport.Informer<Listener>() {
-        public void inform(Listener l) { l.bufferNotUpToDate(buffer); }
+        @Override
+        public void inform(final Listener l) { l.bufferNotUpToDate(buffer); }
       });
   }
 
   private String createNewBufferName() {
 
-    final String prefix = m_resources.getString("newBuffer.text");
+    final String prefix = m_translations.translate("console.phrase/new-buffer");
 
     synchronized (this) {
       try {
@@ -388,7 +395,7 @@ public final class EditorModel {
     }
   }
 
-  private void parseSelectedProperties(File file) {
+  private void parseSelectedProperties(final File file) {
 
     if (file != null && file.equals(getSelectedPropertiesFile())) {
       File selectedFile;
@@ -402,10 +409,10 @@ public final class EditorModel {
                                GrinderProperties.DEFAULT_SCRIPT))
           .getCanonicalFile();
       }
-      catch (PersistenceException e) {
+      catch (final PersistenceException e) {
         selectedFile = null;
       }
-      catch (IOException e) {
+      catch (final IOException e) {
         selectedFile = null;
       }
 
@@ -420,7 +427,7 @@ public final class EditorModel {
    *
    * @param listener The listener.
    */
-  public void addListener(Listener listener) {
+  public void addListener(final Listener listener) {
     m_listeners.add(listener);
   }
 
@@ -431,7 +438,7 @@ public final class EditorModel {
    * @param f The file.
    * @return <code>true</code> => its a Python file.
    */
-  public boolean isScriptFile(File f) {
+  public boolean isScriptFile(final File f) {
     if (f != null  &&
         (!f.exists() || f.isFile())) {
 
@@ -454,7 +461,7 @@ public final class EditorModel {
    * @param f The file.
    * @return <code>true</code> => its a properties file.
    */
-  public boolean isPropertiesFile(File f) {
+  public boolean isPropertiesFile(final File f) {
     return
       f != null &&
       (!f.exists() || f.isFile()) &&
@@ -468,7 +475,7 @@ public final class EditorModel {
    * @param f The file.
    * @return <code>true</code> => its the selected script.
    */
-  public boolean isSelectedScript(File f) {
+  public boolean isSelectedScript(final File f) {
     // We don't constrain selection to have a .py extension. If the
     // user really wants to use something else, so be it.
     synchronized (this) {
@@ -482,7 +489,7 @@ public final class EditorModel {
    * @param f The file.
    * @return a <code>true</code> => its boring.
    */
-  public boolean isBoringFile(File f) {
+  public boolean isBoringFile(final File f) {
     if (f == null) {
       return false;
     }
@@ -517,17 +524,17 @@ public final class EditorModel {
     }
 
     if (externalEditor == null) {
-      throw new DisplayMessageConsoleException(m_resources,
-                                               "externalEditorNotSet.text");
+      throw new DisplayMessageConsoleException(
+        m_translations.translate("console.phrase/external-editor-not-set"));
     }
 
     try {
       externalEditor.open(file);
     }
-    catch (IOException e) {
-      throw new DisplayMessageConsoleException(m_resources,
-                                               "externalEditError.text",
-                                               e);
+    catch (final IOException e) {
+      throw new DisplayMessageConsoleException(
+        m_translations.translate("console.phrase/external-edit-error"),
+        e);
     }
   }
 
@@ -543,7 +550,7 @@ public final class EditorModel {
    *            If no <code>%f</code> is found, the file path will be appended
    *            to the end of the command line.
    */
-  public void setExternalEditor(File command, String arguments) {
+  public void setExternalEditor(final File command, final String arguments) {
     final ExternalEditor externalEditor;
     if (command == null) {
       externalEditor = null;
@@ -603,21 +610,21 @@ public final class EditorModel {
     /**
      * {@inheritDoc}
      */
-    @Override public void bufferAdded(Buffer buffer) { }
+    @Override public void bufferAdded(final Buffer buffer) { }
 
     /**
      * {@inheritDoc}
      */
-    @Override public void bufferStateChanged(Buffer buffer) { }
+    @Override public void bufferStateChanged(final Buffer buffer) { }
 
     /**
      * {@inheritDoc}
      */
-    @Override public void bufferNotUpToDate(Buffer buffer) { }
+    @Override public void bufferNotUpToDate(final Buffer buffer) { }
 
     /**
      * {@inheritDoc}
      */
-    @Override public void bufferRemoved(Buffer buffer) { }
+    @Override public void bufferRemoved(final Buffer buffer) { }
   }
 }

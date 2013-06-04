@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2011 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -24,6 +24,7 @@ package net.grinder.console.swingui;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.StringWriter;
@@ -46,9 +47,11 @@ import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.DelegatingStubFactory;
 import net.grinder.testutility.RandomStubFactory;
 import net.grinder.testutility.StubTimer;
+import net.grinder.translation.Translations;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 /**
  * Unit tests for {@link CumulativeStatisticsTableModel}.
@@ -57,9 +60,13 @@ import org.junit.Test;
  */
 public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
 
+  @Mock private Translations m_translations;
+
   private File m_file;
 
   @Before public void setUp() throws Exception {
+    initMocks(this);
+
     m_file = new File(getDirectory(), "properties");
   }
 
@@ -197,11 +204,12 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
     final Timer timer = new StubTimer();
 
     final SampleModelImplementation sampleModelImplementation =
-      new SampleModelImplementation(new ConsoleProperties(m_resources, m_file),
-                                    m_statisticsServices,
-                                    timer,
-                                    m_resources,
-                                    null);
+      new SampleModelImplementation(
+        new ConsoleProperties(m_translations, m_file),
+        m_statisticsServices,
+        timer,
+        m_resources,
+        null);
 
     final SampleStatisticsTableModel model =
       new SampleStatisticsTableModel(sampleModelImplementation,

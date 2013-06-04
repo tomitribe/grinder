@@ -32,6 +32,7 @@ import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.ObjectInputStream;
@@ -59,8 +60,6 @@ import net.grinder.communication.StreamSender;
 import net.grinder.communication.StubConnector;
 import net.grinder.console.common.DisplayMessageConsoleException;
 import net.grinder.console.common.ErrorHandler;
-import net.grinder.console.common.Resources;
-import net.grinder.console.common.ResourcesImplementation;
 import net.grinder.console.communication.ProcessControl.ProcessReports;
 import net.grinder.console.model.ConsoleProperties;
 import net.grinder.engine.agent.StubAgentIdentity;
@@ -77,14 +76,15 @@ import net.grinder.messages.console.AgentProcessReportMessage;
 import net.grinder.messages.console.WorkerAddress;
 import net.grinder.messages.console.WorkerProcessReportMessage;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
+import net.grinder.testutility.EchoTranslations;
 import net.grinder.testutility.StubTimer;
+import net.grinder.translation.Translations;
 import net.grinder.util.FileContents;
 import net.grinder.util.StandardTimeAuthority;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -99,12 +99,10 @@ import org.mockito.stubbing.Answer;
 public class TestConsoleCommunicationImplementation
   extends AbstractJUnit4FileTestCase {
 
-  private static final Resources s_resources =
-      new ResourcesImplementation(
-        "net.grinder.console.common.resources.Console");
+  private final Translations m_translations = new EchoTranslations();
 
-  private @Mock ErrorHandler m_errorHandler;
-  private @Mock Handler<Message> m_messageHandler;
+  @Mock private ErrorHandler m_errorHandler;
+  @Mock private Handler<Message> m_messageHandler;
   private final TimeAuthority m_timeAuthority = new StandardTimeAuthority();
 
   private ConsoleCommunicationImplementation m_consoleCommunication;
@@ -115,19 +113,19 @@ public class TestConsoleCommunicationImplementation
   private StubTimer m_timer;
 
   @Before public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
+    initMocks(this);
 
     m_timer = new StubTimer();
 
     m_usedServerSocket = new ServerSocket(0, 50, InetAddress.getByName(null));
 
     final File file = new File(getDirectory(), "properties");
-    m_properties = new ConsoleProperties(s_resources, file);
+    m_properties = new ConsoleProperties(m_translations, file);
 
     m_properties.setConsolePort(findFreePort());
 
     m_consoleCommunication =
-      new ConsoleCommunicationImplementation(s_resources,
+      new ConsoleCommunicationImplementation(m_translations,
                                              m_properties,
                                              m_errorHandler,
                                              m_timeAuthority,
@@ -160,7 +158,7 @@ public class TestConsoleCommunicationImplementation
     m_properties.setConsolePort(m_usedServerSocket.getLocalPort());
 
     final ConsoleCommunicationImplementation consoleCommunication =
-      new ConsoleCommunicationImplementation(s_resources,
+      new ConsoleCommunicationImplementation(m_translations,
                                              m_properties,
                                              m_errorHandler,
                                              m_timeAuthority,
@@ -170,7 +168,7 @@ public class TestConsoleCommunicationImplementation
     assertEquals(0, consoleCommunication.getNumberOfConnections());
 
     final ConsoleCommunicationImplementation consoleCommunication2 =
-      new ConsoleCommunicationImplementation(s_resources,
+      new ConsoleCommunicationImplementation(m_translations,
                                              m_properties,
                                              m_errorHandler,
                                              m_timeAuthority);
@@ -226,7 +224,7 @@ public class TestConsoleCommunicationImplementation
     final ProcessControl processControl =
       new ProcessControlImplementation(m_timer,
                                        m_consoleCommunication,
-                                       s_resources);
+                                       m_translations);
 
     final CacheHighWaterMark cacheHighWaterMark =
       new StubCacheHighWaterMark("cache", 100);
@@ -416,7 +414,7 @@ public class TestConsoleCommunicationImplementation
     final ProcessControl processControl =
       new ProcessControlImplementation(m_timer,
                                        m_consoleCommunication,
-                                       s_resources);
+                                       m_translations);
 
     assertEquals(0, processControl.getNumberOfLiveAgents());
 
@@ -490,7 +488,7 @@ public class TestConsoleCommunicationImplementation
 
     m_properties.setConsolePort(m_usedServerSocket.getLocalPort());
     final ConsoleCommunication brokenConsoleCommunication =
-      new ConsoleCommunicationImplementation(s_resources,
+      new ConsoleCommunicationImplementation(m_translations,
                                              m_properties,
                                              m_errorHandler,
                                              m_timeAuthority,
@@ -535,7 +533,7 @@ public class TestConsoleCommunicationImplementation
     // Test a ConsoleCommunication with an invalid Sender.
     m_properties.setConsolePort(m_usedServerSocket.getLocalPort());
     final ConsoleCommunication brokenConsoleCommunication =
-      new ConsoleCommunicationImplementation(s_resources,
+      new ConsoleCommunicationImplementation(m_translations,
                                              m_properties,
                                              errorHandler2,
                                              m_timeAuthority,

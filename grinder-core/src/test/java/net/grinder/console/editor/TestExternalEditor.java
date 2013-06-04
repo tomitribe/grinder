@@ -29,11 +29,10 @@ import static org.mockito.MockitoAnnotations.initMocks;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 
-import net.grinder.console.common.Resources;
-import net.grinder.console.common.ResourcesImplementation;
 import net.grinder.console.distribution.AgentCacheState;
 import net.grinder.console.distribution.FileChangeWatcher;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
+import net.grinder.translation.Translations;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -50,9 +49,7 @@ public class TestExternalEditor extends AbstractJUnit4FileTestCase {
   private static final String s_testClasspath =
     System.getProperty("java.class.path");
 
-  private static final Resources s_resources =
-    new ResourcesImplementation(
-      "net.grinder.console.common.resources.Console");
+  @Mock private Translations m_translations;
 
   @Mock
   private FileChangeWatcher m_fileChangeWatcher;
@@ -120,7 +117,7 @@ public class TestExternalEditor extends AbstractJUnit4FileTestCase {
     final StringTextSource.Factory stringTextSourceFactory =
       new StringTextSource.Factory();
 
-    final EditorModel editorModel = new EditorModel(s_resources,
+    final EditorModel editorModel = new EditorModel(m_translations,
                                                     stringTextSourceFactory,
                                                     cacheState,
                                                     m_fileChangeWatcher);

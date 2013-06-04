@@ -25,12 +25,14 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.HashSet;
 import java.util.Set;
+
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 
 import net.grinder.console.common.Resources;
+import net.grinder.translation.Translations;
 
 
 /**
@@ -56,17 +58,22 @@ abstract class CustomAction extends AbstractAction {
   private final Set<AbstractButton> m_buttonsWithRegisteredListeners =
     new HashSet<AbstractButton>();
 
-  protected CustomAction(Resources resources, String key) {
-    this(resources, key, false);
+  protected CustomAction(
+    Resources resources,
+    Translations translations,
+    String key) {
+    this(resources, translations, key, false);
   }
 
-  protected CustomAction(Resources resources, String key,
-                         boolean isDialogAction) {
-    super();
+  protected CustomAction(
+    Resources resources,
+    Translations translations,
+    String key,
+    boolean isDialogAction) {
 
     m_key = key;
 
-    final String label = resources.getString(m_key + ".label", false);
+    final String label = translations.translate("console.action/" + m_key);
 
     if (label != null) {
       if (isDialogAction) {
@@ -77,7 +84,8 @@ abstract class CustomAction extends AbstractAction {
       }
     }
 
-    final String tip = resources.getString(m_key + ".tip", false);
+    final String tip =
+      translations.translate("console.action/" + m_key + "-detail");
 
     if (tip != null) {
       putValue(Action.SHORT_DESCRIPTION, tip);

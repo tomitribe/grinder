@@ -21,6 +21,8 @@
 
 package net.grinder.console.swingui;
 
+import static net.grinder.console.swingui.MnemonicHeuristics.removeMnemonicMarkers;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -39,7 +41,6 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -100,12 +101,12 @@ import net.grinder.console.model.SampleListener;
 import net.grinder.console.model.SampleModel;
 import net.grinder.console.model.SampleModelViews;
 import net.grinder.statistics.StatisticsSet;
+import net.grinder.translation.Translations;
 import net.grinder.util.Directory;
 import net.grinder.util.FileContents;
 import net.grinder.util.thread.Condition;
 
 import org.slf4j.Logger;
-
 
 /**
  * Swing UI for console.
@@ -132,6 +133,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
   private final DistributeFilesAction m_distributeFilesAction;
 
   private final Resources m_resources;
+  private final Translations m_translations;
   private final ConsoleProperties m_properties;
   private final SampleModel m_model;
   private final SampleModelViews m_sampleModelViews;
@@ -150,9 +152,10 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
   private final CumulativeStatisticsTableModel m_cumulativeTableModel;
 
   /**
-   * Creates a new <code>ConsoleUI</code> instance.
+   * Constructor.
    *
    * @param resources Resources.
+   * @param translations Translation service.
    * @param consoleProperties Console properties.
    * @param model The console model.
    * @param sampleModelViews Console sample model views.
@@ -162,6 +165,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
    * @exception ConsoleException if an error occurs
    */
   public ConsoleUI(Resources resources,
+                   Translations translations,
                    ConsoleProperties consoleProperties,
                    SampleModel model,
                    SampleModelViews sampleModelViews,
@@ -171,6 +175,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     throws ConsoleException {
 
     m_resources = resources;
+    m_translations = translations;
     m_properties = consoleProperties;
     m_model = model;
     m_sampleModelViews = sampleModelViews;
@@ -179,10 +184,10 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
     // Create the frame to contain the a menu and the top level pane.
     // Do before actions are constructed as we use the frame to create dialogs.
-    m_frame = new JFrame(m_resources.getString("title"));
+    m_frame = new JFrame(m_translations.translate("console/title"));
 
     final ErrorDialogHandler errorDialogHandler =
-      new ErrorDialogHandler(m_frame, m_resources, logger);
+      new ErrorDialogHandler(m_frame, m_translations, logger);
 
     m_errorHandler =
       new SwingDispatcherFactoryImplementation(null).create(ErrorHandler.class,
@@ -196,7 +201,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
     errorDialogHandler.registerWithLookAndFeel(m_lookAndFeel);
 
-    m_editorModel = new EditorModel(m_resources,
+    m_editorModel = new EditorModel(m_translations,
                                     new Editor.TextSourceFactory(),
                                     m_fileDistribution.getAgentCacheState(),
                                     m_fileDistribution);
@@ -275,10 +280,11 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
     graphTabPane.setBorder(BorderFactory.createEmptyBorder());
 
-    tabbedPane.addTab(m_resources.getString("graphTab.title"),
+    tabbedPane.addTab(m_translations.translate("console.section/graphs"),
                       m_resources.getImageIcon("graphTab.image"),
                       graphTabPane,
-                      m_resources.getString("graphTab.tip"));
+                      m_translations.translate(
+                        "console.section/graphs-detail"));
 
     m_titleLabelFont =
       new JLabel().getFont().deriveFont(Font.PLAIN | Font.ITALIC);
@@ -290,7 +296,8 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     final JScrollPane cumulativeTablePane =
       new JScrollPane(new Table(m_cumulativeTableModel));
 
-    cumulativeTablePane.setBorder(createTitledBorder("cumulativeTable.label"));
+    cumulativeTablePane.setBorder(
+      createTitledBorder("console.section/cumulative-data"));
     cumulativeTablePane.setMinimumSize(new Dimension(100, 60));
 
     final SampleStatisticsTableModel sampleModel =
@@ -298,7 +305,8 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
         m_model, m_sampleModelViews, m_resources, swingDispatcherFactory);
 
     final JScrollPane sampleTablePane = new JScrollPane(new Table(sampleModel));
-    sampleTablePane.setBorder(createTitledBorder("sampleTable.label"));
+    sampleTablePane.setBorder(
+      createTitledBorder("console.section/sample-data"));
     sampleTablePane.setMinimumSize(new Dimension(100, 60));
 
     final JSplitPane resultsPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
@@ -309,10 +317,11 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     resultsPane.setResizeWeight(1.0d);
     resultsPane.setBorder(BorderFactory.createEmptyBorder());
 
-    tabbedPane.addTab(m_resources.getString("resultsTab.title"),
+    tabbedPane.addTab(m_translations.translate("console.section/results"),
                       m_resources.getImageIcon("resultsTab.image"),
                       resultsPane,
-                      m_resources.getString("resultsTab.tip"));
+                      m_translations.translate(
+                        "console.section/results-detail"));
 
     final ProcessStatusTableModel processStatusModel =
       new ProcessStatusTableModel(m_resources,
@@ -323,13 +332,14 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       new JScrollPane(new Table(processStatusModel));
 
     processStatusPane.setBorder(
-      createTitledBorder("processStatusTableTab.tip"));
+      createTitledBorder("console.section/processes-detail"));
 
-    tabbedPane.addTab(m_resources.getString("processStatusTableTab.title"),
+    tabbedPane.addTab(m_translations.translate("console.section/processes"),
                       m_resources.getImageIcon(
                         "processStatusTableTab.image"),
                       processStatusPane,
-                      m_resources.getString("processStatusTableTab.tip"));
+                      m_translations.translate(
+                        "console.section/processes-detail"));
 
     final JToolBar editorToolBar = new JToolBar();
     new ToolBarAssembler(editorToolBar, true).populate("editor.toolbar");
@@ -368,6 +378,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     final JPopupMenu fileTreePopupMenu = new JPopupMenu();
 
     final FileTree fileTree = new FileTree(m_resources,
+                                           m_translations,
                                            getErrorHandler(),
                                            m_editorModel,
                                            new BufferTreeModel(m_editorModel),
@@ -413,10 +424,11 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     scriptPane.setOneTouchExpandable(true);
     scriptPane.setBorder(BorderFactory.createEmptyBorder());
 
-    tabbedPane.addTab(m_resources.getString("scriptTab.title"),
+    tabbedPane.addTab(m_translations.translate("console.section/editor"),
                       m_resources.getImageIcon("scriptTab.image"),
                       scriptPane,
-                      m_resources.getString("scriptTab.tip"));
+                      m_translations.translate(
+                        "console.section/editor-detail"));
 
     final JPanel contentPanel = new JPanel(new BorderLayout());
     contentPanel.add(controlAndTotalPanel, BorderLayout.WEST);
@@ -455,6 +467,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       swingDispatcherFactory.create(
         SampleModel.Listener.class,
         new SampleModel.AbstractListener() {
+          @Override
           public void stateChanged() { ConsoleUI.this.stateChanged(); }
         }
       ));
@@ -469,11 +482,11 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     m_frame.setVisible(true);
   }
 
-  private TitledBorder createTitledBorder(String titleResource) {
+  private TitledBorder createTitledBorder(String titleTranslationKey) {
     final TitledBorder border =
       BorderFactory.createTitledBorder(
         BorderFactory.createEmptyBorder(3, 3, 3, 3),
-        m_resources.getString(titleResource));
+        m_translations.translate(titleTranslationKey));
 
     border.setTitleFont(m_titleLabelFont);
     border.setTitleColor(SystemColor.textInactiveText);
@@ -484,7 +497,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
   private JPanel createControlAndTotalPanel() {
     final LabelledGraph totalGraph =
-      new LabelledGraph(m_resources.getString("totalGraph.title"),
+      new LabelledGraph(m_translations.translate("console.term/total"),
                         m_resources, SystemColor.window,
                         m_model.getTPSExpression(),
                         m_model.getPeakTPSExpression(),
@@ -497,7 +510,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     m_model.addTotalSampleListener(
       new SampleListener() {
         private final String m_suffix =
-          ' ' + m_resources.getString("tps.units");
+          ' ' + m_translations.translate("console.term/tps");
 
         public void update(StatisticsSet intervalStatistics,
                            StatisticsSet cumulativeStatistics) {
@@ -560,6 +573,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       super(m_frame);
     }
 
+    @Override
     public void lookAndFeelChanged() {
       m_frame.setVisible(false);
 
@@ -619,9 +633,11 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       new MnemonicHeuristics(component);
     }
 
+    @Override
     protected void token(String menuItemKey) {
       final JMenuItem menuItem = new JMenuItem() {
 
+        @Override
         public Dimension getPreferredSize() {
           final Dimension d = super.getPreferredSize();
           d.height = (int) (d.height * 0.9);
@@ -652,6 +668,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       super(component);
     }
 
+    @Override
     protected void dash() {
       ((JMenu)getComponent()).addSeparator();
     }
@@ -663,6 +680,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       super(component);
 
       component.addContainerListener(new ContainerAdapter() {
+        @Override
         public void componentAdded(ContainerEvent e) {
           if (e.getChild() instanceof JMenuItem) {
             final JMenuItem menuItem = (JMenuItem)e.getChild();
@@ -687,6 +705,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       });
     }
 
+    @Override
     protected void dash() {
       ((JPopupMenu)getComponent()).addSeparator();
     }
@@ -699,13 +718,15 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       new MnemonicHeuristics(component);
     }
 
+    @Override
     protected void greaterThan() {
       getComponent().add(Box.createHorizontalGlue());
     }
 
+    @Override
     protected void token(String key) {
       final JMenu menu =
-        new JMenu(m_resources.getString(key + ".menu.label"));
+        new JMenu(m_translations.translate("console.menu/" + key));
 
       new MenuAssembler(menu).populate(key + ".menu");
 
@@ -722,10 +743,12 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       m_small = small;
     }
 
+    @Override
     protected void dash() {
       ((JToolBar)getComponent()).addSeparator();
     }
 
+    @Override
     protected void token(String key) {
       final JButton button = new CustomJButton();
 
@@ -786,6 +809,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
   }
 
   private final class WindowCloseAdapter extends WindowAdapter {
+    @Override
     public void windowClosing(WindowEvent e) {
       m_exitAction.exit();
     }
@@ -796,17 +820,18 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     private final JCheckBox m_saveTotalsCheckBox;
 
     SaveResultsAction() {
-      super(m_resources, "save-results", true);
+      super(m_resources, m_translations, "save-results", true);
 
       m_fileChooser.setDialogTitle(
-        MnemonicHeuristics.removeMnemonicMarkers(
-          m_resources.getString("save-results.label")));
+        removeMnemonicMarkers(
+          m_translations.translate("console.action/save-results")));
 
       m_fileChooser.setSelectedFile(
-        new File(m_resources.getString("default.filename")));
+        new File(m_translations.translate("console.option/default-filename")));
 
       m_saveTotalsCheckBox =
-        new JCheckBox(m_resources.getString("saveTotalsWithResults.label"));
+        new JCheckBox(
+          m_translations.translate("console.option/save-totals-with-results"));
       m_saveTotalsCheckBox.setSelected(
         m_properties.getSaveTotalsWithResults());
 
@@ -825,7 +850,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
         if (file.exists() &&
             JOptionPane.showConfirmDialog(
               m_frame,
-              m_resources.getString("overwriteConfirmation.text"),
+              m_translations.translate("console.phrase/overwrite-confirmation"),
               file.toString(),
               JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
           return;
@@ -852,7 +877,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
           UncheckedInterruptedException.ioException(e);
           getErrorHandler().handleErrorMessage(
             e.getMessage(),
-            m_resources.getString("fileError.title"));
+            m_translations.translate("console.phrase/file-error"));
         }
         finally {
           Closer.close(writer);
@@ -873,12 +898,15 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     private final OptionsDialogHandler m_optionsDialogHandler;
 
     OptionsAction() {
-      super(m_resources, "options", true);
+      super(m_resources, m_translations, "options", true);
 
       m_optionsDialogHandler =
-        new OptionsDialogHandler(m_frame, m_lookAndFeel,
-                                 m_properties,
-                                 m_resources) {
+        new OptionsDialogHandler(m_frame,
+                                 m_lookAndFeel,
+                                 m_resources,
+                                 m_translations,
+                                 m_properties) {
+          @Override
           protected void setNewOptions(ConsoleProperties newOptions) {
             m_properties.set(newOptions);
             m_samplingControlPanel.refresh();
@@ -896,7 +924,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     private final ImageIcon m_logoIcon;
 
     AboutAction(ImageIcon logoIcon) {
-      super(m_resources, "about", true);
+      super(m_resources, m_translations, "about", true);
       m_logoIcon = logoIcon;
     }
 
@@ -905,9 +933,12 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       final Resources resources = m_resources;
 
       final String title =
-        MnemonicHeuristics.removeMnemonicMarkers(
-          resources.getString("about.label"));
-      final String aboutText = resources.getStringFromFile("about.text", true);
+        removeMnemonicMarkers(m_translations.translate("console.dialog/about"));
+
+      final String aboutText =
+          resources.getStringFromFile(
+            m_translations.translate("console.dialog/about.text"),
+            true);
 
       final JEditorPane htmlPane = new JEditorPane("text/html", aboutText);
       htmlPane.setEditable(false);
@@ -918,6 +949,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
         new JScrollPane(htmlPane,
                         JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                         JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
+          @Override
           public Dimension getPreferredSize() {
             final Dimension d = super.getPreferredSize();
             d.width = 500;
@@ -937,7 +969,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
   private final class ExitAction extends CustomAction {
 
     ExitAction() {
-      super(m_resources, "exit");
+      super(m_resources, m_translations, "exit");
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -966,7 +998,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
   private final class StartAction extends CustomAction {
     StartAction() {
-      super(m_resources, "start");
+      super(m_resources, m_translations, "start");
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -980,7 +1012,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
   private final class StopAction extends CustomAction {
     StopAction() {
-      super(m_resources, "stop");
+      super(m_resources, m_translations, "stop");
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -997,7 +1029,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
   private final class NewFileAction extends CustomAction {
     public NewFileAction() {
-      super(m_resources, "new-file");
+      super(m_resources, m_translations, "new-file");
     }
 
     public void actionPerformed(ActionEvent event) {
@@ -1007,9 +1039,10 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
   private final class SaveFileAction extends CustomAction {
     public SaveFileAction() {
-      super(m_resources, "save-file");
+      super(m_resources, m_translations, "save-file");
 
       m_editorModel.addListener(new EditorModel.AbstractListener() {
+          @Override
           public void bufferStateChanged(Buffer ignored) {
             setEnabled(shouldEnable());
           }
@@ -1032,8 +1065,8 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
           if (!buffer.isUpToDate() &&
               JOptionPane.showConfirmDialog(
                 m_frame,
-                m_resources.getString(
-                  "outOfDateOverwriteConfirmation.text"),
+                m_translations.translate(
+                  "console.phrase/out-of-date-overwrite-confirmation"),
                 buffer.getFile().toString(),
                 JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
             return;
@@ -1056,9 +1089,10 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     private final JFileChooser m_fileChooser = new JFileChooser(".");
 
     public SaveFileAsAction() {
-      super(m_resources, "save-file-as", true);
+      super(m_resources, m_translations, "save-file-as", true);
 
       m_editorModel.addListener(new EditorModel.AbstractListener() {
+          @Override
           public void bufferStateChanged(Buffer ignored) {
             setEnabled(shouldEnable());
           }
@@ -1067,17 +1101,20 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       setEnabled(shouldEnable());
 
       m_fileChooser.setDialogTitle(
-        MnemonicHeuristics.removeMnemonicMarkers(
-          m_resources.getString("save-file-as.label")));
+        removeMnemonicMarkers(
+          m_translations.translate("console.action/save-file-as")));
 
-      final String pythonFilesText = m_resources.getString("scripts.label");
+      final String pythonFilesText =
+          m_translations.translate("console.section/scripts");
 
       m_fileChooser.addChoosableFileFilter(
         new FileFilter() {
+          @Override
           public boolean accept(File file) {
             return m_editorModel.isScriptFile(file) || file.isDirectory();
           }
 
+          @Override
           public String getDescription() {
             return pythonFilesText;
           }
@@ -1122,8 +1159,8 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       if (!distributionDirectory.isParentOf(file) &&
         JOptionPane.showConfirmDialog(
           m_frame,
-          m_resources.getString(
-            "saveOutsideOfDistributionConfirmation.text"),
+          m_translations.translate(
+            "console.phrase/save-outside-of-distribution-confirmation"),
           (String) getValue(NAME),
           JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
         return;
@@ -1136,20 +1173,24 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
         if (oldBuffer != null) {
           final List<String> messages = new ArrayList<String>();
           messages.add(
-            m_resources.getString("ignoreExistingBufferConfirmation.text"));
+            m_translations.translate(
+              "console.phrase/ignore-existing-buffer-confirmation"));
 
           if (oldBuffer.isDirty()) {
             messages.add(
-              m_resources.getString("existingBufferHasUnsavedChanges.text"));
+              m_translations.translate(
+                "console.phrase/existing-buffer-has-unsaved-changes"));
           }
 
           if (!oldBuffer.isUpToDate()) {
             messages.add(
-              m_resources.getString("existingBufferOutOfDate.text"));
+              m_translations.translate(
+                "console.phrase/existing-buffer-out-of-date"));
           }
 
           messages.add(
-            m_resources.getString("ignoreExistingBufferConfirmation2.text"));
+            m_translations.translate(
+              "console.phrase/ignore-existing-buffer-confirmation2"));
 
           if (JOptionPane.showConfirmDialog(
                 m_frame, messages.toArray(), file.toString(),
@@ -1163,7 +1204,8 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
           if (file.exists() &&
               JOptionPane.showConfirmDialog(
                 m_frame,
-                m_resources.getString("overwriteConfirmation.text"),
+                m_translations.translate(
+                  "console.phrase/overwrite-confirmation"),
                 file.toString(),
                 JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
             return;
@@ -1176,7 +1218,8 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
         if (!buffer.isUpToDate() &&
             JOptionPane.showConfirmDialog(
               m_frame,
-              m_resources.getString("outOfDateOverwriteConfirmation.text"),
+              m_translations.translate(
+                "console.phrase/out-of-date-overwrite-confirmation"),
               buffer.getFile().toString(),
               JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
           return;
@@ -1189,9 +1232,10 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
   private final class CloseFileAction extends CustomAction {
     public CloseFileAction() {
-      super(m_resources, "close-file");
+      super(m_resources, m_translations, "close-file");
 
       m_editorModel.addListener(new EditorModel.AbstractListener() {
+          @Override
           public void bufferStateChanged(Buffer ignored) {
             setEnabled(shouldEnable());
           }
@@ -1215,10 +1259,9 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
           // canceled.
 
           final String confirmationMessage =
-            MessageFormat.format(
-              m_resources.getString(
-                "saveModifiedBufferConfirmation.text"),
-              new Object[] { buffer.getDisplayName() });
+              m_translations.translate(
+                "console.phrase/save-modified-buffer-confirmation",
+                buffer.getDisplayName());
 
           final int chosen =
             JOptionPane.showConfirmDialog(m_frame,
@@ -1280,7 +1323,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
   private class StartProcessesAction extends CustomAction {
 
     StartProcessesAction() {
-      super(m_resources, "start-processes");
+      super(m_resources, m_translations, "start-processes");
       m_processControl.addProcessStatusListener(
         new EnableIfAgentsConnected(this));
     }
@@ -1292,7 +1335,9 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
         if (propertiesFile == null) {
           final int chosen =
             m_optionalConfirmDialog.show(
-              m_resources.getString("propertiesNotSetConfirmation.text"),
+              m_translations.translate(
+              m_translations.translate(
+                "console.phrase/properties-not-set-confirmation")),
               (String) getValue(NAME),
               JOptionPane.OK_CANCEL_OPTION,
               "propertiesNotSetAsk");
@@ -1308,8 +1353,8 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
           if (m_editorModel.isABufferDirty()) {
             final int chosen =
               m_optionalConfirmDialog.show(
-                m_resources.getString(
-                  "startWithUnsavedBuffersConfirmation.text"),
+                m_translations.translate(
+                    "console.phrase/start-with-unsaved-buffers-confirmation"),
                 (String) getValue(NAME),
                 JOptionPane.OK_CANCEL_OPTION,
                 "startWithUnsavedBuffersAsk");
@@ -1323,7 +1368,8 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
           if (m_fileDistribution.getAgentCacheState().getOutOfDate()) {
             final int chosen =
               m_optionalConfirmDialog.show(
-                m_resources.getString("cachesOutOfDateConfirmation.text"),
+                m_translations.translate(
+                    "console.phrase/caches-out-of-date-confirmation"),
                 (String) getValue(NAME),
                 JOptionPane.OK_CANCEL_OPTION,
                 "distributeOnStartAsk");
@@ -1358,7 +1404,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
   private final class ResetProcessesAction extends CustomAction {
     ResetProcessesAction() {
-      super(m_resources, "reset-processes");
+      super(m_resources, m_translations, "reset-processes");
       m_processControl.addProcessStatusListener(
         new EnableIfAgentsConnected(this));
     }
@@ -1370,8 +1416,8 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       try {
         final int chosen =
           m_optionalConfirmDialog.show(
-            m_resources.getString(
-              "resetConsoleWithProcessesConfirmation.text"),
+            m_translations.translate(
+              "console.phrase/reset-console-with-processes-confirmation"),
             (String) getValue(NAME),
             JOptionPane.YES_NO_CANCEL_OPTION,
             "resetConsoleWithProcessesAsk");
@@ -1408,7 +1454,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
   private final class StopProcessesAction extends CustomAction {
     StopProcessesAction() {
-      super(m_resources, "stop-processes");
+      super(m_resources, m_translations, "stop-processes");
       m_processControl.addProcessStatusListener(
         new EnableIfAgentsConnected(this));
     }
@@ -1418,7 +1464,8 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       try {
         final int chosen =
           m_optionalConfirmDialog.show(
-            m_resources.getString("stopProcessesConfirmation.text"),
+            m_translations.translate(
+                "console.phrase/stop-proceses-confirmation"),
             (String) getValue(NAME),
             JOptionPane.OK_CANCEL_OPTION,
             "stopProcessesAsk");
@@ -1441,10 +1488,10 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     private final JFileChooser m_fileChooser = new JFileChooser(".");
 
     ChooseDirectoryAction() {
-      super(m_resources, "choose-directory", true);
+      super(m_resources, m_translations, "choose-directory", true);
 
       m_fileChooser.setDialogTitle(
-        m_resources.getString("choose-directory.tip"));
+        m_translations.translate("console.action/choose-directory-detail"));
 
       m_fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
@@ -1459,7 +1506,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       try {
         final String title =
           MnemonicHeuristics.removeMnemonicMarkers(
-            m_resources.getString("choose-directory.label"));
+            m_translations.translate("console.action/choose-directory"));
 
         if (m_fileChooser.showDialog(m_frame, title) ==
             JFileChooser.APPROVE_OPTION) {
@@ -1471,7 +1518,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
           if (!file.exists()) {
             if (JOptionPane.showConfirmDialog(
                   m_frame,
-                  m_resources.getString("createDirectory.text"),
+                  m_translations.translate("console.prhase/create-directory"),
                   file.toString(),
                   JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
               return;
@@ -1499,7 +1546,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     private final Condition m_cacheStateCondition = new Condition();
 
     DistributeFilesAction() {
-      super(m_resources, "distribute-files");
+      super(m_resources, m_translations, "distribute-files");
 
       final AgentCacheState agentCacheState =
         m_fileDistribution.getAgentCacheState();

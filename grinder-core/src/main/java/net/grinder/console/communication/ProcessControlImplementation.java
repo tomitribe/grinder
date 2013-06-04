@@ -30,13 +30,13 @@ import net.grinder.communication.MessageDispatchRegistry;
 import net.grinder.communication.MessageDispatchRegistry.AbstractHandler;
 import net.grinder.console.common.ConsoleException;
 import net.grinder.console.common.DisplayMessageConsoleException;
-import net.grinder.console.common.Resources;
 import net.grinder.messages.agent.ResetGrinderMessage;
 import net.grinder.messages.agent.StartGrinderMessage;
 import net.grinder.messages.agent.StopGrinderMessage;
 import net.grinder.messages.console.AgentAddress;
 import net.grinder.messages.console.AgentProcessReportMessage;
 import net.grinder.messages.console.WorkerProcessReportMessage;
+import net.grinder.translation.Translations;
 import net.grinder.util.AllocateLowestNumber;
 import net.grinder.util.AllocateLowestNumberImplementation;
 import net.grinder.util.Directory;
@@ -56,7 +56,7 @@ public class ProcessControlImplementation implements ProcessControl {
   private final AllocateLowestNumber m_agentNumberMap =
     new AllocateLowestNumberImplementation();
 
-  private final Resources m_resources;
+  private final Translations m_translations;
 
   /**
    * Constructor.
@@ -65,16 +65,16 @@ public class ProcessControlImplementation implements ProcessControl {
    *          Timer that can be used to schedule housekeeping tasks.
    * @param consoleCommunication
    *          The console communication handler.
-   * @param resources
-   *          Resources.
+   * @param translations
+   *          Translation service.
    */
   public ProcessControlImplementation(
     final Timer timer,
     final ConsoleCommunication consoleCommunication,
-    final Resources resources) {
+    final Translations translations) {
 
     m_consoleCommunication = consoleCommunication;
-    m_resources = resources;
+    m_translations = translations;
     m_processStatusSet =
       new ProcessStatusImplementation(timer, m_agentNumberMap);
 
@@ -141,8 +141,8 @@ public class ProcessControlImplementation implements ProcessControl {
     // since it is fairly obvious to the user what is going on.
     if (path == null && !configuredScript.isAbsolute()) {
       throw new DisplayMessageConsoleException(
-        m_resources,
-        "scriptNotInDirectoryError.text");
+        m_translations.translate(
+          "console.phrase/script-not-in-directory-error"));
     }
 
     GrinderProperties propertiesToSend = properties;

@@ -34,7 +34,7 @@
      AbstractTestSemantics]
     [net.grinder.console.model
      ConsoleProperties]
-    net.grinder.console.common.Resources))
+    net.grinder.translation.Translations))
 
 
 (defmacro with-temporary-files
@@ -56,7 +56,7 @@
    backed by a tempory file bound to the name f, then execute the body."
   [cp f & body]
   `(with-temporary-files [~f]
-    (let [~cp (ConsoleProperties. (reify Resources) ~f)]
+    (let [~cp (ConsoleProperties. (reify Translations) ~f)]
           (do ~@body))))
 
 (def ^:private null-logger-factory

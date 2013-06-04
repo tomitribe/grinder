@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2011 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,12 @@
 
 package net.grinder.console.swingui;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.awt.Color;
 import java.io.File;
 import java.io.StringWriter;
@@ -30,7 +36,6 @@ import java.util.HashMap;
 import java.util.Timer;
 
 import net.grinder.common.StubTest;
-import net.grinder.common.Test;
 import net.grinder.console.common.StubResources;
 import net.grinder.console.model.ConsoleProperties;
 import net.grinder.console.model.ModelTestIndex;
@@ -42,22 +47,30 @@ import net.grinder.statistics.StatisticsServicesTestFactory;
 import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.TestStatisticsMap;
 import net.grinder.statistics.TestStatisticsQueries;
-import net.grinder.testutility.AbstractFileTestCase;
+import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.DelegatingStubFactory;
 import net.grinder.testutility.RandomStubFactory;
 import net.grinder.testutility.StubTimer;
+import net.grinder.translation.Translations;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 /**
  * Unit tests for {@link CumulativeStatisticsTableModel}.
  *
  * @author Philip Aston
  */
-public class TestCumulativeStatisticsTableModel extends AbstractFileTestCase {
+public class TestCumulativeStatisticsTableModel
+  extends AbstractJUnit4FileTestCase {
+
+  @Mock private Translations m_translations;
 
   private File m_file;
 
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before public void setUp() throws Exception {
+    initMocks(this);
     m_file = new File(getDirectory(), "properties");
   }
 
@@ -117,7 +130,7 @@ public class TestCumulativeStatisticsTableModel extends AbstractFileTestCase {
       m_statisticsServices.getStatisticsSetFactory().create());
   }
 
-  public void testConstruction() throws Exception {
+  @Test public void testConstruction() throws Exception {
     final CumulativeStatisticsTableModel model =
       new CumulativeStatisticsTableModel(m_sampleModel,
                                          m_sampleModelViews,
@@ -166,7 +179,7 @@ public class TestCumulativeStatisticsTableModel extends AbstractFileTestCase {
     assertNull(model.getBackground(0, 3));
   }
 
-  public void testDefaultWrite() throws Exception {
+  @Test public void testDefaultWrite() throws Exception {
     final CumulativeStatisticsTableModel model =
       new CumulativeStatisticsTableModel(m_sampleModel,
                                          m_sampleModelViews,
@@ -181,7 +194,7 @@ public class TestCumulativeStatisticsTableModel extends AbstractFileTestCase {
                  writer.toString());
   }
 
-  public void testWriteWithoutTotals() throws Exception {
+  @Test public void testWriteWithoutTotals() throws Exception {
     final CumulativeStatisticsTableModel model =
       new CumulativeStatisticsTableModel(m_sampleModel,
                                          m_sampleModelViews,
@@ -196,7 +209,7 @@ public class TestCumulativeStatisticsTableModel extends AbstractFileTestCase {
                  writer.toString());
   }
 
-  public void testAddColumns() throws Exception {
+  @Test public void testAddColumns() throws Exception {
     final CumulativeStatisticsTableModel model =
       new CumulativeStatisticsTableModel(m_sampleModel,
                                          m_sampleModelViews,
@@ -224,15 +237,16 @@ public class TestCumulativeStatisticsTableModel extends AbstractFileTestCase {
     assertEquals("meantime", model.getColumnName(5));
   }
 
-  public void testWithData() throws Exception {
+  @Test public void testWithData() throws Exception {
     final Timer timer = new StubTimer();
 
     final SampleModelImplementation sampleModelImplementation =
-      new SampleModelImplementation(new ConsoleProperties(m_resources, m_file),
-                                    m_statisticsServices,
-                                    timer,
-                                    m_resources,
-                                    null);
+      new SampleModelImplementation(
+        new ConsoleProperties(m_translations, m_file),
+        m_statisticsServices,
+        timer,
+        m_resources,
+        null);
 
     final CumulativeStatisticsTableModel model =
       new CumulativeStatisticsTableModel(sampleModelImplementation,
@@ -246,7 +260,7 @@ public class TestCumulativeStatisticsTableModel extends AbstractFileTestCase {
     assertNull(model.getForeground(0, 0));
     assertNull(model.getBackground(0, 0));
 
-    final Test[] tests = {
+    final net.grinder.common.Test[] tests = {
         new StubTest(1, "test 1"),
         new StubTest(2, "test 2"),
     };

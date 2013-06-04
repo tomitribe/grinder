@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2012 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // Copyright (C) 2005 Martin Wagner
 // All rights reserved.
 //
@@ -22,6 +22,15 @@
 
 package net.grinder.console.editor;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,9 +38,12 @@ import java.io.IOException;
 import java.net.UnknownHostException;
 
 import net.grinder.console.common.DisplayMessageConsoleException;
-import net.grinder.console.common.Resources;
-import net.grinder.console.common.ResourcesImplementation;
-import net.grinder.testutility.AbstractFileTestCase;
+import net.grinder.testutility.AbstractJUnit4FileTestCase;
+import net.grinder.translation.Translations;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 
 /**
@@ -39,22 +51,26 @@ import net.grinder.testutility.AbstractFileTestCase;
  *
  * @author Philip Aston
  */
-public class TestBuffer extends AbstractFileTestCase {
+public class TestBuffer extends AbstractJUnit4FileTestCase {
 
   private static String LINE_SEPARATOR = System.getProperty("line.separator");
 
-  private static final Resources s_resources =
-      new ResourcesImplementation(
-        "net.grinder.console.common.resources.Console");
+  @Mock private Translations m_translations;
 
-  public void testBufferWithNoFile() throws Exception {
+  @Before
+  public void setUp() {
+    initMocks(this);
+  }
+
+  @Test public void testBufferWithNoFile() throws Exception {
     final String text = "Some text for testing with";
 
     final TextSource textSource = new StringTextSource(text);
 
     assertEquals(text, textSource.getText());
 
-    final Buffer buffer = new BufferImplementation(s_resources, textSource, "My Buffer");
+    final Buffer buffer =
+        new BufferImplementation(m_translations, textSource, "My Buffer");
 
     assertNotNull(textSource.getText());
     assertEquals(text, textSource.getText());
@@ -65,14 +81,14 @@ public class TestBuffer extends AbstractFileTestCase {
       buffer.load();
       fail("Expected EditorException");
     }
-    catch (EditorException e) {
+    catch (final EditorException e) {
     }
 
     try {
       buffer.save();
       fail("Expected EditorException");
     }
-    catch (EditorException e) {
+    catch (final EditorException e) {
     }
 
     assertTrue(!buffer.isDirty());
@@ -92,7 +108,7 @@ public class TestBuffer extends AbstractFileTestCase {
     private final Buffer.Type m_type;
     private final File m_file;
 
-    public Expectation(Buffer.Type type, String filename) {
+    public Expectation(final Buffer.Type type, final String filename) {
       m_type = type;
       m_file = new File(filename);
     }
@@ -106,7 +122,7 @@ public class TestBuffer extends AbstractFileTestCase {
     }
   }
 
-  public void testGetType() throws Exception {
+  @Test public void testGetType() throws Exception {
     final StringTextSource textSource = new StringTextSource("");
 
     final Expectation[] wordsOfExpectation = {
@@ -130,18 +146,19 @@ public class TestBuffer extends AbstractFileTestCase {
       new Expectation(Buffer.Type.TEXT_BUFFER, "...."),
     };
 
-    for (int i=0; i<wordsOfExpectation.length; ++i) {
-      final Expectation expectation = wordsOfExpectation[i];
-
+    for (final Expectation expectation : wordsOfExpectation) {
       final Buffer buffer =
-        new BufferImplementation(s_resources, textSource, expectation.getFile());
+        new BufferImplementation(
+          m_translations,
+          textSource,
+          expectation.getFile());
 
       assertEquals(expectation.getType(), buffer.getType());
       assertEquals(textSource, buffer.getTextSource());
     }
   }
 
-  public void testBufferWithAssociatedFile() throws Exception {
+  @Test public void testBufferWithAssociatedFile() throws Exception {
 
     final String s0 =
       "A shield for your eyes\na beast in the well on your hand";
@@ -156,7 +173,8 @@ public class TestBuffer extends AbstractFileTestCase {
 
     final File file = new File(getDirectory(), "myfile.txt");
 
-    final Buffer buffer = new BufferImplementation(s_resources, textSource, file);
+    final Buffer buffer =
+        new BufferImplementation(m_translations, textSource, file);
 
     assertEquals(Buffer.Type.TEXT_BUFFER, buffer.getType());
     assertTrue(!buffer.isDirty());
@@ -201,7 +219,7 @@ public class TestBuffer extends AbstractFileTestCase {
     return s0.replaceAll("\n", LINE_SEPARATOR) + LINE_SEPARATOR;
   }
 
-  public void testBufferWithLargeFile() throws Exception {
+  @Test public void testBufferWithLargeFile() throws Exception {
     final char[] chars = "0123456789abcdef".toCharArray();
     final char[] manyChars = new char[10000];
 
@@ -215,7 +233,8 @@ public class TestBuffer extends AbstractFileTestCase {
 
     final File file = new File(getDirectory(), "myfile.txt");
 
-    final Buffer buffer = new BufferImplementation(s_resources, textSource, file);
+    final Buffer buffer =
+        new BufferImplementation(m_translations, textSource, file);
 
     assertEquals(Buffer.Type.TEXT_BUFFER, buffer.getType());
     assertTrue(!buffer.isDirty());
@@ -237,17 +256,18 @@ public class TestBuffer extends AbstractFileTestCase {
     assertNotSame(s0, textSource.getText());
   }
 
-  public void testBufferWithBadAssociatedFile() throws Exception {
+  @Test public void testBufferWithBadAssociatedFile() throws Exception {
 
     final StringTextSource textSource = new StringTextSource("");
 
-    final Buffer buffer = new BufferImplementation(s_resources, textSource, getDirectory());
+    final Buffer buffer =
+        new BufferImplementation(m_translations, textSource, getDirectory());
 
     try {
       buffer.load();
       fail("Expected DisplayMessageConsoleException");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
       assertTrue(e.getCause() instanceof IOException);
     }
 
@@ -255,7 +275,7 @@ public class TestBuffer extends AbstractFileTestCase {
       buffer.save();
       fail("Expected DisplayMessageConsoleException");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
       assertTrue(e.getCause() instanceof IOException);
     }
   }
@@ -264,7 +284,7 @@ public class TestBuffer extends AbstractFileTestCase {
     private final IOException m_ioException;
     private final String m_reason;
 
-    public ExtractReasonExpectation(IOException ioException, String reason) {
+    public ExtractReasonExpectation(final IOException ioException, final String reason) {
       m_ioException = ioException;
       m_reason = reason;
     }
@@ -278,7 +298,7 @@ public class TestBuffer extends AbstractFileTestCase {
     }
   }
 
-  public void testExtractReasonFromIOException() throws Exception {
+  @Test public void testExtractReasonFromIOException() throws Exception {
     final ExtractReasonExpectation[] wordsOfExpectation = {
       new ExtractReasonExpectation(new EOFException("Blah"), ""),
       new ExtractReasonExpectation(new IOException("Blah (foo)"), ""),
@@ -295,9 +315,7 @@ public class TestBuffer extends AbstractFileTestCase {
         "a different message"),
     };
 
-    for (int i = 0; i < wordsOfExpectation.length; ++i) {
-      final ExtractReasonExpectation expectation = wordsOfExpectation[i];
-
+    for (final ExtractReasonExpectation expectation : wordsOfExpectation) {
       final String reason =
         BufferImplementation.extractReasonFromIOException(expectation.getIOException());
 

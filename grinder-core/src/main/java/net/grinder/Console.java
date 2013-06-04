@@ -22,10 +22,14 @@
 
 package net.grinder;
 
+import java.util.Locale;
+
 import net.grinder.common.GrinderException;
 import net.grinder.console.ConsoleFoundation;
 import net.grinder.console.common.Resources;
 import net.grinder.console.common.ResourcesImplementation;
+import net.grinder.translation.Translations;
+import net.grinder.translation.impl.TranslationsSource;
 import net.grinder.util.AbstractMainClass;
 
 import org.slf4j.Logger;
@@ -48,6 +52,7 @@ public final class Console extends AbstractMainClass {
 
   private Console(final String[] args,
                   final Resources resources,
+                  final Translations translations,
                   final Logger logger)
     throws GrinderException {
 
@@ -64,7 +69,8 @@ public final class Console extends AbstractMainClass {
       }
     }
 
-    m_consoleFoundation = new ConsoleFoundation(resources, logger, headless);
+    m_consoleFoundation =
+      new ConsoleFoundation(resources, translations, logger, headless);
   }
 
   private void run() {
@@ -80,11 +86,15 @@ public final class Console extends AbstractMainClass {
     final Resources resources =
         new ResourcesImplementation(ConsoleFoundation.RESOURCE_BUNDLE);
 
+    final Translations translations =
+        new TranslationsSource().getTranslations(Locale.getDefault());
+
     final Logger logger =
-      LoggerFactory.getLogger(resources.getString("shortTitle"));
+      LoggerFactory.getLogger(translations.translate("console/terminal-label"));
 
     try {
-      final Console console = new Console(args, resources, logger);
+      final Console console =
+        new Console(args, resources, translations, logger);
       console.run();
     }
     catch (final LoggedInitialisationException e) {

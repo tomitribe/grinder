@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2009 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,14 @@
 
 package net.grinder.console.swingui;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 
@@ -30,7 +38,11 @@ import javax.swing.JButton;
 
 import net.grinder.console.common.Resources;
 import net.grinder.console.common.StubResources;
-import junit.framework.TestCase;
+import net.grinder.translation.Translations;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 
 /**
@@ -38,7 +50,7 @@ import junit.framework.TestCase;
  *
  * @author Philip Aston
  */
-public class TestCustomAction extends TestCase {
+public class TestCustomAction {
 
   private static ImageIcon s_image1 = new ImageIcon();
   private static ImageIcon s_image2 = new ImageIcon();
@@ -46,34 +58,49 @@ public class TestCustomAction extends TestCase {
   private static Resources s_resources =
     new StubResources<Object>(
       new HashMap<String, Object>() { {
-        put("blah.label", "lah");
         put("blah.rollover-image", s_image2);
-        put("x.label", "X");
-        put("x.tip", "X Tip");
         put("x.image", s_image1);
       } }
     );
 
-  private static class MyAction extends CustomAction {
+  @Mock
+  private Translations m_translations;
+
+  @Before
+  public void setUp() {
+    initMocks(this);
+
+    when(m_translations.translate("console.action/blah"))
+    .thenReturn("lah");
+
+    when(m_translations.translate("console.action/x"))
+    .thenReturn("X");
+
+    when(m_translations.translate("console.action/x-detail"))
+    .thenReturn("X Tip");
+  }
+
+  private class MyAction extends CustomAction {
 
     public MyAction(String key) {
-      super(s_resources, key);
+      super(s_resources, m_translations, key);
     }
 
     public MyAction(String key, boolean isDialogAction) {
-      super(s_resources, key, isDialogAction);
+      super(s_resources, m_translations, key, isDialogAction);
     }
 
     public void actionPerformed(ActionEvent e) {
     }
 
+    @Override
     public void firePropertyChange(
       String propertyName, Object oldValue, Object newValue) {
       super.firePropertyChange(propertyName, oldValue, newValue);
     }
   }
 
-  public void testConstruction() throws Exception {
+  @Test public void testConstruction() throws Exception {
     final MyAction action1 = new MyAction("blah");
     assertEquals("lah", action1.getValue(Action.NAME));
     assertNull(action1.getValue(Action.SHORT_DESCRIPTION));
@@ -93,7 +120,7 @@ public class TestCustomAction extends TestCase {
     assertSame(s_image1, action4.getValue(Action.SMALL_ICON));
   }
 
-  public void testRegisterButton() throws Exception {
+  @Test public void testRegisterButton() throws Exception {
     final MyAction action1 = new MyAction("blah");
     final MyAction action2 = new MyAction("blah");
 
@@ -113,7 +140,7 @@ public class TestCustomAction extends TestCase {
     assertSame(action2, button.getAction());
   }
 
-  public void testRelevantToSelection() throws Exception {
+  @Test public void testRelevantToSelection() throws Exception {
     final MyAction action1 = new MyAction("blah");
     final MyAction action2 = new MyAction("x");
 

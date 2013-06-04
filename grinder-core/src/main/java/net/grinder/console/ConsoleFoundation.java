@@ -52,6 +52,7 @@ import net.grinder.messages.console.RegisterExpressionViewMessage;
 import net.grinder.messages.console.RegisterTestsMessage;
 import net.grinder.messages.console.ReportStatisticsMessage;
 import net.grinder.statistics.StatisticsServicesImplementation;
+import net.grinder.translation.Translations;
 import net.grinder.util.StandardTimeAuthority;
 
 import org.picocontainer.ComponentMonitor;
@@ -96,22 +97,25 @@ public final class ConsoleFoundation {
    * Constructor. Locates the console properties in the user's home directory.
    *
    * @param resources Console resources
+   * @param translations Translations.
    * @param logger Logger.
    * @param headless {@code true} => run with the text UI.
    *
    * @exception GrinderException If an error occurs.
    */
   public ConsoleFoundation(final Resources resources,
+                           final Translations translations,
                            final Logger logger,
                            final boolean headless)
     throws GrinderException {
 
     this(resources,
+         translations,
          logger,
          headless,
          new Timer(true),
          new ConsoleProperties(
-            resources,
+            translations,
             // Some platforms do not have user home directories, fall back
             // to java.home.
             new File(System.getProperty("user.home",
@@ -123,6 +127,7 @@ public final class ConsoleFoundation {
    * Constructor. Allows properties to be specified.
    *
    * @param resources Console resources
+   * @param translations Translations.
    * @param logger Logger.
    * @param headless {@code true} => run with the text UI.
    * @param timer A timer.
@@ -132,6 +137,7 @@ public final class ConsoleFoundation {
    */
   @SuppressWarnings("unchecked")
   public ConsoleFoundation(final Resources resources,
+                           final Translations translations,
                            final Logger logger,
                            final boolean headless,
                            final Timer timer,
@@ -156,6 +162,7 @@ public final class ConsoleFoundation {
 
     m_container.addComponent(logger);
     m_container.addComponent(resources);
+    m_container.addComponent(translations);
     m_container.addComponent(properties);
     m_container.addComponent(timer);
     m_container.addComponent(StatisticsServicesImplementation.getInstance());

@@ -35,7 +35,6 @@
     </testResources>
     <directory>target</directory>
     <outputDirectory>target/classes</outputDirectory>
-
     <plugins>
       <plugin>
         <groupId>com.theoryinpractise</groupId>
@@ -50,8 +49,9 @@
             <testSourceDirectory>dev-resources</testSourceDirectory>
             <testSourceDirectory>test</testSourceDirectory>
           </testSourceDirectories>
-          <!-- TODO how to prevent compilation -->
-          <namespaces><namespace>dummy</namespace></namespaces>
+          <namespaces>
+            <namespace>net.grinder.translation.impl.translations-source</namespace>
+          </namespaces>
           <compileDeclaredNamespaceOnly>true</compileDeclaredNamespaceOnly>
         </configuration>
       </plugin>
@@ -83,7 +83,7 @@
     <dependency>
       <groupId>com.taoensso</groupId>
       <artifactId>tower</artifactId>
-      <version>1.2.0</version>
+      <version>1.6.0</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>

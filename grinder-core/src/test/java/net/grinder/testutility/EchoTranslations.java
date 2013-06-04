@@ -19,19 +19,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 // OF THE POSSIBILITY OF SUCH DAMAGE.
 
-package net.grinder.common;
+package net.grinder.testutility;
+
+import net.grinder.translation.Translations;
 
 /**
- * An identifiable object that can be translated into different languages.
+ * Test implementation of {@link Translations} that returns its arguments
+ * as a concatenated String.
  *
  * @author Philip Aston
  */
-public interface Translatable {
+public class EchoTranslations implements Translations {
 
-  /**
-   * Return a key that can be used to look up the appropriate translation.
-   *
-   * @return The key.
-   */
-  String getTranslationKey();
+  @Override
+  public String translate(final String pattern, final Object... arguments) {
+    final StringBuilder result = new StringBuilder(pattern);
+
+    for (final Object a  : arguments) {
+      result.append('|');
+      result.append(a.toString());
+    }
+
+    return result.toString();
+  }
 }

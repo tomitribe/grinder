@@ -38,7 +38,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.grinder.console.common.Resources;
 import net.grinder.console.model.SampleModelViews.Listener;
 import net.grinder.statistics.ExpressionView;
 import net.grinder.statistics.StatisticsServices;
@@ -46,6 +45,7 @@ import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.statistics.StatisticsView;
 import net.grinder.statistics.TestStatisticsQueries;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
+import net.grinder.translation.Translations;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +61,7 @@ public class TestSampleModelViewsImplementation
   extends AbstractJUnit4FileTestCase {
 
   @Mock private SampleModel m_model;
-  @Mock private Resources m_resources;
+  @Mock private Translations m_translations;
 
   private ConsoleProperties m_consoleProperties;
 
@@ -69,7 +69,7 @@ public class TestSampleModelViewsImplementation
     initMocks(this);
 
     m_consoleProperties =
-      new ConsoleProperties(m_resources, new File(getDirectory(), "props"));
+      new ConsoleProperties(m_translations, new File(getDirectory(), "props"));
   }
 
   @Test public void testConstruction() throws Exception {

@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.util.Timer;
@@ -35,13 +36,13 @@ import net.grinder.common.processidentity.ProcessReport.State;
 import net.grinder.communication.MessageDispatchRegistry;
 import net.grinder.communication.MessageDispatchRegistry.Handler;
 import net.grinder.console.common.DisplayMessageConsoleException;
-import net.grinder.console.common.Resources;
 import net.grinder.console.communication.ProcessControl.ProcessReports;
 import net.grinder.engine.agent.StubAgentIdentity;
 import net.grinder.messages.agent.StartGrinderMessage;
 import net.grinder.messages.agent.StubCacheHighWaterMark;
 import net.grinder.messages.console.AgentAddress;
 import net.grinder.messages.console.AgentProcessReportMessage;
+import net.grinder.translation.Translations;
 import net.grinder.util.Directory;
 
 import org.junit.Before;
@@ -49,7 +50,6 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 
 /**
  * Unit tests for {@link ProcessControlImplementation}.
@@ -70,7 +70,7 @@ public class TestProcessControlImplementation {
   @Mock private Timer m_timer;
   @Mock private MessageDispatchRegistry m_messageDispatchRegistry;
   @Mock private ConsoleCommunication m_consoleCommunication;
-  @Mock private Resources m_resources;
+  @Mock private Translations m_translations;
   @Captor ArgumentCaptor<Handler<AgentProcessReportMessage>>
     m_agentReportMessageHandlerCaptor;
   @Captor ArgumentCaptor<StartGrinderMessage> m_startGrinderMessageCaptor;
@@ -78,7 +78,7 @@ public class TestProcessControlImplementation {
   private ProcessControl m_processControl;
 
   @Before public void setUp() throws Exception {
-    MockitoAnnotations.initMocks(this);
+    initMocks(this);
 
     when(m_consoleCommunication.getMessageDispatchRegistry())
       .thenReturn(m_messageDispatchRegistry);
@@ -87,7 +87,7 @@ public class TestProcessControlImplementation {
 
     m_processControl = new ProcessControlImplementation(m_timer,
                                      m_consoleCommunication,
-                                     m_resources);
+                                     m_translations);
 
     verify(m_messageDispatchRegistry)
       .set(eq(AgentProcessReportMessage.class),

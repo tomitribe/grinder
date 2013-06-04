@@ -22,14 +22,15 @@
 package net.grinder.console.model;
 
 import static net.grinder.communication.CommunicationDefaults.ALL_INTERFACES;
-import static net.grinder.testutility.AssertUtilities.assertNotEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
@@ -46,14 +47,14 @@ import net.grinder.common.GrinderProperties;
 import net.grinder.communication.CommunicationDefaults;
 import net.grinder.console.common.ConsoleException;
 import net.grinder.console.common.DisplayMessageConsoleException;
-import net.grinder.console.common.Resources;
-import net.grinder.console.common.ResourcesImplementation;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.FileUtilities;
+import net.grinder.translation.Translations;
 import net.grinder.util.Directory;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 
 /**
@@ -63,8 +64,7 @@ import org.junit.Test;
  */
 public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
-  private static final Resources s_resources = new ResourcesImplementation(
-    "net.grinder.console.common.resources.Console");
+  @Mock private Translations m_translations;
 
   private File m_file;
 
@@ -72,6 +72,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
   @Before public void setup() throws Exception {
     m_file = new File(getDirectory(), "properties");
+    initMocks(this);
   }
 
   @Test public void testCollectSamples() throws Exception {
@@ -154,7 +155,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
     writePropertyToFile(propertyName, s1);
 
-    final ConsoleProperties properties = new ConsoleProperties(s_resources,
+    final ConsoleProperties properties = new ConsoleProperties(m_translations,
       m_file);
 
     assertEquals(s1, properties.getConsoleHost());
@@ -166,7 +167,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
     properties.save();
 
-    final ConsoleProperties properties2 = new ConsoleProperties(s_resources,
+    final ConsoleProperties properties2 = new ConsoleProperties(m_translations,
       m_file);
 
     assertEquals(s2, properties2.getConsoleHost());
@@ -234,7 +235,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
     writePropertyToFile(propertyName, s1);
 
-    final ConsoleProperties properties = new ConsoleProperties(s_resources,
+    final ConsoleProperties properties = new ConsoleProperties(m_translations,
       m_file);
 
     assertEquals(s1, properties.getHttpHost());
@@ -246,7 +247,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
     properties.save();
 
-    final ConsoleProperties properties2 = new ConsoleProperties(s_resources,
+    final ConsoleProperties properties2 = new ConsoleProperties(m_translations,
       m_file);
 
     assertEquals(s2, properties2.getHttpHost());
@@ -431,7 +432,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     final File file = new File(getDirectory(), "testing");
 
     final ConsoleProperties properties =
-      new ConsoleProperties(s_resources, file);
+      new ConsoleProperties(m_translations, file);
 
     assertNull(properties.getPropertiesFile());
 
@@ -440,14 +441,14 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     assertEquals(propertiesFile, properties.getPropertiesFile());
 
     final ConsoleProperties properties2 =
-      new ConsoleProperties(s_resources, file);
+      new ConsoleProperties(m_translations, file);
     assertEquals(propertiesFile, properties2.getPropertiesFile());
 
     properties.setAndSavePropertiesFile(null);
     assertNull(properties.getPropertiesFile());
 
     final ConsoleProperties properties3 =
-      new ConsoleProperties(s_resources, file);
+      new ConsoleProperties(m_translations, file);
     assertNull(properties3.getPropertiesFile());
   }
 
@@ -472,7 +473,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     final File file = new File(getDirectory(), "testing");
 
     final ConsoleProperties properties =
-      new ConsoleProperties(s_resources, file);
+      new ConsoleProperties(m_translations, file);
 
     assertNotNull(properties.getDistributionDirectory());
     final Directory defaultDirectory = properties.getDistributionDirectory();
@@ -495,7 +496,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     assertTrue(file2.createNewFile());
 
     final ConsoleProperties p2 =
-      new ConsoleProperties(s_resources, file);
+      new ConsoleProperties(m_translations, file);
     assertEquals(defaultDirectory, p2.getDistributionDirectory());
 
     FileUtilities.setCanAccess(file, false);
@@ -570,7 +571,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
   @Test public void testNullLookAndFeel() throws Exception {
 
     final ConsoleProperties properties =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
     assertNull(properties.getLookAndFeel());
 
@@ -619,7 +620,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
   @Test public void testFrameBounds() throws Exception {
 
     final ConsoleProperties properties =
-      new ConsoleProperties(s_resources, m_file);
+      new ConsoleProperties(m_translations, m_file);
 
     assertNull(properties.getFrameBounds());
 
@@ -629,7 +630,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     assertEquals(rectangle, properties.getFrameBounds());
 
     final ConsoleProperties properties2 =
-      new ConsoleProperties(s_resources, m_file);
+      new ConsoleProperties(m_translations, m_file);
 
     properties.setAndSaveFrameBounds(null);
     assertNull(properties.getFrameBounds());
@@ -653,20 +654,20 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       ConsoleProperties.FRAME_BOUNDS_PROPERTY, "1,2,3");
     writeProperties.save();
 
-    assertNull(new ConsoleProperties(s_resources, m_file).getFrameBounds());
+    assertNull(new ConsoleProperties(m_translations, m_file).getFrameBounds());
 
     writeProperties.setProperty(
       ConsoleProperties.FRAME_BOUNDS_PROPERTY, "A,2,3");
     writeProperties.save();
 
-    assertNull(new ConsoleProperties(s_resources, m_file).getFrameBounds());
+    assertNull(new ConsoleProperties(m_translations, m_file).getFrameBounds());
 
     writeProperties.setProperty(
       ConsoleProperties.FRAME_BOUNDS_PROPERTY, "1,2,3,4");
     writeProperties.save();
 
     assertEquals(new Rectangle(1, 2, 3, 4),
-                 new ConsoleProperties(s_resources, m_file).getFrameBounds());
+                 new ConsoleProperties(m_translations, m_file).getFrameBounds());
   }
 
   @Test public void testSaveTotalsWithResults() throws Exception {
@@ -689,7 +690,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
   }
 
   @Test public void testCopyConstructor() throws Exception {
-    final ConsoleProperties p1 = new ConsoleProperties(s_resources, m_file);
+    final ConsoleProperties p1 = new ConsoleProperties(m_translations, m_file);
     final ConsoleProperties p2 = new ConsoleProperties(p1);
 
     assertEquals(p1.getCollectSampleCount(), p2.getCollectSampleCount());
@@ -721,8 +722,8 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
   }
 
   @Test public void testAssignment() throws Exception {
-    final ConsoleProperties p1 = new ConsoleProperties(s_resources, m_file);
-    final ConsoleProperties p2 = new ConsoleProperties(s_resources, m_file);
+    final ConsoleProperties p1 = new ConsoleProperties(m_translations, m_file);
+    final ConsoleProperties p2 = new ConsoleProperties(m_translations, m_file);
     p2.setCollectSampleCount(99);
     p2.setIgnoreSampleCount(99);
     p2.setSampleInterval(99);
@@ -810,14 +811,14 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
     FileUtilities.setCanAccess(badFile, false);
 
     try {
-      new ConsoleProperties(s_resources, badFile);
+      new ConsoleProperties(m_translations, badFile);
       fail("Expected DisplayMessageConsoleException");
     }
     catch (final DisplayMessageConsoleException e) {
     }
 
     FileUtilities.setCanAccess(badFile, true);
-    final ConsoleProperties p = new ConsoleProperties(s_resources, badFile);
+    final ConsoleProperties p = new ConsoleProperties(m_translations, badFile);
     FileUtilities.setCanAccess(badFile, false);
 
     try {
@@ -847,7 +848,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       final ConsoleProperties defaults = ConsoleProperties.DEFAULTS;
 
       final ConsoleProperties properties =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
       assertEquals(get(properties), get(defaults));
 
@@ -906,7 +907,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       writePropertyToFile(m_propertyName, Integer.toString(i1));
 
       final ConsoleProperties properties =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
       assertEquals(i1, get(properties));
 
@@ -918,7 +919,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       properties.save();
 
       final ConsoleProperties properties2 =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
       assertEquals(i2, get(properties2));
 
@@ -1012,7 +1013,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       writePropertyToFile(m_propertyName, "false");
 
       final ConsoleProperties properties =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
       assertTrue(!get(properties));
 
@@ -1022,7 +1023,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       properties.save();
 
       final ConsoleProperties properties2 =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
       assertTrue(get(properties2));
 
@@ -1077,7 +1078,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
 
       if (m_testNulls) {
         final ConsoleProperties properties =
-            new ConsoleProperties(s_resources, m_file);
+            new ConsoleProperties(m_translations, m_file);
 
         assertNull(get(properties));
 
@@ -1091,7 +1092,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
         properties.save();
 
         final ConsoleProperties properties2 =
-          new ConsoleProperties(s_resources, m_file);
+          new ConsoleProperties(m_translations, m_file);
 
         assertNull(get(properties2));
       }
@@ -1101,7 +1102,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       writePropertyToFile(m_propertyName, s1);
 
       final ConsoleProperties properties =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
       assertEquals(s1, get(properties));
 
@@ -1113,7 +1114,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       properties.save();
 
       final ConsoleProperties properties2 =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
       assertEquals(s2, get(properties2));
 
@@ -1162,7 +1163,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       writePropertyToFile(m_propertyName, f1.getPath());
 
       final ConsoleProperties properties =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
       assertEquals(f1, get(properties));
 
@@ -1174,7 +1175,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       properties.save();
 
       final ConsoleProperties properties2 =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
       assertEquals(f2, get(properties2));
 
@@ -1263,7 +1264,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       writePropertyToFile(m_propertyName, s1);
 
       final ConsoleProperties properties =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
       assertEquals(s1, getPattern(properties).pattern());
       assertEquals(s1, get(properties));
@@ -1277,7 +1278,7 @@ public class TestConsoleProperties extends AbstractJUnit4FileTestCase {
       properties.save();
 
       final ConsoleProperties properties2 =
-        new ConsoleProperties(s_resources, m_file);
+        new ConsoleProperties(m_translations, m_file);
 
       assertEquals(s2, getPattern(properties2).pattern());
       assertEquals(s2, get(properties2));

@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2009 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,10 @@
 
 package net.grinder.console.swingui;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.awt.BorderLayout;
 import java.io.File;
 import java.io.FileFilter;
@@ -38,39 +42,47 @@ import net.grinder.console.distribution.FileChangeWatcher;
 import net.grinder.console.editor.Buffer;
 import net.grinder.console.editor.EditorModel;
 import net.grinder.console.editor.StringTextSource;
-import net.grinder.console.editor.TextSource;
 import net.grinder.console.editor.StringTextSource.Factory;
-import net.grinder.testutility.AbstractFileTestCase;
+import net.grinder.console.editor.TextSource;
+import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.DelegatingStubFactory;
-import net.grinder.testutility.RandomStubFactory;
+import net.grinder.translation.Translations;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
-public class TestFileTree extends AbstractFileTestCase {
+/**
+ * Unit tests for {@link FileTree}.
+ *
+ * @author Philip Aston
+ */
+public class TestFileTree extends AbstractJUnit4FileTestCase {
   private static final Resources s_resources =
     new ResourcesImplementation(
       "net.grinder.console.common.resources.Console");
-  private final RandomStubFactory<ErrorHandler> m_errorHandlerStubFactory =
-    RandomStubFactory.create(ErrorHandler.class);
-  private final ErrorHandler m_errorHandler =
-    m_errorHandlerStubFactory.getStub();
+
+  @Mock
+  private ErrorHandler m_errorHandler;
 
   private final StringTextSource.Factory m_stringTextSourceFactory =
     new StringTextSource.Factory();
+
   private final DelegatingStubFactory<Factory>
     m_textSourceFactoryStubFactory =
       DelegatingStubFactory.create(m_stringTextSourceFactory);
+
   private final TextSource.Factory m_textSourceFactory =
     m_textSourceFactoryStubFactory.getStub();
-  private final RandomStubFactory<AgentCacheState>
-    m_agentCacheStateStubFactory =
-      RandomStubFactory.create(AgentCacheState.class);
-  private final AgentCacheState m_agentCacheState =
-    m_agentCacheStateStubFactory.getStub();
-  private final RandomStubFactory<FileChangeWatcher>
-    m_fileChangeWatcherStubFactory =
-      RandomStubFactory.create(FileChangeWatcher.class);
-  private final FileChangeWatcher m_fileChangeWatcher =
-    m_fileChangeWatcherStubFactory.getStub();
+
+  @Mock
+  private AgentCacheState m_agentCacheState;
+
+  @Mock
+  private FileChangeWatcher m_fileChangeWatcher;
+
+  @Mock
+  private Translations m_translations;
 
   private final FileFilter m_nullFileFilter = new FileFilter() {
       public boolean accept(File pathname) {
@@ -78,8 +90,13 @@ public class TestFileTree extends AbstractFileTestCase {
       }
     };
 
-  public void testConstruction() throws Exception {
-    final EditorModel editorModel = new EditorModel(s_resources,
+  @Before
+  public void setUp() {
+    initMocks(this);
+  }
+
+  @Test public void testConstruction() throws Exception {
+    final EditorModel editorModel = new EditorModel(m_translations,
                                                     m_textSourceFactory,
                                                     m_agentCacheState,
                                                     m_fileChangeWatcher);
@@ -88,7 +105,7 @@ public class TestFileTree extends AbstractFileTestCase {
     final FileTreeModel fileTreeModel =
       new FileTreeModel(editorModel, m_nullFileFilter, new File("c:"));
 
-    final FileTree fileTree = new FileTree(s_resources,
+    final FileTree fileTree = new FileTree(s_resources, m_translations,
       m_errorHandler, editorModel, bufferTreeModel, fileTreeModel,
       new JLabel().getFont(), new JPopupMenu(), null);
 
@@ -98,8 +115,8 @@ public class TestFileTree extends AbstractFileTestCase {
     assertNotNull(fileTree.getActions());
   }
 
-  public void testEditorModelListener() throws Exception {
-    final EditorModel editorModel = new EditorModel(s_resources,
+  @Test public void testEditorModelListener() throws Exception {
+    final EditorModel editorModel = new EditorModel(m_translations,
                                                     m_textSourceFactory,
                                                     m_agentCacheState,
                                                     m_fileChangeWatcher);
@@ -108,8 +125,9 @@ public class TestFileTree extends AbstractFileTestCase {
     final FileTreeModel fileTreeModel =
       new FileTreeModel(editorModel, m_nullFileFilter, new File("c:"));
 
-    new FileTree(s_resources, m_errorHandler, editorModel, bufferTreeModel,
-                 fileTreeModel, new JLabel().getFont(), new JPopupMenu(), null);
+    new FileTree(s_resources, m_translations, m_errorHandler, editorModel,
+                 bufferTreeModel, fileTreeModel, new JLabel().getFont(),
+                 new JPopupMenu(), null);
 
     // Exercise the EditorModel listeners.
     editorModel.selectNewBuffer();
@@ -141,8 +159,8 @@ public class TestFileTree extends AbstractFileTestCase {
     editorModel.closeBuffer(buffer2);
   }
 
-  public void testDisplay() throws Exception {
-    final EditorModel editorModel = new EditorModel(s_resources,
+  @Test public void testDisplay() throws Exception {
+    final EditorModel editorModel = new EditorModel(m_translations,
                                                     m_textSourceFactory,
                                                     m_agentCacheState,
                                                     m_fileChangeWatcher);
@@ -152,7 +170,7 @@ public class TestFileTree extends AbstractFileTestCase {
       new FileTreeModel(editorModel, m_nullFileFilter, getDirectory());
 
     final FileTree fileTree =
-      new FileTree(s_resources, m_errorHandler, editorModel,
+      new FileTree(s_resources, m_translations, m_errorHandler, editorModel,
                    bufferTreeModel, fileTreeModel, new JLabel().getFont(),
                    new JPopupMenu(), null);
 

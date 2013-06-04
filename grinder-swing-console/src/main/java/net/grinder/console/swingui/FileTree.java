@@ -31,6 +31,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
@@ -58,6 +59,7 @@ import net.grinder.console.editor.Buffer;
 import net.grinder.console.editor.EditorModel;
 import net.grinder.console.model.ConsoleProperties;
 import net.grinder.console.swingui.FileTreeModel.FileNode;
+import net.grinder.translation.Translations;
 
 
 /**
@@ -73,6 +75,7 @@ import net.grinder.console.swingui.FileTreeModel.FileNode;
 final class FileTree {
 
   private final Resources m_resources;
+  private final Translations m_translations;
   private final ErrorHandler m_errorHandler;
   private final EditorModel m_editorModel;
   private final BufferTreeModel m_bufferTreeModel;
@@ -87,6 +90,7 @@ final class FileTree {
   private final JScrollPane m_scrollPane;
 
   public FileTree(Resources resources,
+                  Translations translations,
                   ErrorHandler errorHandler,
                   EditorModel editorModel,
                   BufferTreeModel bufferTreeModel,
@@ -96,6 +100,7 @@ final class FileTree {
                   ConsoleProperties properties) {
 
     m_resources = resources;
+    m_translations = translations;
     m_errorHandler = errorHandler;
     m_editorModel = editorModel;
     m_bufferTreeModel = bufferTreeModel;
@@ -111,6 +116,7 @@ final class FileTree {
         // A new CustomTreeCellRenderer needs to be set whenever the
         // L&F changes because its superclass constructor reads the
         // resources.
+        @Override
         public void updateUI() {
           super.updateUI();
 
@@ -183,6 +189,7 @@ final class FileTree {
       m_popupMenu = popupMenu;
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
       m_handledOnPress = false;
 
@@ -222,6 +229,7 @@ final class FileTree {
       }
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
       if (m_handledOnPress) {
         // Prevent downstream event handlers from overriding our good work.
@@ -236,6 +244,7 @@ final class FileTree {
 
   private class EditorModelListener extends EditorModel.AbstractListener {
 
+    @Override
     public void bufferAdded(Buffer buffer) {
       // When a file is opened, the new buffer causes the view to
       // scroll down by one row. This feels wrong, so we compensate.
@@ -244,6 +253,7 @@ final class FileTree {
       verticalScrollBar.setValue(verticalScrollBar.getValue() + rowHeight);
     }
 
+    @Override
     public void bufferStateChanged(Buffer buffer) {
       final File file = buffer.getFile();
 
@@ -283,6 +293,7 @@ final class FileTree {
       updateActionState();
     }
 
+    @Override
     public void bufferRemoved(Buffer buffer) {
       final FileTreeModel.FileNode fileNode =
         m_fileTreeModel.findFileNode(buffer);
@@ -312,7 +323,7 @@ final class FileTree {
    */
   private final class OpenAction extends CustomAction {
     public OpenAction() {
-      super(m_resources, "open-file");
+      super(m_resources, m_translations, "open-file");
     }
 
     public void actionPerformed(ActionEvent event) {
@@ -353,7 +364,7 @@ final class FileTree {
    */
   private final class OpenExternalAction extends CustomAction {
     public OpenExternalAction() {
-      super(m_resources, "open-file-external");
+      super(m_resources, m_translations, "open-file-external");
     }
 
     public void actionPerformed(ActionEvent event) {
@@ -391,7 +402,7 @@ final class FileTree {
 
   private final class SelectPropertiesAction extends CustomAction {
     public SelectPropertiesAction() {
-      super(m_resources, "select-properties");
+      super(m_resources, m_translations, "select-properties");
     }
 
     public void actionPerformed(ActionEvent event) {
@@ -425,7 +436,7 @@ final class FileTree {
 
   private final class DeselectPropertiesAction extends CustomAction {
     public DeselectPropertiesAction() {
-      super(m_resources, "deselect-properties");
+      super(m_resources, m_translations, "deselect-properties");
     }
 
     public void actionPerformed(ActionEvent event) {
@@ -527,6 +538,7 @@ final class FileTree {
       m_defaultRenderer.setBackgroundNonSelectionColor(background);
     }
 
+    @Override
     public Component getTreeCellRendererComponent(
       JTree tree, Object value, boolean selected, boolean expanded,
       boolean leaf, int row, boolean hasFocus) {
@@ -594,6 +606,7 @@ final class FileTree {
      * This means it never resizes. Go with this, but be a few pixels
      * wider to allow text to be italicised.
      */
+    @Override
     public Dimension getPreferredSize() {
       final Dimension result = super.getPreferredSize();
 
@@ -601,6 +614,7 @@ final class FileTree {
         new Dimension(result.width + 3, result.height) : null;
     }
 
+    @Override
     public void paint(Graphics g) {
 
       final Color backgroundColour;

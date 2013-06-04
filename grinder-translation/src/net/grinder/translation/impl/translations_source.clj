@@ -1,4 +1,4 @@
-; Copyright (C) 2012 - 2013 Philip Aston
+; Copyright (C) 2013 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -19,27 +19,14 @@
 ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 ; OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(ns net.grinder.console.service.bootstrap
-  "A Bootstrap Java class that is registered as a dynamic console
-   component in META-INF/net.grinder.console. At runtime, PicoContainer
-   will supply the constructor with implementations of the declared
-   parameters."
+(ns net.grinder.translation.impl.translations-source
+  "Implementation of `net.grinder.translation.Translations.Source`."
 
   (:gen-class
-   :name net.grinder.console.service.Bootstrap
-   :constructors { [net.grinder.console.model.ConsoleProperties
-                    net.grinder.console.model.SampleModel
-                    net.grinder.console.model.SampleModelViews
-                    net.grinder.console.communication.ProcessControl
-                    net.grinder.console.common.ErrorQueue
-                    net.grinder.console.distribution.FileDistribution
-                    net.grinder.console.common.Resources]
-                  []
-                   }
+   :name net.grinder.translation.impl.TranslationsSource
+   :implements [net.grinder.translation.Translations$Source]
+   :constructors { [] [] }
    :init init
-   :implements [org.picocontainer.Startable]
    :state state
-   :prefix bootstrap-
-   :impl-ns net.grinder.console.service.bootstrap_impl
-  ))
+   :impl-ns net.grinder.translation.impl.translations-source-impl))
 

@@ -64,6 +64,7 @@ import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.TestStatisticsMap;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.StubTimer;
+import net.grinder.translation.Translations;
 
 import org.junit.After;
 import org.junit.Before;
@@ -96,6 +97,7 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
 
   private StubTimer m_timer;
 
+  @Mock private Translations m_translations;
   @Mock private Listener m_listener;
   @Captor private ArgumentCaptor<Set<net.grinder.common.Test>> m_testSetCaptor;
   @Captor private ArgumentCaptor<ModelTestIndex> m_modelTestIndexCaptor;
@@ -118,7 +120,7 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
 
     m_timer = new StubTimer();
     m_consoleProperties =
-      new ConsoleProperties(m_resources,
+      new ConsoleProperties(m_translations,
                             new File(getDirectory(), "props"));
 
     m_sampleModelImplementation =
@@ -156,10 +158,10 @@ public class TestSampleModelImplementation extends AbstractJUnit4FileTestCase {
                m_sampleModelImplementation.getTotalCumulativeStatistics());
 
     final StatisticsSet totalLatestStatistics =
-    	      m_sampleModelImplementation.getTotalLatestStatistics();
-    	    assertNotNull(totalLatestStatistics);
-    	    assertSame(totalLatestStatistics,
-    	               m_sampleModelImplementation.getTotalLatestStatistics());
+            m_sampleModelImplementation.getTotalLatestStatistics();
+          assertNotNull(totalLatestStatistics);
+          assertSame(totalLatestStatistics,
+                     m_sampleModelImplementation.getTotalLatestStatistics());
 
     final State state = m_sampleModelImplementation.getState();
     assertEquals(WaitingForFirstReport, state.getValue());

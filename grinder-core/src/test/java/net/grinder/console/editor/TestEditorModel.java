@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2011 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -29,6 +29,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -37,8 +38,6 @@ import java.util.Arrays;
 
 import net.grinder.common.GrinderProperties;
 import net.grinder.console.common.DisplayMessageConsoleException;
-import net.grinder.console.common.Resources;
-import net.grinder.console.common.ResourcesImplementation;
 import net.grinder.console.distribution.AgentCacheState;
 import net.grinder.console.distribution.FileChangeWatcher;
 import net.grinder.console.editor.EditorModel.Listener;
@@ -47,8 +46,11 @@ import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.CallData;
 import net.grinder.testutility.DelegatingStubFactory;
 import net.grinder.testutility.RandomStubFactory;
+import net.grinder.translation.Translations;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 
 /**
@@ -58,9 +60,7 @@ import org.junit.Test;
  */
 public class TestEditorModel extends AbstractJUnit4FileTestCase {
 
-  private static final Resources s_resources =
-      new ResourcesImplementation(
-        "net.grinder.console.common.resources.Console");
+  @Mock private Translations m_translations;
 
   private final RandomStubFactory<AgentCacheState>
     m_agentCacheStateStubFactory =
@@ -74,6 +74,10 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
   private final FileChangeWatcher m_fileChangeWatcher =
     m_fileChangeWatcherStubFactory.getStub();
 
+  @Before public void setUp() {
+    initMocks(this);
+  }
+
   @Test public void testConstruction() throws Exception {
     final StringTextSource.Factory stringTextSourceFactory =
       new StringTextSource.Factory();
@@ -81,7 +85,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
     final DelegatingStubFactory<Factory> textSourceFactoryStubFactory =
       DelegatingStubFactory.create(stringTextSourceFactory);
     final EditorModel editorModel =
-      new EditorModel(s_resources,
+      new EditorModel(m_translations,
                       textSourceFactoryStubFactory.getStub(),
                       m_agentCacheState,
                       m_fileChangeWatcher);
@@ -98,7 +102,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
     final DelegatingStubFactory<Factory> textSourceFactoryStubFactory =
       DelegatingStubFactory.create(stringTextSourceFactory);
     final EditorModel editorModel =
-      new EditorModel(s_resources,
+      new EditorModel(m_translations,
                       textSourceFactoryStubFactory.getStub(),
                       m_agentCacheState,
                       m_fileChangeWatcher);
@@ -191,7 +195,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
       RandomStubFactory.create(EditorModel.Listener.class);
 
     final EditorModel editorModel =
-      new EditorModel(s_resources,
+      new EditorModel(m_translations,
                       textSourceFactoryStubFactory.getStub(),
                       m_agentCacheState,
                       m_fileChangeWatcher);
@@ -225,7 +229,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
     listener1StubFactory.assertNoMoreCalls();
   }
 
-  private File createFile(String name, String text) throws Exception {
+  private File createFile(final String name, final String text) throws Exception {
     final File file = new File(getDirectory(), name);
     final FileWriter out = new FileWriter(file);
     out.write(text);
@@ -236,7 +240,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
 
   @Test public void testIsBoringFile() throws Exception {
     final EditorModel editorModel =
-      new EditorModel(s_resources,
+      new EditorModel(m_translations,
                       new StringTextSource.Factory(),
                       m_agentCacheState,
                       m_fileChangeWatcher);
@@ -252,9 +256,9 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
       new File("dfadhklfda.tiff"),
     };
 
-    for (int i = 0; i < boring.length; ++i) {
-      assertTrue("Is boring: " + boring[i],
-                 editorModel.isBoringFile(boring[i]));
+    for (final File element : boring) {
+      assertTrue("Is boring: " + element,
+                 editorModel.isBoringFile(element));
     }
 
     final File[] notBoring = {
@@ -274,7 +278,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
 
   @Test public void testIsScriptFile() throws Exception {
     final EditorModel editorModel =
-      new EditorModel(s_resources,
+      new EditorModel(m_translations,
                       new StringTextSource.Factory(),
                       m_agentCacheState,
                       m_fileChangeWatcher);
@@ -288,9 +292,9 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
       new File(".clj"),
     };
 
-    for (int i = 0; i < script.length; ++i) {
-      assertTrue("Is script: " + script[i],
-                 editorModel.isScriptFile(script[i]));
+    for (final File element : script) {
+      assertTrue("Is script: " + element,
+                 editorModel.isScriptFile(element));
     }
 
     final File[] notScript = {
@@ -309,7 +313,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
 
   @Test public void testIsPropertiesFile() throws Exception {
     final EditorModel editorModel =
-      new EditorModel(s_resources,
+      new EditorModel(m_translations,
                       new StringTextSource.Factory(),
                       m_agentCacheState,
                       m_fileChangeWatcher);
@@ -321,9 +325,9 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
       new File("~python.properties"),
     };
 
-    for (int i = 0; i < properties.length; ++i) {
-      assertTrue("Is properties: " + properties[i],
-                 editorModel.isPropertiesFile(properties[i]));
+    for (final File propertie : properties) {
+      assertTrue("Is properties: " + propertie,
+                 editorModel.isPropertiesFile(propertie));
     }
 
     final File[] notProperties = {
@@ -342,7 +346,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
 
   @Test public void testCloseBufferAndIsABufferDirty() throws Exception {
     final EditorModel editorModel =
-      new EditorModel(s_resources,
+      new EditorModel(m_translations,
                       new StringTextSource.Factory(),
                       m_agentCacheState,
                       m_fileChangeWatcher);
@@ -411,7 +415,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
     final StringTextSource.Factory stringTextSourceFactory =
       new StringTextSource.Factory();
 
-    final EditorModel editorModel = new EditorModel(s_resources,
+    final EditorModel editorModel = new EditorModel(m_translations,
                                                     stringTextSourceFactory,
                                                     m_agentCacheState,
                                                     m_fileChangeWatcher);
@@ -460,7 +464,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
 
   @Test public void testGetAndSelectProperties() throws Exception {
     final EditorModel editorModel =
-      new EditorModel(s_resources,
+      new EditorModel(m_translations,
                       new StringTextSource.Factory(),
                       m_agentCacheState,
                       m_fileChangeWatcher);
@@ -524,7 +528,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
 
   @Test public void testChangedFilesMonitoring() throws Exception {
     final EditorModel editorModel =
-      new EditorModel(s_resources,
+      new EditorModel(m_translations,
                       new StringTextSource.Factory(),
                       m_agentCacheState,
                       m_fileChangeWatcher);
@@ -569,7 +573,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
 
   @Test public void testOpenWithExternalEditor() throws Exception {
     final EditorModel editorModel =
-      new EditorModel(s_resources,
+      new EditorModel(m_translations,
                       new StringTextSource.Factory(),
                       m_agentCacheState,
                       m_fileChangeWatcher);
@@ -578,7 +582,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
       editorModel.openWithExternalEditor(null);
       fail("Expected DisplayMessageConsoleException");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
       assertNull(e.getCause());
     }
 
@@ -588,7 +592,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
       editorModel.openWithExternalEditor(new File("foo"));
       fail("Expected DisplayMessageConsoleException");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
       assertTrue(e.getCause() instanceof IOException);
     }
 
@@ -598,7 +602,7 @@ public class TestEditorModel extends AbstractJUnit4FileTestCase {
       editorModel.openWithExternalEditor(new File("foo"));
       fail("Expected DisplayMessageConsoleException");
     }
-    catch (DisplayMessageConsoleException e) {
+    catch (final DisplayMessageConsoleException e) {
       assertNull(e.getCause());
     }
   }

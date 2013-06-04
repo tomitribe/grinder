@@ -19,13 +19,13 @@
 ; ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 ; OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(ns net.grinder.console.service.translate
+(ns net.grinder.translation.translate
   "Internationalisation."
   (:use [taoensso.tower.ring :only [make-wrap-i18n-middleware]])
   (:require [taoensso.tower :as tower])
   (:import
     [java.util MissingResourceException ResourceBundle]
-    net.grinder.common.Translatable))
+    net.grinder.translation.Translatable))
 
 (def ^:dynamic *resource-bundle-name* nil)
 

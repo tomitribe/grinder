@@ -1,4 +1,4 @@
-// Copyright (C)  2003 - 2011 Philip Aston
+// Copyright (C)  2003 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -28,6 +28,7 @@ import java.awt.datatransfer.StringSelection;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+
 import javax.swing.BorderFactory;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -35,11 +36,11 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 
-import org.slf4j.Logger;
-
 import net.grinder.console.common.DisplayMessageConsoleException;
 import net.grinder.console.common.ErrorHandler;
-import net.grinder.console.common.Resources;
+import net.grinder.translation.Translations;
+
+import org.slf4j.Logger;
 
 
 /**
@@ -66,13 +67,16 @@ final class ErrorDialogHandler implements ErrorHandler {
    * Constructor.
    *
    * @param frame Parent frame.
-   * @param resources Resources object to use for strings and things.
+   * @param translations Translation service.
    * @param logger Logger to use for information messages.
    */
-  public ErrorDialogHandler(JFrame frame, Resources resources, Logger logger) {
-    this(resources, logger);
+  public ErrorDialogHandler(JFrame frame,
+                            Translations translations,
+                            Logger logger) {
+    this(translations, logger);
 
     m_dialog = new JOptionPaneDialog(frame, null, true, m_optionPane) {
+        @Override
         protected boolean shouldClose() {
           return ErrorDialogHandler.this.shouldClose();
         }
@@ -83,15 +87,16 @@ final class ErrorDialogHandler implements ErrorHandler {
    * Constructor.
    *
    * @param dialog Parent frame.
-   * @param resources Resources object to use for strings and things.
+   * @param translations Translation service.
    * @param logger Logger to use for information messages.XS
    */
   public ErrorDialogHandler(JDialog dialog,
-                            Resources resources,
+                            Translations translations,
                             Logger logger) {
-    this(resources, logger);
+    this(translations, logger);
 
     m_dialog = new JOptionPaneDialog(dialog, null, true, m_optionPane) {
+        @Override
         protected boolean shouldClose() {
           return ErrorDialogHandler.this.shouldClose();
         }
@@ -102,22 +107,22 @@ final class ErrorDialogHandler implements ErrorHandler {
     lookAndFeel.addListener(new LookAndFeel.ComponentListener(m_dialog));
   }
 
-  private ErrorDialogHandler(Resources resources, Logger logger) {
+  private ErrorDialogHandler(Translations translations, Logger logger) {
     m_logger = logger;
 
-    m_errorTitle = resources.getString("error.title");
-    m_unexpectedErrorTitle = resources.getString("unexpectedError.title");
-    m_errorDetailsTitle = resources.getString("errorDetails.title");
+    m_errorTitle = translations.translate("console.dialog/error");
+    m_unexpectedErrorTitle =
+        translations.translate("console.phrase/unexpected-error");
+    m_errorDetailsTitle =
+        translations.translate("console.dialog/error-details");
 
-    final String errorOkText = resources.getString("error.ok.label");
-    final String detailsText = resources.getString("error.details.label");
-    final String detailsOkText = resources.getString("errorDetails.ok.label");
+    final String okText = translations.translate("console.action/ok");
     final String detailsClipboardText =
-      resources.getString("errorDetails.copytoclipboard.label");
+      translations.translate("console.action/copy-to-clipboard");
 
-    m_okOptions = new Object[] { errorOkText, };
-    m_okDetailsOptions = new Object[] { errorOkText, detailsText, };
-    m_detailsOptions = new Object[] { detailsOkText, detailsClipboardText, };
+    m_okOptions = new Object[] { okText, };
+    m_okDetailsOptions = new Object[] { okText, m_errorDetailsTitle, };
+    m_detailsOptions = new Object[] { okText, detailsClipboardText, };
   }
 
   private boolean shouldClose() {
@@ -154,6 +159,7 @@ final class ErrorDialogHandler implements ErrorHandler {
           new JScrollPane(label,
                           JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                           JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
+            @Override
             public Dimension getPreferredSize() {
               final Dimension d = super.getPreferredSize();
               d.width = 600;
@@ -171,6 +177,7 @@ final class ErrorDialogHandler implements ErrorHandler {
           new JOptionPaneDialog(m_dialog, m_errorDetailsTitle, true,
                                 detailsOptionPane) {
 
+            @Override
             protected boolean shouldClose() {
               if (detailsOptionPane.getValue() == m_detailsOptions[1]) {
 

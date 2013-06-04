@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2011 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -29,17 +29,15 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.TimerTask;
 import java.util.regex.Pattern;
 
 import net.grinder.communication.MessageDispatchRegistry;
-import net.grinder.console.common.Resources;
-import net.grinder.console.common.StubResources;
 import net.grinder.console.communication.ConsoleCommunication;
 import net.grinder.console.model.ConsoleProperties;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.StubTimer;
+import net.grinder.translation.Translations;
 import net.grinder.util.Directory;
 
 import org.junit.Before;
@@ -56,8 +54,9 @@ import org.mockito.MockitoAnnotations;
  */
 public class TestWireFileDistribution extends AbstractJUnit4FileTestCase {
 
-   @Mock private MessageDispatchRegistry m_messageDispatchRegistry;
+  @Mock private MessageDispatchRegistry m_messageDispatchRegistry;
   @Mock private ConsoleCommunication m_consoleCommunication;
+  @Mock private Translations m_translations;
 
   @Before public void setUp() {
     MockitoAnnotations.initMocks(this);
@@ -66,16 +65,12 @@ public class TestWireFileDistribution extends AbstractJUnit4FileTestCase {
       .thenReturn(m_messageDispatchRegistry);
   }
 
-  private final Resources m_resources =
-    new StubResources<Object>(new HashMap<String, Object>() {{
-    }});
-
   @Test public void testWireFileDistribution() throws Exception {
 
     final FileDistribution fileDistribution = mock(FileDistribution.class);
 
     final ConsoleProperties consoleProperties =
-      new ConsoleProperties(m_resources, new File(getDirectory(), "props"));
+      new ConsoleProperties(m_translations, new File(getDirectory(), "props"));
 
     final StubTimer timer = new StubTimer();
 

@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2009 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,22 +21,30 @@
 
 package net.grinder.console.swingui;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreePath;
 
-import net.grinder.console.common.Resources;
-import net.grinder.console.common.ResourcesImplementation;
 import net.grinder.console.distribution.AgentCacheState;
 import net.grinder.console.distribution.FileChangeWatcher;
 import net.grinder.console.editor.Buffer;
 import net.grinder.console.editor.EditorModel;
-
 import net.grinder.console.editor.StringTextSource;
 import net.grinder.testutility.CallData;
 import net.grinder.testutility.RandomStubFactory;
+import net.grinder.translation.Translations;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 
 /**
@@ -44,11 +52,9 @@ import net.grinder.testutility.RandomStubFactory;
  *
  * @author Philip Aston
  */
-public class TestBufferTreeModel extends TestCase {
+public class TestBufferTreeModel {
 
-  private static final Resources s_resources =
-      new ResourcesImplementation(
-        "net.grinder.console.common.resources.Console");
+  @Mock private Translations m_translations;
 
   private final RandomStubFactory<AgentCacheState>
     m_agentCacheStateStubFactory =
@@ -62,11 +68,15 @@ public class TestBufferTreeModel extends TestCase {
   private final FileChangeWatcher m_fileChangeWatcher =
     m_fileChangeWatcherStubFactory.getStub();
 
-  public void testConstructionAndGetChildMethods() throws Exception {
+  @Before public void setUp() {
+    initMocks(this);
+  }
+
+  @Test public void testConstructionAndGetChildMethods() throws Exception {
     final StringTextSource.Factory stringTextSourceFactory =
       new StringTextSource.Factory();
 
-    final EditorModel editorModel = new EditorModel(s_resources,
+    final EditorModel editorModel = new EditorModel(m_translations,
                                                     stringTextSourceFactory,
                                                     m_agentCacheState,
                                                     m_fileChangeWatcher);
@@ -112,11 +122,11 @@ public class TestBufferTreeModel extends TestCase {
     assertFalse(bufferTreeModel.isLeaf(anotherBufferNode));
   }
 
-  public void testSettersAndListeners() throws Exception {
+  @Test public void testSettersAndListeners() throws Exception {
     final StringTextSource.Factory stringTextSourceFactory =
       new StringTextSource.Factory();
 
-    final EditorModel editorModel = new EditorModel(s_resources,
+    final EditorModel editorModel = new EditorModel(m_translations,
                                                     stringTextSourceFactory,
                                                     m_agentCacheState,
                                                     m_fileChangeWatcher);
@@ -160,7 +170,7 @@ public class TestBufferTreeModel extends TestCase {
     listener1StubFactory.assertNoMoreCalls();
     listener2StubFactory.assertNoMoreCalls();
 
-    final EditorModel editorModel2 = new EditorModel(s_resources,
+    final EditorModel editorModel2 = new EditorModel(m_translations,
                                                     stringTextSourceFactory,
                                                     m_agentCacheState,
                                                     m_fileChangeWatcher);

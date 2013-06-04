@@ -38,7 +38,7 @@ import net.grinder.common.GrinderProperties;
 import net.grinder.communication.CommunicationDefaults;
 import net.grinder.console.common.ConsoleException;
 import net.grinder.console.common.DisplayMessageConsoleException;
-import net.grinder.console.common.Resources;
+import net.grinder.translation.Translations;
 import net.grinder.util.Directory;
 
 
@@ -242,7 +242,7 @@ public final class ConsoleProperties {
    * Used to produce pretty exception messages if mutation fails. If
    * {@code null}, the instance cannot be mutated.
    */
-  private final Resources m_resources;
+  private final Translations m_translations;
 
   /**
    * We delegate to GrinderProperties for storage and the backing file.
@@ -252,23 +252,24 @@ public final class ConsoleProperties {
   /**
    * Construct a ConsoleProperties backed by the given file.
    *
-   * @param resources Console resources.
+   * @param translations Translation service.
    * @param file The properties file.
    * @throws ConsoleException If the properties file
    * cannot be read or the properties file contains invalid data.
    *
    */
-  public ConsoleProperties(final Resources resources, final File file)
+  public ConsoleProperties(final Translations translations, final File file)
     throws ConsoleException {
 
-    m_resources = resources;
+    m_translations = translations;
 
     try {
       m_backingProperties = new GrinderProperties(file);
     }
     catch (final GrinderProperties.PersistenceException e) {
       throw new DisplayMessageConsoleException(
-        m_resources, "couldNotLoadOptionsError.text", e);
+        m_translations.translate("console.phrase/could-not-load-options-error"),
+        e);
     }
   }
 
@@ -277,14 +278,14 @@ public final class ConsoleProperties {
    * Constructor for the read only default properties.
    */
   private ConsoleProperties() {
-    // Resources are required only for reporting illegal mutations, and we
+    // Translations are required only for reporting illegal mutations, and we
     // can't set anything.
-    m_resources = null;
+    m_translations = null;
     m_backingProperties = new GrinderProperties();
   }
 
   private void assertMutationAllowed() {
-    if (m_resources == null) {
+    if (m_translations == null) {
       throw new UnsupportedOperationException("Mutation disallowed");
     }
   }
@@ -295,7 +296,7 @@ public final class ConsoleProperties {
    * @param properties The properties to copy.
    */
   public ConsoleProperties(final ConsoleProperties properties) {
-    m_resources = properties.m_resources;
+    m_translations = properties.m_translations;
     m_backingProperties = new GrinderProperties();
     m_backingProperties.setAssociatedFile(
       properties.m_backingProperties.getAssociatedFile());
@@ -347,7 +348,8 @@ public final class ConsoleProperties {
     }
     catch (final GrinderProperties.PersistenceException e) {
       throw new DisplayMessageConsoleException(
-        m_resources, "couldNotSaveOptionsError.text", e);
+        m_translations.translate("console.phrase/could-not-save-options-error"),
+        e);
     }
   }
 
@@ -369,7 +371,7 @@ public final class ConsoleProperties {
   public void setCollectSampleCount(final int n) throws ConsoleException {
     if (n < 0) {
       throw new DisplayMessageConsoleException(
-        m_resources, "collectNegativeError.text");
+        m_translations.translate("console.phrase/collect-negative-error"));
     }
 
     m_collectSampleCount.set(n);
@@ -393,7 +395,8 @@ public final class ConsoleProperties {
   public void setIgnoreSampleCount(final int n) throws ConsoleException {
     if (n < 0) {
       throw new DisplayMessageConsoleException(
-        m_resources, "ignoreSamplesNegativeError.text");
+        m_translations.translate(
+          "console.phrase/ignore-samples-negative-error"));
     }
 
     m_ignoreSampleCount.set(n);
@@ -417,7 +420,8 @@ public final class ConsoleProperties {
   public void setSampleInterval(final int interval) throws ConsoleException {
     if (interval <= 0) {
       throw new DisplayMessageConsoleException(
-        m_resources, "intervalLessThanOneError.text");
+        m_translations.translate(
+          "console.phrase/interval-less-than-one-error"));
     }
 
     m_sampleInterval.set(interval);
@@ -441,7 +445,8 @@ public final class ConsoleProperties {
   public void setSignificantFigures(final int n) throws ConsoleException {
     if (n <= 0) {
       throw new DisplayMessageConsoleException(
-        m_resources, "significantFiguresNegativeError.text");
+        m_translations.translate(
+          "console.phrase/significant-figures-negative-error"));
     }
 
     m_significantFigures.set(n);
@@ -482,12 +487,13 @@ public final class ConsoleProperties {
       }
       catch (final UnknownHostException e) {
         throw new DisplayMessageConsoleException(
-          m_resources, "unknownHostError.text");
+          m_translations.translate("console.phrase/unknown-host-error"));
       }
 
       if (newAddress.isMulticastAddress()) {
         throw new DisplayMessageConsoleException(
-          m_resources, "invalidHostAddressError.text");
+          m_translations.translate(
+            "console.phrase/invalid-host-address-error"));
       }
     }
 
@@ -509,12 +515,10 @@ public final class ConsoleProperties {
     if (port < CommunicationDefaults.MIN_PORT ||
         port > CommunicationDefaults.MAX_PORT) {
       throw new DisplayMessageConsoleException(
-        m_resources,
-        "invalidPortNumberError.text",
-        new Object[] {
+        m_translations.translate(
+          "console.phrase/invalid-port-number-error",
           CommunicationDefaults.MIN_PORT,
-          CommunicationDefaults.MAX_PORT, }
-        );
+          CommunicationDefaults.MAX_PORT));
     }
   }
 
@@ -865,7 +869,8 @@ public final class ConsoleProperties {
       throws ConsoleException {
     if (i < 0) {
       throw new DisplayMessageConsoleException(
-        m_resources, "scanDistributionFilesPeriodNegativeError.text");
+        m_translations.translate(
+          "console.phrase/scan-distributioned-files-period-negative-error"));
     }
 
     m_scanDistributionFilesPeriod.set(i);
@@ -995,7 +1000,9 @@ public final class ConsoleProperties {
       }
       catch (final GrinderProperties.PersistenceException e) {
         throw new DisplayMessageConsoleException(
-          m_resources, "couldNotSaveOptionsError.text", e);
+          m_translations.translate(
+            "console.phrase/could-not-save-options-error"),
+          e);
       }
     }
 
@@ -1093,10 +1100,10 @@ public final class ConsoleProperties {
         }
         catch (final PatternSyntaxException e) {
           throw new DisplayMessageConsoleException(
-              m_resources,
-              "regularExpressionError.text",
-              new Object[] { getPropertyName(), },
-              e);
+            m_translations.translate(
+              "console.phrase/regular-expression-error",
+              getPropertyName()),
+            e);
         }
       }
     }

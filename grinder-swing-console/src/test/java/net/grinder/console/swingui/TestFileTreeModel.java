@@ -28,6 +28,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -35,7 +36,6 @@ import java.io.FileFilter;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 
-import net.grinder.console.common.Resources;
 import net.grinder.console.distribution.AgentCacheState;
 import net.grinder.console.distribution.FileChangeWatcher;
 import net.grinder.console.editor.Buffer;
@@ -47,8 +47,11 @@ import net.grinder.console.swingui.FileTreeModel.Node;
 import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.CallData;
 import net.grinder.testutility.RandomStubFactory;
+import net.grinder.translation.Translations;
 
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
 
 /**
  * Unit tests for {@link FileTreeModel}.
@@ -57,21 +60,18 @@ import org.junit.Test;
  */
 public class TestFileTreeModel extends AbstractJUnit4FileTestCase {
 
-  private RandomStubFactory<Resources> m_resourcesStubFactory =
-      RandomStubFactory.create(Resources.class);
+  @Mock private Translations m_translations;
 
-  private Resources m_resources = m_resourcesStubFactory.getStub();
-
-  private RandomStubFactory<Factory> m_textSourceFactoryStubFactory =
+  private final RandomStubFactory<Factory> m_textSourceFactoryStubFactory =
       RandomStubFactory.create(TextSource.Factory.class);
 
-  private TextSource.Factory m_textSourceFactory =
+  private final TextSource.Factory m_textSourceFactory =
       m_textSourceFactoryStubFactory.getStub();
 
-  private RandomStubFactory<AgentCacheState> m_agentCacheStateStubFactory =
+  private final RandomStubFactory<AgentCacheState> m_agentCacheStateStubFactory =
       RandomStubFactory.create(AgentCacheState.class);
 
-  private AgentCacheState m_agentCacheState =
+  private final AgentCacheState m_agentCacheState =
       m_agentCacheStateStubFactory.getStub();
 
   private final RandomStubFactory<FileChangeWatcher> m_fileChangeWatcherStubFactory =
@@ -80,10 +80,16 @@ public class TestFileTreeModel extends AbstractJUnit4FileTestCase {
   private final FileChangeWatcher m_fileChangeWatcher =
       m_fileChangeWatcherStubFactory.getStub();
 
-  final EditorModel m_editorModel = new EditorModel(m_resources,
-    m_textSourceFactory,
-    m_agentCacheState,
-    m_fileChangeWatcher);
+  private EditorModel m_editorModel;
+
+  @Before public void setUp() {
+    initMocks(this);
+
+    m_editorModel = new EditorModel(m_translations,
+                                    m_textSourceFactory,
+                                    m_agentCacheState,
+                                    m_fileChangeWatcher);
+  }
 
   private final FileFilter m_nullFileFilter = new FileFilter() {
     public boolean accept(File pathname) {

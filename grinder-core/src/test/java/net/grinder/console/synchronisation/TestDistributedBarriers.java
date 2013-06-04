@@ -1,4 +1,4 @@
-// Copyright (C) 2011 - 2012 Philip Aston
+// Copyright (C) 2011 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -43,7 +43,6 @@ import net.grinder.communication.MessageDispatchSender;
 import net.grinder.communication.MessagePump;
 import net.grinder.communication.Sender;
 import net.grinder.console.common.ErrorHandler;
-import net.grinder.console.common.Resources;
 import net.grinder.console.communication.ConsoleCommunication;
 import net.grinder.console.communication.ConsoleCommunicationImplementation;
 import net.grinder.console.communication.ProcessControl;
@@ -58,6 +57,7 @@ import net.grinder.synchronisation.BarrierImplementation;
 import net.grinder.synchronisation.ClientBarrierGroups;
 import net.grinder.synchronisation.messages.BarrierIdentity;
 import net.grinder.synchronisation.messages.BarrierIdentity.Factory;
+import net.grinder.translation.Translations;
 import net.grinder.util.StandardTimeAuthority;
 
 import org.junit.After;
@@ -81,7 +81,7 @@ public class TestDistributedBarriers {
 
   @Mock private ErrorHandler m_errorHandler;
   @Mock private ProcessControl m_processControl;
-  @Mock private Resources m_resources;
+  @Mock private Translations m_translations;
 
   private ConsoleCommunication m_communication;
 
@@ -92,13 +92,13 @@ public class TestDistributedBarriers {
     MockitoAnnotations.initMocks(this);
 
     final ConsoleProperties properties =
-      new ConsoleProperties(m_resources, new File(""));
+      new ConsoleProperties(m_translations, new File(""));
 
     m_port = findFreePort();
     properties.setConsolePort(m_port);
 
     m_communication =
-      new ConsoleCommunicationImplementation(m_resources,
+      new ConsoleCommunicationImplementation(m_translations,
                                              properties,
                                              m_errorHandler,
                                              new StandardTimeAuthority());
@@ -106,11 +106,12 @@ public class TestDistributedBarriers {
     new WireDistributedBarriers(m_communication, m_processControl);
 
     m_exector.execute(new Runnable() {
+      @Override
       public void run() {
         try {
           while (m_communication.processOneMessage()) { }
         }
-        catch (UncheckedInterruptedException e) {
+        catch (final UncheckedInterruptedException e) {
           // Exit.
         }
       }
@@ -132,8 +133,8 @@ public class TestDistributedBarriers {
     private final Barrier m_assertionBarrier;
     private final Barrier m_resetBarrier;
 
-    private ClientThread(BarrierGroups barrierGroups,
-                         Factory identityFactory)
+    private ClientThread(final BarrierGroups barrierGroups,
+                         final Factory identityFactory)
       throws Exception {
 
       m_barrierGroups = barrierGroups;
@@ -168,6 +169,7 @@ public class TestDistributedBarriers {
     }
 
 
+    @Override
     public Void call() throws Exception {
       for (int i = 0; i < RUNS; ++i) {
         run();
@@ -185,7 +187,7 @@ public class TestDistributedBarriers {
     private final BarrierGroups m_barrierGroups;
     private final BarrierIdentity.Factory m_identityFactory;
 
-    public ClientProcess(int n) throws Exception {
+    public ClientProcess(final int n) throws Exception {
 
       m_agentIdentity = new StubAgentIdentity("agent" + n);
 
@@ -245,12 +247,12 @@ public class TestDistributedBarriers {
     }
 
     try {
-      for (Future<Void> f : m_exector.invokeAll(threads)) { f.get(); }
+      for (final Future<Void> f : m_exector.invokeAll(threads)) { f.get(); }
     }
-    catch (ExecutionException e) {
+    catch (final ExecutionException e) {
       throw e.getCause();
     }
 
-    for (ClientProcess p : processes) { p.stop(); }
+    for (final ClientProcess p : processes) { p.stop(); }
   }
 }

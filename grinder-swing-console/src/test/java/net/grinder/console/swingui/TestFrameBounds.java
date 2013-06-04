@@ -1,4 +1,4 @@
-// Copyright (C) 2006 - 2008 Philip Aston
+// Copyright (C) 2006 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,6 +21,9 @@
 
 package net.grinder.console.swingui;
 
+import static org.junit.Assert.assertEquals;
+import static org.mockito.MockitoAnnotations.initMocks;
+
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -28,11 +31,14 @@ import java.io.File;
 
 import javax.swing.JFrame;
 
-import net.grinder.console.common.Resources;
-import net.grinder.console.common.ResourcesImplementation;
 import net.grinder.console.model.ConsoleProperties;
-import net.grinder.testutility.AbstractFileTestCase;
+import net.grinder.testutility.AbstractJUnit4FileTestCase;
 import net.grinder.testutility.AssertUtilities;
+import net.grinder.translation.Translations;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 
 /**
@@ -40,21 +46,20 @@ import net.grinder.testutility.AssertUtilities;
  *
  * @author Philip Aston
  */
-public class TestFrameBounds extends AbstractFileTestCase {
-  private static final Resources s_resources =
-    new ResourcesImplementation(
-      "net.grinder.console.common.resources.Console");
+public class TestFrameBounds extends AbstractJUnit4FileTestCase {
+  @Mock private Translations m_translations;
 
   private File m_file;
 
-  protected void setUp() throws Exception {
-    super.setUp();
+  @Before public void setUp() throws Exception {
+    initMocks(this);
+
     m_file = new File(getDirectory(), "properties");
   }
 
-  public void testFrameBounds() throws Exception {
+  @Test public void testFrameBounds() throws Exception {
     final ConsoleProperties properties =
-      new ConsoleProperties(s_resources, m_file);
+      new ConsoleProperties(m_translations, m_file);
 
     final JFrame frame = new JFrame();
 
@@ -68,7 +73,7 @@ public class TestFrameBounds extends AbstractFileTestCase {
     frameBounds.store();
 
     final ConsoleProperties properties2 =
-      new ConsoleProperties(s_resources, m_file);
+      new ConsoleProperties(m_translations, m_file);
 
     final FrameBounds frameBounds2 = new FrameBounds(properties2, frame);
     frameBounds2.restore();

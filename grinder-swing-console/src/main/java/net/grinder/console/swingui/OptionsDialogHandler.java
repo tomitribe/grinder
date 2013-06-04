@@ -51,6 +51,7 @@ import net.grinder.communication.CommunicationDefaults;
 import net.grinder.console.common.ConsoleException;
 import net.grinder.console.common.Resources;
 import net.grinder.console.model.ConsoleProperties;
+import net.grinder.translation.Translations;
 
 
 /**
@@ -62,6 +63,7 @@ abstract class OptionsDialogHandler {
   private final JFrame m_parentFrame;
   private final LookAndFeel m_lookAndFeel;
   private final Resources m_resources;
+  private final Translations m_translations;
 
   private final LookAndFeelInfo[] m_installedLookAndFeels;
 
@@ -94,14 +96,16 @@ abstract class OptionsDialogHandler {
    * the properties file to save to.
    * @param resources Resources object to use for strings and things.
    */
-  public OptionsDialogHandler(JFrame parentFrame,
-                              LookAndFeel lookAndFeel,
-                              ConsoleProperties properties,
-                              final Resources resources) {
+  public OptionsDialogHandler(final JFrame parentFrame,
+                              final LookAndFeel lookAndFeel,
+                              final Resources resources,
+                              final Translations translations,
+                              final ConsoleProperties properties) {
 
     m_parentFrame = parentFrame;
     m_lookAndFeel = lookAndFeel;
     m_resources = resources;
+    m_translations = translations;
     m_installedLookAndFeels = lookAndFeel.getInstalledLookAndFeels();
     m_properties = new ConsoleProperties(properties);
 
@@ -244,6 +248,7 @@ abstract class OptionsDialogHandler {
                             true,
                             optionPane) {
 
+        @Override
         protected boolean shouldClose() {
           final Object value = optionPane.getValue();
 
@@ -255,7 +260,7 @@ abstract class OptionsDialogHandler {
               setProperties(m_properties);
             }
             catch (ConsoleException e) {
-              new ErrorDialogHandler(m_dialog, m_resources, null)
+              new ErrorDialogHandler(m_dialog, translations, null)
               .handleException(e);
               return false;
             }
@@ -270,7 +275,7 @@ abstract class OptionsDialogHandler {
                 final String messsage =
                   (cause != null ? cause : e).getMessage();
 
-                new ErrorDialogHandler(m_dialog, m_resources, null)
+                new ErrorDialogHandler(m_dialog, translations, null)
                 .handleErrorMessage(messsage,
                                     m_resources.getString("fileError.title"));
                 return false;
@@ -286,6 +291,7 @@ abstract class OptionsDialogHandler {
 
     m_lookAndFeel.addListener(
       new LookAndFeel.ComponentListener(m_dialog) {
+        @Override
         public void lookAndFeelChanged() {
           super.lookAndFeelChanged();
           m_dialog.pack();
@@ -372,12 +378,12 @@ abstract class OptionsDialogHandler {
     private final JFileChooser m_fileChooser = new JFileChooser(".");
 
     ChooseCommandAction() {
-      super(m_resources, null, true);
+      super(m_resources, m_translations, "choose-external-editor", true);
 
       putValue(Action.NAME, "...");
 
       m_fileChooser.setDialogTitle(
-        m_resources.getString("choose-external-editor.label"));
+        m_translations.translate("console.action/" + getKey()));
 
       m_fileChooser.setSelectedFile(
         m_properties.getExternalEditorCommand());

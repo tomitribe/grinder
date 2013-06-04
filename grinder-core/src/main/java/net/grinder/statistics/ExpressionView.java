@@ -21,7 +21,7 @@
 
 package net.grinder.statistics;
 
-import net.grinder.common.Translatable;
+import net.grinder.translation.Translatable;
 
 
 /**

@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2012 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -35,7 +35,7 @@ import java.util.EventListener;
 import net.grinder.common.Closer;
 import net.grinder.common.UncheckedInterruptedException;
 import net.grinder.console.common.DisplayMessageConsoleException;
-import net.grinder.console.common.Resources;
+import net.grinder.translation.Translations;
 import net.grinder.util.ListenerSupport;
 
 
@@ -46,7 +46,7 @@ import net.grinder.util.ListenerSupport;
  */
 final class BufferImplementation implements Buffer {
 
-  private final Resources m_resources;
+  private final Translations m_translations;
   private final TextSource m_textSource;
 
   private final ListenerSupport<Listener> m_listeners =
@@ -60,13 +60,13 @@ final class BufferImplementation implements Buffer {
   /**
    * Constructor for buffers with no associated file.
    *
-   * @param resources Console resources.
+   * @param translations Translation service.
    * @param textSource The text editor.
    */
-  BufferImplementation(Resources resources,
-                       TextSource textSource,
-                       String name) {
-    m_resources = resources;
+  BufferImplementation(final Translations translations,
+                       final TextSource textSource,
+                       final String name) {
+    m_translations = translations;
     m_textSource = textSource;
     m_file = null;
     m_name = name;
@@ -79,8 +79,12 @@ final class BufferImplementation implements Buffer {
    * @param textSource The text editor.
    * @param file The file.
    */
-  BufferImplementation(Resources resources, TextSource textSource, File file) {
-    m_resources = resources;
+  BufferImplementation(
+    final Translations translations,
+    final TextSource textSource,
+    final File file) {
+
+    m_translations = translations;
     m_textSource = textSource;
     setFile(file);
   }
@@ -90,6 +94,7 @@ final class BufferImplementation implements Buffer {
    *
    * @return The text source.
    */
+  @Override
   public TextSource getTextSource() {
     return m_textSource;
   }
@@ -101,6 +106,7 @@ final class BufferImplementation implements Buffer {
    * be read from.
    * @exception EditorException If an unexpected problem occurs.
    */
+  @Override
   public void load() throws DisplayMessageConsoleException, EditorException {
     // Should never be called if there is no associated file, but
     // check anyway.
@@ -127,15 +133,13 @@ final class BufferImplementation implements Buffer {
         stringWriter.write('\n');
       }
     }
-    catch (IOException e) {
+    catch (final IOException e) {
       UncheckedInterruptedException.ioException(e);
 
       throw new DisplayMessageConsoleException(
-        m_resources,
-        "fileReadError.text",
-        new Object[] { m_file,
-                       ".\n(" + extractReasonFromIOException(e) + ")",
-        },
+        m_translations.translate("console.phrase/file-read-error",
+          m_file,
+          ".\n(" + extractReasonFromIOException(e) + ")"),
         e);
     }
     finally {
@@ -154,6 +158,7 @@ final class BufferImplementation implements Buffer {
    * be written to.
    * @exception EditorException If an unexpected problem occurs.
    */
+  @Override
   public void save() throws DisplayMessageConsoleException, EditorException {
     // The UI should never call save if there is no associated file,
     // but check anyway.
@@ -173,7 +178,8 @@ final class BufferImplementation implements Buffer {
    * @exception DisplayMessageConsoleException If the file could not
    * be written to.
    */
-  public void save(File file) throws DisplayMessageConsoleException {
+  @Override
+  public void save(final File file) throws DisplayMessageConsoleException {
     final File oldFile = getFile();
 
     Writer fileWriter = null;
@@ -191,8 +197,8 @@ final class BufferImplementation implements Buffer {
       fileWriter = new FileWriter(file);
       final PrintWriter printWriter = new PrintWriter(fileWriter);
 
-      for (int i = 0; i < lines.length; ++i) {
-        printWriter.println(lines[i]);
+      for (final String line : lines) {
+        printWriter.println(line);
       }
 
       setFile(file);
@@ -202,20 +208,19 @@ final class BufferImplementation implements Buffer {
 
       m_listeners.apply(
         new ListenerSupport.Informer<Listener>() {
-          public void inform(Listener l) {
+          @Override
+          public void inform(final Listener l) {
             l.bufferSaved(BufferImplementation.this, oldFile);
           }
         });
     }
-    catch (IOException e) {
+    catch (final IOException e) {
       UncheckedInterruptedException.ioException(e);
 
       throw new DisplayMessageConsoleException(
-        m_resources,
-        "fileWriteError.text",
-        new Object[] { m_file,
-                       "./n(" + extractReasonFromIOException(e) + ")",
-        },
+        m_translations.translate("console.phrase/file-write-error",
+          m_file,
+          ".\n(" + extractReasonFromIOException(e) + ")"),
         e);
     }
     finally {
@@ -229,11 +234,12 @@ final class BufferImplementation implements Buffer {
    *
    * @return <code>true</code> => the text has changed.
    */
+  @Override
   public boolean isDirty() {
     return m_textSource.isDirty();
   }
 
-  private void setFile(File file) {
+  private void setFile(final File file) {
     m_file = file;
     m_name = file.getName();
   }
@@ -243,6 +249,7 @@ final class BufferImplementation implements Buffer {
    *
    * @return The file. <code>null</code> if there is no associated file.
    */
+  @Override
   public File getFile() {
     return m_file;
   }
@@ -254,6 +261,7 @@ final class BufferImplementation implements Buffer {
    * @return <code>true</code> => the file has changed independently
    * of the buffer.
    */
+  @Override
   public boolean isUpToDate() {
     return m_file == null || m_lastModified == m_file.lastModified();
   }
@@ -263,6 +271,7 @@ final class BufferImplementation implements Buffer {
    *
    * @return The buffer's type.
    */
+  @Override
   public Type getType() {
 
     if (m_file != null) {
@@ -283,6 +292,7 @@ final class BufferImplementation implements Buffer {
    *
    * @return The buffer's name.
    */
+  @Override
   public String getDisplayName() {
     return m_name;
   }
@@ -301,7 +311,8 @@ final class BufferImplementation implements Buffer {
    *
    * @param listener The listener.
    */
-  public void addListener(Listener listener) {
+  @Override
+  public void addListener(final Listener listener) {
     m_listeners.add(listener);
   }
 
@@ -322,7 +333,7 @@ final class BufferImplementation implements Buffer {
   /**
    * Protected for unit tests.
    */
-  static String extractReasonFromIOException(IOException e) {
+  static String extractReasonFromIOException(final IOException e) {
     if (e instanceof FileNotFoundException) {
       final String message = e.getMessage();
 
