@@ -1,4 +1,4 @@
-// Copyright (C)  2005, 2006, 2007 Philip Aston
+// Copyright (C)  2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -22,14 +22,15 @@
 package net.grinder.console.swingui;
 
 import java.awt.Component;
+
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 
 import net.grinder.console.common.DisplayMessageConsoleException;
-import net.grinder.console.common.Resources;
 import net.grinder.console.model.ConsoleProperties;
+import net.grinder.translation.Translations;
 import net.grinder.util.BooleanProperty;
 
 
@@ -41,7 +42,7 @@ import net.grinder.util.BooleanProperty;
 final class OptionalConfirmDialog {
 
   private final JFrame m_frame;
-  private final Resources m_resources;
+  private final Translations m_translations;
   private final ConsoleProperties m_properties;
 
   /**
@@ -54,13 +55,14 @@ final class OptionalConfirmDialog {
    * Constructor.
    *
    * @param frame Parent frame.
-   * @param resources Resources object to use for strings and things.
+   * @param translations Translation service.
    * @param properties Console properties.
    */
-  public OptionalConfirmDialog(JFrame frame, Resources resources,
+  public OptionalConfirmDialog(JFrame frame,
+                               Translations translations,
                                ConsoleProperties properties) {
     m_frame = frame;
-    m_resources = resources;
+    m_translations = translations;
     m_properties = properties;
   }
 
@@ -96,7 +98,8 @@ final class OptionalConfirmDialog {
     }
 
     final JCheckBox dontAskMeAgainCheckBox =
-      new JCheckBox(m_resources.getString("dontAskMeAgain.text"));
+      new JCheckBox(
+        m_translations.translate("console.phrase/:dont-ask-me-again"));
     dontAskMeAgainCheckBox.setAlignmentX(Component.RIGHT_ALIGNMENT);
 
     final Object[] messageArray = {

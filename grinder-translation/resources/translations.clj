@@ -24,8 +24,7 @@
                       :send-error "Failed to send message, check options."
                       }
 
-      :console {:about "About The Grinder"
-                :title "The Grinder Console"
+      :console {:title "The Grinder Console"
                 :terminal-label "console"
 
                 :section {
@@ -179,7 +178,7 @@
                         :collection-stopped "Collection stopped"
                         :capturing-samples "Collecting samples"
                         ; lower case and add <>
-                        :noConnectedAgents "No connected agents"
+                        :no-connected-agents "No connected agents"
                         }
 
                 :term {:agent "Agent"
@@ -198,6 +197,7 @@
                        ; transform to lower case where required
                        :error "Error"
                        :errors "Errors"
+                       :milisecond "ms"
                        :miliseconds "ms"
                        :sample "Sample"
                        :samples "Samples"

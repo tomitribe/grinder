@@ -35,9 +35,9 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 
 import net.grinder.console.common.ConsoleException;
-import net.grinder.console.common.Resources;
 import net.grinder.console.editor.Buffer;
 import net.grinder.console.editor.EditorModel;
+import net.grinder.translation.Translations;
 
 
 /**
@@ -52,12 +52,12 @@ class EditorControls {
   /**
    * Constructor.
    *
-   * @param resources Console resources.
+   * @param translations Translation service.
    * @param editorModel The editor model
    * @param labelFont Base font to use for labels.
    * @param editorToolBar The controls tool bar.
    */
-  public EditorControls(final Resources resources,
+  public EditorControls(final Translations translations,
                         final EditorModel editorModel,
                         Font labelFont,
                         JToolBar editorToolBar)
@@ -76,11 +76,12 @@ class EditorControls {
     label.setForeground(SystemColor.textHighlight);
 
     editorModel.addListener(new EditorModel.AbstractListener() {
+      @Override
       public void bufferStateChanged(Buffer buffer) {
         final Buffer selectedBuffer = editorModel.getSelectedBuffer();
 
         if (selectedBuffer == null) {
-          label.setText(resources.getString("editor.title"));
+          label.setText(translations.translate("console.section/editor"));
           label.setFont(noFileTitleFont);
         }
         else if (buffer.equals(selectedBuffer)) {
@@ -92,6 +93,7 @@ class EditorControls {
     });
 
     m_panel = new JPanel() {
+      @Override
       public Dimension getPreferredSize() {
         final Dimension mySize = super.getPreferredSize();
         final Dimension parentSize = getParent().getSize();

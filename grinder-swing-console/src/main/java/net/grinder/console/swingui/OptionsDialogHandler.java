@@ -1,4 +1,4 @@
-// Copyright (C) 2000 - 2008 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -111,13 +111,13 @@ abstract class OptionsDialogHandler {
 
     final JPanel addressLabelPanel = new JPanel(new GridLayout(0, 1, 0, 1));
     addressLabelPanel.add(
-      new JLabel(m_resources.getString("consoleHost.label")));
+      new JLabel(m_translations.translate("console.option/console-host")));
     addressLabelPanel.add(
-      new JLabel(m_resources.getString("consolePort.label")));
+      new JLabel(m_translations.translate("console.option/console-port")));
     addressLabelPanel.add(
-      new JLabel(m_resources.getString("httpHost.label")));
+      new JLabel(m_translations.translate("console.option/http-host")));
     addressLabelPanel.add(
-      new JLabel(m_resources.getString("httpPort.label")));
+      new JLabel(m_translations.translate("console.option/http-port")));
 
     final JPanel addressFieldPanel = new JPanel(new GridLayout(0, 1, 0, 1));
     addressFieldPanel.add(m_consoleHost);
@@ -138,7 +138,7 @@ abstract class OptionsDialogHandler {
     communicationTab.add(addressPanel, BorderLayout.NORTH);
     communicationTab.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
-    m_samplingControlPanel = new SamplingControlPanel(m_resources);
+    m_samplingControlPanel = new SamplingControlPanel(m_translations);
 
     final JPanel samplingControlTab = new JPanel(new BorderLayout());
     samplingControlTab.add(m_samplingControlPanel, BorderLayout.NORTH);
@@ -152,14 +152,18 @@ abstract class OptionsDialogHandler {
     m_sfSlider.setPreferredSize(d);
 
     final JPanel sfPanel = new JPanel(new GridLayout(0, 2));
-    sfPanel.add(new JLabel(m_resources.getString("significantFigures.label")));
+    sfPanel.add(
+      new JLabel(
+        m_translations.translate("console.option/signficant-figures")));
     sfPanel.add(m_sfSlider);
 
     final JPanel editorLabelPanel = new JPanel(new GridLayout(0, 1, 0, 1));
     editorLabelPanel.add(
-      new JLabel(m_resources.getString("externalEditorCommand.label")));
+      new JLabel(m_translations.translate(
+        "console.option/external-editor-command")));
     editorLabelPanel.add(
-      new JLabel(m_resources.getString("externalEditorArguments.label")));
+      new JLabel(m_translations.translate(
+        "console.option/external-editor-arguments")));
 
     final JPanel editorFieldPanel = new JPanel(new GridLayout(0, 1, 0, 1));
     final JPanel commandPanel = new JPanel(new BorderLayout());
@@ -183,7 +187,9 @@ abstract class OptionsDialogHandler {
     editorTab.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
     m_resetConsoleWithProcessesCheckBox =
-      new JCheckBox(m_resources.getString("resetConsoleWithProcesses.label"));
+      new JCheckBox(
+        m_translations.translate(
+          "console.options/reset-console-with-processes"));
     final JPanel checkBoxPanel = new JPanel();
     checkBoxPanel.add(m_resetConsoleWithProcessesCheckBox);
 
@@ -198,7 +204,8 @@ abstract class OptionsDialogHandler {
 
     final JPanel lookAndFeelPanel = new JPanel(new GridLayout(0, 2));
     lookAndFeelPanel.add(
-      new JLabel(m_resources.getString("lookAndFeel.label")));
+      new JLabel(
+        m_translations.translate("console.option/look-and-feel")));
     lookAndFeelPanel.add(m_lookAndFeelComboBox);
 
     final JPanel miscellaneousPanel = new JPanel();
@@ -214,26 +221,30 @@ abstract class OptionsDialogHandler {
 
     final JTabbedPane tabbedPane = new JTabbedPane();
 
-    tabbedPane.addTab(m_resources.getString("options.communicationTab.title"),
-                      null, communicationTab,
-                      m_resources.getString("options.communicationTab.tip"));
+    tabbedPane.addTab(
+      m_translations.translate("console.section/communication"),
+      null, communicationTab,
+      m_translations.translate("console.section/communication-detail"));
 
-    tabbedPane.addTab(m_resources.getString("options.samplingTab.title"),
-                      null, samplingControlTab,
-                      m_resources.getString("options.samplingTab.tip"));
+    tabbedPane.addTab(
+      m_translations.translate("console.option/sampling"),
+      null, samplingControlTab,
+      m_translations.translate("console.option/sampling-detail"));
 
-    tabbedPane.addTab(m_resources.getString("options.editorTab.title"),
-                      null, editorTab,
-                      m_resources.getString("options.editorTab.tip"));
+    tabbedPane.addTab(
+      m_translations.translate("console.option/editor"),
+      null, editorTab,
+      m_translations.translate("console.option/editor-detail"));
 
-    tabbedPane.addTab(m_resources.getString("options.miscellaneousTab.title"),
-                      null, miscellaneousTab,
-                      m_resources.getString("options.miscellaneousTab.tip"));
+    tabbedPane.addTab(
+      m_translations.translate("console.option/miscellaneous"),
+      null, editorTab,
+      m_translations.translate("console.option/miscellaneous-detail"));
 
     final Object[] options = {
-      m_resources.getString("options.ok.label"),
-      m_resources.getString("options.cancel.label"),
-      m_resources.getString("options.save.label"),
+      m_translations.translate("console.action/ok"),
+      m_translations.translate("console.action/cancel"),
+      m_translations.translate("console.tion/save-defaults"),
     };
 
     final JOptionPane optionPane =
@@ -244,7 +255,7 @@ abstract class OptionsDialogHandler {
 
     m_dialog =
       new JOptionPaneDialog(m_parentFrame,
-                            m_resources.getString("options.label"),
+                            m_translations.translate("console.action/options"),
                             true,
                             optionPane) {
 
@@ -276,8 +287,9 @@ abstract class OptionsDialogHandler {
                   (cause != null ? cause : e).getMessage();
 
                 new ErrorDialogHandler(m_dialog, translations, null)
-                .handleErrorMessage(messsage,
-                                    m_resources.getString("fileError.title"));
+                  .handleErrorMessage(messsage,
+                    m_translations.translate("console.phrase/file-error"));
+
                 return false;
               }
             }
@@ -394,7 +406,7 @@ abstract class OptionsDialogHandler {
 
     public void actionPerformed(ActionEvent event) {
       final String buttonText =
-        m_resources.getString("choose-external-editor.label");
+        m_translations.translate("console.action/choose-external-editor");
 
       if (m_fileChooser.showDialog(m_parentFrame, buttonText) ==
           JFileChooser.APPROVE_OPTION) {

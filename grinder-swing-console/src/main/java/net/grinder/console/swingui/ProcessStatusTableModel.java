@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2011 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // Copyright (C) 2001, 2002 Dirk Feufel
 // All rights reserved.
 //
@@ -35,10 +35,10 @@ import net.grinder.common.processidentity.ProcessReport;
 import net.grinder.common.processidentity.WorkerProcessReport;
 import net.grinder.console.common.ConsoleException;
 import net.grinder.console.common.ProcessReportDescriptionFactory;
-import net.grinder.console.common.Resources;
 import net.grinder.console.common.ProcessReportDescriptionFactory.ProcessDescription;
 import net.grinder.console.communication.ProcessControl;
 import net.grinder.console.communication.ProcessControl.ProcessReports;
+import net.grinder.translation.Translations;
 
 
 /**
@@ -70,25 +70,24 @@ class ProcessStatusTableModel
 
   private Row[] m_data = new Row[0];
 
-  public ProcessStatusTableModel(Resources resources,
+  public ProcessStatusTableModel(Translations translations,
                                  ProcessControl processControl,
                                  SwingDispatcherFactory swingDispatcherFactory)
     throws ConsoleException {
 
     m_descriptionFactory =
-      new ProcessReportDescriptionFactory(resources);
+      new ProcessReportDescriptionFactory(translations);
 
     m_columnHeadings = new String[3];
     m_columnHeadings[NAME_COLUMN_INDEX] =
-      resources.getString("processTable.nameColumn.label");
+      translations.translate("console.process/name");
     m_columnHeadings[TYPE_COLUMN_INDEX] =
-      resources.getString("processTable.processTypeColumn.label");
+      translations.translate("console.process/type");
     m_columnHeadings[STATE_COLUMN_INDEX] =
-      resources.getString("processTable.stateColumn.label");
+      translations.translate("console.process/state");
 
-    m_workerProcessesString =
-      resources.getString("processTable.processes.label");
-    m_threadsString = resources.getString("processTable.threads.label");
+    m_workerProcessesString = translations.translate("console.process/label");
+    m_threadsString = translations.translate("console.term/threads");
 
     processControl.addProcessStatusListener(
       swingDispatcherFactory.create(
@@ -144,6 +143,7 @@ class ProcessStatusTableModel
     return m_columnHeadings.length;
   }
 
+  @Override
   public String getColumnName(int column) {
     return m_columnHeadings[column];
   }
@@ -203,14 +203,17 @@ class ProcessStatusTableModel
       m_description = description;
     }
 
+    @Override
     public String getName() {
       return m_description.getName();
     }
 
+    @Override
     public String getProcessType() {
       return m_description.getProcessType();
     }
 
+    @Override
     public String getState() {
       return m_description.getState();
     }
@@ -225,14 +228,17 @@ class ProcessStatusTableModel
       m_delegate = row;
     }
 
+    @Override
     public String getName() {
       return m_indent + m_delegate.getName();
     }
 
+    @Override
     public String getProcessType() {
       return m_delegate.getProcessType();
     }
 
+    @Override
     public String getState() {
       return m_delegate.getState();
     }
@@ -249,14 +255,17 @@ class ProcessStatusTableModel
       m_workerProcesses = workerProcesses;
     }
 
+    @Override
     public String getName() {
       return "";
     }
 
+    @Override
     public String getProcessType() {
       return "" + m_workerProcesses + " " + m_workerProcessesString;
     }
 
+    @Override
     public String getState() {
       return
         "" + m_runningThreads + "/" + m_totalThreads + " " + m_threadsString;

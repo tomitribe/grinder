@@ -1,4 +1,4 @@
-// Copyright (C) 2000, 2001, 2002, 2003, 2004, 2005 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -25,6 +25,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridLayout;
+
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
@@ -34,8 +35,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import net.grinder.console.common.ConsoleException;
-import net.grinder.console.common.Resources;
 import net.grinder.console.model.ConsoleProperties;
+import net.grinder.translation.Translations;
 
 
 /**
@@ -60,21 +61,26 @@ class SamplingControlPanel extends JPanel {
 
   private ConsoleProperties m_properties = null;
 
-  public SamplingControlPanel(Resources resources) {
+  public SamplingControlPanel(Translations translations) {
     m_sampleIntervalString =
-      resources.getString("sampleInterval.label") + ": ";
+      translations.translate("console.option/sample-interval") + ": ";
 
-    m_ignoreSampleString = resources.getString("ignoreSampleCount.label") + " ";
+    m_ignoreSampleString =
+      translations.translate("console.option/ignore-sample-count") + " ";
 
     m_collectSampleZeroString =
-      resources.getString("collectCountZero.label", false);
+      translations.translate("console.option/collect-count-zero", false);
     m_collectSampleString =
-      resources.getString("collectSampleCount.label") + " ";
+      translations.translate("console.option/collect-sample-count") + " ";
 
-    m_msUnit = " " + resources.getString("ms.unit");
-    m_msUnits = " " + resources.getString("ms.units");
-    m_sampleUnit = " " + resources.getString("sample.unit");
-    m_sampleUnits = " " + resources.getString("sample.units");
+    m_msUnit =
+        " " + translations.translate("console.term/millisecond").toLowerCase();
+    m_msUnits =
+        " " + translations.translate("console.term/milliseconds").toLowerCase();
+    m_sampleUnit =
+        " " + translations.translate("console.term/sample").toLowerCase();
+    m_sampleUnits =
+        " " + translations.translate("console.term/samples").toLowerCase();
 
     m_intervalSlider.setMajorTickSpacing(1000);
     m_intervalSlider.setMinorTickSpacing(100);

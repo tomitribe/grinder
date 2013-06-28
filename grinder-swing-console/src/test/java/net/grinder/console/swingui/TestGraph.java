@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2008 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -22,16 +22,18 @@
 
 package net.grinder.console.swingui;
 
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.text.DecimalFormat;
 import java.util.Random;
+
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
-import net.grinder.console.common.ResourcesImplementation;
 import net.grinder.statistics.PeakStatisticExpression;
 import net.grinder.statistics.StatisticExpression;
 import net.grinder.statistics.StatisticExpressionFactory;
@@ -40,27 +42,36 @@ import net.grinder.statistics.StatisticsServices;
 import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.StatisticsSetFactory;
+import net.grinder.translation.Translations;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 
 
 /**
+ * Unit tests for {@link LabelledGraph}.
+ *
  * @author Philip Aston
  */
-public class TestGraph extends TestCase {
+public class TestGraph {
 
-  public TestGraph(String name) {
-    super(name);
-  }
+  @Mock private Translations m_translations;
 
-  private int m_pauseTime = 1;
-  private Random s_random = new Random();
+  private final int m_pauseTime = 1;
+  private final Random s_random = new Random();
   private JFrame m_frame;
 
-  protected void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
+    initMocks(this);
     m_frame = new JFrame("Test Graph");
   }
 
-  protected void tearDown() throws Exception {
+  @After
+  public void tearDown() throws Exception {
     m_frame.dispose();
   }
 
@@ -70,7 +81,7 @@ public class TestGraph extends TestCase {
     m_frame.setVisible(true);
   }
 
-  public void testRamp() throws Exception {
+  @Test public void testRamp() throws Exception {
     final Graph graph = new Graph(25);
     createUI(graph);
 
@@ -89,7 +100,7 @@ public class TestGraph extends TestCase {
     }
   }
 
-  public void testRandom() throws Exception {
+  @Test public void testRandom() throws Exception {
     final Graph graph = new Graph(100);
     createUI(graph);
 
@@ -101,7 +112,7 @@ public class TestGraph extends TestCase {
     }
   }
 
-  public void testLabelledGraph() throws Exception {
+  @Test public void testLabelledGraph() throws Exception {
     final StatisticsServices statisticsServices =
       StatisticsServicesImplementation.getInstance();
 
@@ -129,8 +140,7 @@ public class TestGraph extends TestCase {
     final LabelledGraph labelledGraph =
       new LabelledGraph(
         "Test",
-        new ResourcesImplementation(
-          "net.grinder.console.common.resources.Console"),
+        m_translations,
         tpsExpression,
         peakTPSExpression,
         statisticsServices.getTestStatisticsQueries());
@@ -190,8 +200,7 @@ public class TestGraph extends TestCase {
     final LabelledGraph labelledGraph2 =
       new LabelledGraph(
         "Test",
-        new ResourcesImplementation(
-          "net.grinder.console.common.resources.Console"),
+        m_translations,
         Colours.DARK_GREEN,
         tpsExpression,
         peakTPSExpression,

@@ -28,6 +28,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
 import java.net.InetAddress;
@@ -68,7 +69,8 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 
 
@@ -92,10 +94,17 @@ public class TestConsoleFoundation extends AbstractJUnit4FileTestCase {
   private final ExecutorService m_executor = Executors.newCachedThreadPool();
 
   @Before public void setUp() {
-    MockitoAnnotations.initMocks(this);
+    initMocks(this);
 
     when(m_consoleCommunication.getMessageDispatchRegistry())
       .thenReturn(m_messageDispatchRegistry);
+
+    when(m_translations.translate(isA(String.class)))
+      .thenAnswer(new Answer<String>() {
+        @Override
+        public String answer(final InvocationOnMock invocation) {
+          return (String) invocation.getArguments()[0];
+        }});
   }
 
   @Override

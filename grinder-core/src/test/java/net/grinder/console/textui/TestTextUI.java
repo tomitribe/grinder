@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2012 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -26,14 +26,11 @@ import static org.mockito.Matchers.contains;
 import static org.mockito.Matchers.matches;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-
-import java.util.HashMap;
-
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 import net.grinder.common.processidentity.ProcessReport;
 import net.grinder.common.processidentity.WorkerProcessReport;
 import net.grinder.console.common.ErrorHandler;
-import net.grinder.console.common.Resources;
-import net.grinder.console.common.StubResources;
 import net.grinder.console.common.processidentity.StubAgentProcessReport;
 import net.grinder.console.common.processidentity.StubWorkerProcessReport;
 import net.grinder.console.communication.ProcessControl;
@@ -43,11 +40,11 @@ import net.grinder.console.model.SampleModel;
 import net.grinder.engine.agent.StubAgentIdentity;
 import net.grinder.testutility.CallData;
 import net.grinder.testutility.RandomStubFactory;
+import net.grinder.translation.Translations;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 
 
@@ -58,21 +55,47 @@ import org.slf4j.Logger;
  */
 public class TestTextUI {
 
-  private final Resources m_resources = new StubResources<String>(
-    new HashMap<String, String>() {{
-      put("finished.text", "done");
-      put("noConnectedAgents.text", "no agents!");
-      put("processTable.threads.label", "strings");
-      put("processTable.agentProcess.label", "AG");
-      put("processTable.workerProcess.label", "WK");
-      put("processState.started.label", "hot to trot");
-      put("processState.running.label", "rolling");
-      put("processState.connected.label", "plugged in");
-      put("processState.finished.label", "fini");
-      put("processState.disconnected.label", "that's all folks");
-      put("processState.unknown.label", "huh");
-    }}
-  );
+  @Mock private Translations m_translations;
+
+  @Before public void setUp() {
+    initMocks(this);
+
+    when(m_translations.translate("console.term/threads"))
+      .thenReturn("strings");
+
+    when(m_translations.translate("console.state/finished"))
+     .thenReturn("done");
+
+    when(m_translations.translate("console.state/no-connected-agents"))
+     .thenReturn("No Agents!");
+
+    when(m_translations.translate("console.term/agent"))
+      .thenReturn("AG");
+
+    when(m_translations.translate("console.term/worker"))
+      .thenReturn("WK");
+
+    when(m_translations.translate("console.state/started"))
+      .thenReturn("hot to trot");
+
+    when(m_translations.translate("console.state/running"))
+      .thenReturn("rolling");
+
+    when(m_translations.translate("console.state/running-agent"))
+      .thenReturn("plugged in");
+
+    when(m_translations.translate("console.state/finished"))
+      .thenReturn("fini");
+
+    when(m_translations.translate("console.state/finished-agent"))
+      .thenReturn("that's all folks");
+
+    when(m_translations.translate("console.state/unknown"))
+      .thenReturn("huh");
+
+    when(m_translations.translate("console.term/finished"))
+      .thenReturn("done");
+  }
 
   @Mock private Logger m_logger;
 
@@ -86,13 +109,9 @@ public class TestTextUI {
   private final SampleModel m_sampleModel =
     m_sampleModelStubFactory.getStub();
 
-  @Before public void setUp() {
-    MockitoAnnotations.initMocks(this);
-  }
-
   @Test public void testErrorHandler() throws Exception {
     final TextUI textUI =
-      new TextUI(m_resources, m_processControl, m_sampleModel, m_logger);
+      new TextUI(m_translations, m_processControl, m_sampleModel, m_logger);
     verify(m_logger).info(contains("The Grinder"));
 
     final ErrorHandler errorHandler = textUI.getErrorHandler();
@@ -122,7 +141,7 @@ public class TestTextUI {
 
   @Test public void testProcessStatusListener() throws Exception {
     final TextUI textUI =
-      new TextUI(m_resources, m_processControl, m_sampleModel, m_logger);
+      new TextUI(m_translations, m_processControl, m_sampleModel, m_logger);
     verify(m_logger).info(contains("The Grinder"));
 
     final CallData processsControlCall =
@@ -135,7 +154,7 @@ public class TestTextUI {
 
     final ProcessReports[] reports1 = new ProcessReports[0];
     processListener.update(reports1);
-    verify(m_logger).info("no agents!");
+    verify(m_logger).info("<no agents!>");
 
     processListener.update(reports1);
 
@@ -199,7 +218,7 @@ public class TestTextUI {
   }
 
   @Test public void testSampleModelListener() throws Exception {
-    new TextUI(m_resources, m_processControl, m_sampleModel, m_logger);
+    new TextUI(m_translations, m_processControl, m_sampleModel, m_logger);
     verify(m_logger).info(contains("The Grinder"));
 
     final Object[] addListenerParameters =
@@ -242,7 +261,7 @@ public class TestTextUI {
 
   @Test public void testShutdownHook() throws Exception {
     final TextUI textUI =
-      new TextUI(m_resources, m_processControl, m_sampleModel, m_logger);
+      new TextUI(m_translations, m_processControl, m_sampleModel, m_logger);
 
     verify(m_logger).info(contains("The Grinder"));
 

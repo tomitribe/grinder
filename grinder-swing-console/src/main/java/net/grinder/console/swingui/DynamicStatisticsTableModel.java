@@ -25,18 +25,19 @@ import java.awt.Color;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Set;
+
 import javax.swing.table.AbstractTableModel;
 
 import net.grinder.common.Test;
-import net.grinder.console.common.Resources;
-import net.grinder.console.model.SampleModel;
 import net.grinder.console.model.ModelTestIndex;
+import net.grinder.console.model.SampleModel;
 import net.grinder.console.model.SampleModelViews;
 import net.grinder.console.model.SampleModelViews.Listener;
 import net.grinder.statistics.ExpressionView;
-import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.StatisticExpression;
+import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.StatisticsView;
+import net.grinder.translation.Translations;
 
 
 /**
@@ -50,7 +51,7 @@ abstract class DynamicStatisticsTableModel
 
   private final SampleModel m_model;
   private final SampleModelViews m_modelViews;
-  private final Resources m_resources;
+  private final Translations m_translations;
 
   private final String m_testString;
   private final String m_testColumnString;
@@ -71,17 +72,17 @@ abstract class DynamicStatisticsTableModel
   protected DynamicStatisticsTableModel(
     SampleModel model,
     SampleModelViews modelViews,
-    Resources resources,
+    Translations translations,
     SwingDispatcherFactory swingDispatcherFactory) {
 
     m_model = model;
     m_modelViews = modelViews;
-    m_resources = resources;
+    m_translations = translations;
 
-    m_testString = m_resources.getString("table.test.label") + ' ';
-    m_testColumnString = m_resources.getString("table.testColumn.label");
+    m_testString = m_translations.translate("console.term/test") + ' ';
+    m_testColumnString = m_translations.translate("console.term/test");
     m_testDescriptionColumnString =
-      m_resources.getString("table.descriptionColumn.label");
+      m_translations.translate("console.term/test-description");
 
     m_model.addModelListener(
       swingDispatcherFactory.create(SampleModel.Listener.class, this));
@@ -119,8 +120,7 @@ abstract class DynamicStatisticsTableModel
 
       for (int i = 0; i < m_columnLabels.length; ++i) {
         final String resource =
-          m_resources.getString(
-            m_columnViews[i].getTranslationKey() + ".label", false);
+          m_translations.translate(m_columnViews[i].getTranslationKey(), false);
 
         m_columnLabels[i] =
           resource != null ?
@@ -177,6 +177,7 @@ abstract class DynamicStatisticsTableModel
     return 2 + m_columnLabels.length;
   }
 
+  @Override
   public final synchronized String getColumnName(int column) {
     switch (column) {
     case 0:

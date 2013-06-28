@@ -1,5 +1,5 @@
 // Copyright (C) 2000 Paco Gomez
-// Copyright (C) 2000 - 2012 Philip Aston
+// Copyright (C) 2000 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -38,10 +38,10 @@ import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 
-import net.grinder.console.common.Resources;
 import net.grinder.statistics.StatisticExpression;
 import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.TestStatisticsQueries;
+import net.grinder.translation.Translations;
 
 
 /**
@@ -128,6 +128,7 @@ class LabelledGraph extends JPanel {
      * Make all labels the same width.
      * Pack more tightly vertically.
      */
+    @Override
     public Dimension getPreferredSize() {
       final Dimension d = super.getPreferredSize();
       d.width = 120;
@@ -135,6 +136,7 @@ class LabelledGraph extends JPanel {
       return d;
     }
 
+    @Override
     public Dimension getMaximumSize() {
       return getPreferredSize();
     }
@@ -158,15 +160,18 @@ class LabelledGraph extends JPanel {
   private final Label m_errorsLabel;
   private final Dimension m_preferredSize = new Dimension(250, 110);
 
-  public LabelledGraph(String title, Resources resources,
+  public LabelledGraph(String title,
+                       Translations translations,
                        StatisticExpression tpsExpression,
                        StatisticExpression peakTPSExpression,
                        TestStatisticsQueries testStatisticsQueries) {
-    this(title, resources, null, tpsExpression, peakTPSExpression,
+    this(title, translations, null, tpsExpression, peakTPSExpression,
          testStatisticsQueries);
   }
 
-  public LabelledGraph(String title, Resources resources, Color color,
+  public LabelledGraph(String title,
+                       Translations translations,
+                       Color color,
                        StatisticExpression tpsExpression,
                        StatisticExpression peakTPSExpression,
                        TestStatisticsQueries testStatisticsQueries) {
@@ -174,19 +179,25 @@ class LabelledGraph extends JPanel {
     m_peakTPSExpression = peakTPSExpression;
     m_testStatisticsQueries = testStatisticsQueries;
 
-    final String msUnit = resources.getString("ms.unit");
-    final String msUnits = resources.getString("ms.units");
-    final String tpsUnits = resources.getString("tps.units");
-    final String testUnit = resources.getString("test.unit");
+    final String msUnit =
+      translations.translate("console.term/millisecond").toLowerCase();
+    final String msUnits =
+      translations.translate("console.term/milliseconds").toLowerCase();
+    final String tpsUnits =
+      translations.translate("console.term/tps").toLowerCase();
+    final String testUnit =
+      translations.translate("console.term/test").toLowerCase();
     final String testUnits =
-      resources.getString("test.units");
-    final String errorUnit = resources.getString("error.unit");
-    final String errorUnits = resources.getString("error.units");
+      translations.translate("console.term/tests").toLowerCase();
+    final String errorUnit =
+      translations.translate("console.term/error").toLowerCase();
+    final String errorUnits =
+      translations.translate("console.term/errors").toLowerCase();
 
     final String averageSuffix =
-      resources.getString("graph.averageSuffix.label");
+      "(" +  translations.translate("console.term/mean").toLowerCase() + ")";
     final String peakSuffix =
-      resources.getString("graph.peakSuffix.label");
+      "(" +  translations.translate("console.term/peak").toLowerCase() + ")";
 
     m_averageTimeLabel = new Label(msUnit, msUnits, averageSuffix);
     m_averageTPSLabel = new Label(tpsUnits, tpsUnits, averageSuffix);
@@ -238,6 +249,7 @@ class LabelledGraph extends JPanel {
     setBorder(new CompoundBorder(border, margin));
   }
 
+  @Override
   public Dimension getPreferredSize() {
     return m_preferredSize;
   }

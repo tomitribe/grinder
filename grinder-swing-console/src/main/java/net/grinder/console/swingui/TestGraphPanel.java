@@ -1,4 +1,4 @@
-// Copyright (C) 2001 - 2011 Philip Aston
+// Copyright (C) 2001 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -40,6 +40,7 @@ import net.grinder.console.model.SampleListener;
 import net.grinder.console.model.SampleModel;
 import net.grinder.console.model.SampleModelViews;
 import net.grinder.statistics.StatisticsSet;
+import net.grinder.translation.Translations;
 
 
 /**
@@ -58,7 +59,7 @@ public class TestGraphPanel extends JPanel implements SampleModel.Listener {
 
   private final SampleModel m_model;
   private final SampleModelViews m_sampleModelViews;
-  private final Resources m_resources;
+  private final Translations m_translations;
   private final SwingDispatcherFactory m_swingDispatcherFactory;
   private final String m_testLabel;
 
@@ -69,15 +70,16 @@ public class TestGraphPanel extends JPanel implements SampleModel.Listener {
                  SampleModel model,
                  SampleModelViews sampleModelViews,
                  Resources resources,
+                 Translations translations,
                  SwingDispatcherFactory swingDispatcherFactory) {
 
     m_parentComponent = parentComponent;
     m_model = model;
     m_sampleModelViews = sampleModelViews;
-    m_resources = resources;
+    m_translations = translations;
     m_swingDispatcherFactory = swingDispatcherFactory;
 
-    m_testLabel = m_resources.getString("graph.test.label") + " ";
+    m_testLabel = translations.translate("console.term/test") + " ";
 
     m_model.addModelListener(
       swingDispatcherFactory.create(SampleModel.Listener.class, this));
@@ -91,7 +93,7 @@ public class TestGraphPanel extends JPanel implements SampleModel.Listener {
         }
       });
 
-    m_logoLabel = new JLabel(m_resources.getImageIcon("logo-large.image"));
+    m_logoLabel = new JLabel(resources.getImageIcon("logo-large.image"));
   }
 
   /**
@@ -110,7 +112,7 @@ public class TestGraphPanel extends JPanel implements SampleModel.Listener {
 
   /**
    * {@link net.grinder.console.model.SampleModel.Listener} interface.
-   * Existing <code>Test</code>s and <code>StatisticsView</code>s have
+   * Existing {@code Test}s and {@code StatisticsView}s have
    * been discarded.
    */
   public final void resetTests() {
@@ -144,7 +146,7 @@ public class TestGraphPanel extends JPanel implements SampleModel.Listener {
 
       final LabelledGraph testGraph =
         new LabelledGraph(label,
-                          m_resources,
+                          m_translations,
                           m_model.getTPSExpression(),
                           m_model.getPeakTPSExpression(),
                           m_sampleModelViews.getTestStatisticsQueries());
@@ -185,8 +187,9 @@ public class TestGraphPanel extends JPanel implements SampleModel.Listener {
    * tab, and calculate our vertical height. The intermediate scroll
    * pane uses the preferred size.
    *
-   * @return a <code>Dimension</code> value
+   * @return The preferred size.
    */
+  @Override
   public final Dimension getPreferredSize() {
 
     if (m_components.size() == 0) {

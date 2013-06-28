@@ -230,7 +230,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
       });
 
     m_optionalConfirmDialog =
-      new OptionalConfirmDialog(m_frame, m_resources, m_properties);
+      new OptionalConfirmDialog(m_frame, m_translations, m_properties);
 
     m_closeFileAction = new CloseFileAction();
     m_exitAction = new ExitAction();
@@ -258,7 +258,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
     m_stateLabel = new JLabel();
     stateChanged();
-    m_samplingControlPanel = new SamplingControlPanel(m_resources);
+    m_samplingControlPanel = new SamplingControlPanel(m_translations);
 
     final JPanel controlAndTotalPanel = createControlAndTotalPanel();
 
@@ -270,6 +270,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
                          m_model,
                          m_sampleModelViews,
                          m_resources,
+                         translations,
                          swingDispatcherFactory);
     graphPanel.resetTests(); // Show logo.
 
@@ -291,7 +292,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
     m_cumulativeTableModel =
       new CumulativeStatisticsTableModel(
-        m_model, m_sampleModelViews, m_resources, swingDispatcherFactory);
+        m_model, m_sampleModelViews, m_translations, swingDispatcherFactory);
 
     final JScrollPane cumulativeTablePane =
       new JScrollPane(new Table(m_cumulativeTableModel));
@@ -302,7 +303,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
     final SampleStatisticsTableModel sampleModel =
       new SampleStatisticsTableModel(
-        m_model, m_sampleModelViews, m_resources, swingDispatcherFactory);
+        m_model, m_sampleModelViews, m_translations, swingDispatcherFactory);
 
     final JScrollPane sampleTablePane = new JScrollPane(new Table(sampleModel));
     sampleTablePane.setBorder(
@@ -324,7 +325,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
                         "console.section/results-detail"));
 
     final ProcessStatusTableModel processStatusModel =
-      new ProcessStatusTableModel(m_resources,
+      new ProcessStatusTableModel(m_translations,
                                   m_processControl,
                                   swingDispatcherFactory);
 
@@ -350,7 +351,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
     final EditorControls editorControls =
       new EditorControls(
-        m_resources, m_editorModel, editorSmallFont, editorToolBar);
+        m_translations, m_editorModel, editorSmallFont, editorToolBar);
 
     final Editor editor = new Editor(m_editorModel, m_saveFileAction);
 
@@ -498,7 +499,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
   private JPanel createControlAndTotalPanel() {
     final LabelledGraph totalGraph =
       new LabelledGraph(m_translations.translate("console.term/total"),
-                        m_resources, SystemColor.window,
+                        m_translations, SystemColor.window,
                         m_model.getTPSExpression(),
                         m_model.getPeakTPSExpression(),
                         m_sampleModelViews.getTestStatisticsQueries());
@@ -930,13 +931,11 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
     public void actionPerformed(ActionEvent event) {
 
-      final Resources resources = m_resources;
-
       final String title =
         removeMnemonicMarkers(m_translations.translate("console.dialog/about"));
 
       final String aboutText =
-          resources.getStringFromFile(
+          m_resources.getStringFromFile(
             m_translations.translate("console.dialog/about.text"),
             true);
 

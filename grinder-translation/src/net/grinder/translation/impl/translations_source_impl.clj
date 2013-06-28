@@ -49,12 +49,10 @@
     (^String translate [^Translations this ^String k ^objects format-args]
 
       ; Use scope to partition concerns.
-      ; - Our wrapper will always bolt on ":grinder".
       ; - Check it works with strings.
       ; Fix passing of format-args.
       ; Resource bundle support will go away.
       ; Where to place translations file?
-      ; What to do about image resources? Gut feel - separate them out.
       (binding [tower/*Locale* locale]
         (translate/t k format-args)
         ))))

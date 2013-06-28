@@ -21,14 +21,14 @@
 
 package net.grinder.console.swingui;
 
-import net.grinder.console.common.Resources;
 import net.grinder.console.model.SampleModel;
 import net.grinder.console.model.SampleModelViews;
 import net.grinder.statistics.StatisticsSet;
+import net.grinder.translation.Translations;
 
 
 /**
- * <code>TableModel</code> for the sample statistics table.
+ * {@code TableModel} for the sample statistics table.
  *
  * @author Philip Aston
  */
@@ -37,19 +37,21 @@ final class SampleStatisticsTableModel extends DynamicStatisticsTableModel {
   public SampleStatisticsTableModel(
     SampleModel model,
     SampleModelViews sampleModelViews,
-    Resources resources,
+    Translations translations,
     SwingDispatcherFactory swingDispatcherFactory) {
 
-    super(model, sampleModelViews, resources, swingDispatcherFactory);
+    super(model, sampleModelViews, translations, swingDispatcherFactory);
 
     resetStatisticsViews();
   }
 
+  @Override
   public synchronized void resetStatisticsViews() {
     super.resetStatisticsViews();
     addColumns(getModelViews().getIntervalStatisticsView());
   }
 
+  @Override
   protected StatisticsSet getStatistics(int row) {
     return getLastModelTestIndex().getLastSampleStatistics(row);
   }

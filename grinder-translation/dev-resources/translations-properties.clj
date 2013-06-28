@@ -24,8 +24,7 @@
                       :send-error "sendError.text"
                       }
 
-      :console {:about "about.label"
-                :title "title"
+      :console {:title "title"
                 :terminal-label "shortTitle"
 
                 :section {
@@ -33,15 +32,15 @@
                           :file-distribution "File Distribution"
                           :processes "processStatusTableTab.title"
                           :processes-detail "processStatusTableTab.tip"
-                          :sampling "Sampling"
-                          :communication "Communication"
-                          :communication-detail "Communication addresses"
+                          :sampling "options.samplingTab.title"
+                          :communication "options.communicationTab.title"
+                          :communication-detail "options.communicationTab.tip"
                           :swing-console "Swing Console"
                           :graphs "graphTab.title"
                           :graphs-detail "graphTab.tip"
                           :results "resultsTab.title"
                           :results-detail "resultsTab.tip"
-                          :editor "scriptTab.title"
+                          :editor "editor.title"
                           :editor-detail "scriptTab.tip"
                           :scripts "scripts.label"
 
@@ -51,32 +50,32 @@
                           }
 
                 :option {:chart-statistic "Statistic"
-                         :save-defaults "Save defaults"
+                         :save-defaults "options.save.label"
                          :save-totals-with-results "saveTotalsWithResults.label"
                          :save-totals-with-results.detail "Save totals with results"
 
                          :sampling :console.section/sampling
-                         :sampling-detail "Sampling controls"
+                         :sampling-detail "options.samplingTab.tip"
                          :editor :console.section/editor
-                         :editor-detail "Script editor options"
-                         :miscellaneous "Miscellaneous"
-                         :miscellaneous-details "Other options"
+                         :editor-detail "options.editorTab.tip"
+                         :miscellaneous "options.miscellaneousTab.title"
+                         :miscellaneous-details "options.miscellaneousTab.tip"
 
-                         :sample-interval "Sample interval"
-                         :significant-figures "Significant figures"
-                         :ignore-sample-count "Ignore"
+                         :sample-interval "sampleInterval.label"
+                         :significant-figures "significantFigures.label"
+                         :ignore-sample-count "ignoreSampleCount.label"
                          :ignore-sample-count-detail "Number of samples to ignore"
-                         :collect-count-zero "Collect samples forever"
-                         :collect-sample-count "Stop after"
+                         :collect-count-zero "collectCountZero.label"
+                         :collect-sample-count "collectSampleCount.label"
                          :collect-sample-count-detail "Number of samples to collect"
-                         :console-host "Console Host"
-                         :console-port "Console Port"
-                         :http-host "HTTP Service Host"
-                         :http-port "HTTP Service Port"
-                         :external-editor-command "External editor command"
-                         :external-editor-arguments "External editor arguments"
-                         :reset-console-with-processes "Reset Console with Worker Processes"
-                         :look-and-feel "Look and Feel"
+                         :console-host "consoleHost.label"
+                         :console-port "consolePort.label"
+                         :http-host "httpHost.label"
+                         :http-port "httpPort.label"
+                         :external-editor-command "externalEditorCommand.label"
+                         :external-editor-arguments "externalEditorArguments.label"
+                         :reset-console-with-processes "resetConsoleWithProcesses.label"
+                         :look-and-feel "lookAndFeel.label"
 
                          :distribution-directory "Script directory"
                          :properties-file "Selected properties file"
@@ -89,7 +88,7 @@
                 :dialog {:error :console.term/error
                          :error-details "errorDetails.title"
                          :about "about.label"
-                         :about.text "about.text"
+                         :about.text "about.html"
                          }
 
                 :action {:reset-recording "Reset recording"
@@ -97,7 +96,7 @@
                          :stop-recording "Stop recording"
                          :set-properties "Set"
                          :ok "error.ok.label"
-                         :cancel "Cancel"
+                         :cancel "options.cancel.label"
                          :copy-to-clipboard "errorDetails.copytoclipboard.label"
 
                          ; An underscore in the label explicitly marks the next character as a mnemonic.
@@ -156,7 +155,7 @@
                          :distribute-files "distribute-files.label"
                          :distribute-files-detail "distribute-files.tip"
 
-                         :choose-external-editor.label "external editor"
+                         :choose-external-editor "external editor"
                          :choose-external-editor-detail "Select the executable file to use as the external editor"
                          }
 
@@ -167,42 +166,41 @@
                        :help "help.menu.label"
                        }
 
-                :state {:started "Ready"
-                        :running "Running"
-                        :finished "Finished"
-                        :unknown "?"
-                        :running-agent "Connected"
-                        :finished-agent "Disconnected"
+                :state {:started "processState.started.label"
+                        :running "processState.running.label"
+                        :finished "processState.finished.label"
+                        :unknown "processState.unknown.label" ; OR "?"
+                        :running-agent "processState.connected.label"
+                        :finished-agent "processState.disconnected.label"
                         :worker-threads "({0}/{1} {1,choice,0#threads|1#thread|1<{0,number} threads})"
                         :ignoring-samples "Waiting for samples, ignoring"
                         :waiting-for-samples "Waiting for samples"
                         :collection-stopped "Collection stopped"
                         :capturing-samples "Collecting samples"
-                        ; lower case and add <>
-                        :noConnectedAgents "No connected agents"
+                        :no-connected-agents "noConnectedAgents.text" ; CAPITAL CASE
                         }
 
-                :term {:agent "Agent"
+                :term {:agent "processTable.agentProcess.label"
                        :name "Name"
                        :running-processes "Running processes"
                        :status "Status"
-                       :test "Test"
-                       :tests "Tests"
+                       :test "table.test.label"
+                       :tests "test.units" ; CAPITAL CASE
                        :test-number :console.term/test
-                       :test-description "Description"
+                       :test-description "table.descriptionColumn.label"
                        :total "totalGraph.title"
                        :totals "Totals"
-                       :worker "Worker"
-                       :peak "Peak" ; transform to (peak) for usage
-                       :mean "Mean" ; transform to (mean) for usage
-                       ; transform to lower case where required
-                       :error "error.title"
-                       :errors "Errors"
-                       :miliseconds "ms"
-                       :sample "Sample"
-                       :samples "Samples"
-                       :tps "tps.units"
-                       :threads "Threads"
+                       :worker "processTable.workerProcess.label"
+                       :peak "graph.averageSuffix.label" ; CAPTIAL CASE
+                       :mean "graph.peakSuffix.label" ; CAPITAL CASE
+                       :error "error.unit" ; CAPTIAL CASE
+                       :errors "error.units" ; CAPITAL CASE
+                       :milisecond "ms.unit" ; CAPITAL CASE
+                       :miliseconds "ms.units" ; CAPITAL CASE
+                       :sample "sample.unit" ; CAPITAL CASE
+                       :samples "sample.units" ; CAPITAL CASE
+                       :tps "tps.units" ; CAPITAL CASE
+                       :threads "processTable.threads.label" ; CAPITAL CASE
                        }
 
                 :phrase {:no-processes "There are no connected agents."
@@ -234,7 +232,7 @@
                          :external-editor-not-set "externalEditorNotSet.text"
                          :regular-expression-error "regularExpressionError.text"
                          :reset-console-with-processes-confirmation "resetConsoleWithProcessesConfirmation.text"
-                         :dont-ask-me-again "Don't ask me this again"
+                         :dont-ask-me-again "dontAskMeAgain.text"
                          :stop-proceses-confirmation "stopProcessesConfirmation.text"
                          :properties-not-set-confirmation "propertiesNotSetConfirmation.text"
                          :caches-out-of-date-confirmation "cachesOutOfDateConfirmation.text"
@@ -245,25 +243,25 @@
                          :ignoring-unknown-test "Ignoring unknown test"
                          }
 
-                :statistic {:Tests "Successful Tests"
+                :statistic {:Tests "statistic.Tests.label"
                             :Errors :console.term/errors
-                            :Mean_Test_Time_ms "Mean Time"
-                            :Test_Time_Standard_Deviation_ms "Mean Time Standard Deviation"
+                            :Mean_Test_Time_ms "statistic.Mean_Test_Time_(ms).label"
+                            :Test_Time_Standard_Deviation_ms "statistic.Test_Time_Standard_Deviation_(ms).label"
                             :TPS :console.term/tps
-                            :Peak_TPS "Peak TPS"
-                            :Mean_response_length "Mean Response Length"
-                            :Response_bytes_per_second "Response Bytes Per Second"
-                            :Response_errors "Response Errors"
-                            :Mean_time_to_resolve_host "Mean time to resolve host"
-                            "Mean_time_to_establish_connection" "Mean time to establish connection"
-                            :Mean_time_to_first_byte "Mean time to first byte"
+                            :Peak_TPS "statistic.Peak_TPS.label"
+                            :Mean_response_length "statistic.Mean_response_length.label"
+                            :Response_bytes_per_second "statistic.Response_bytes_per_second.label"
+                            :Response_errors "statistic.Response_errors.label"
+                            :Mean_time_to_resolve_host "statistic.Mean_time_to_resolve_host.label"
+                            "Mean_time_to_establish_connection" "statistic.Mean_time_to_establish_connection.label"
+                            :Mean_time_to_first_byte "statistic.Mean_time_to_first_byte.label"
                             }
 
                 :process {
-                          :name "Process"
-                          :type "Type"
+                          :name "processTable.nameColumn.label"
+                          :type "processTable.processTypeColumn.label"
                           :state :console.term/status
-                          :label "worker processes" ; review me
+                          :label "processTable.processes.label" ; review me
                           }
                 }
       :missing  "MISSING TRANSLATION: {0}"

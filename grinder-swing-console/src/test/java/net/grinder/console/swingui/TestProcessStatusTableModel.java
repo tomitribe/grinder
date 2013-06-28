@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2012 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,20 +21,25 @@
 
 package net.grinder.console.swingui;
 
-import java.util.HashMap;
-
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 import net.grinder.common.processidentity.ProcessReport;
 import net.grinder.common.processidentity.WorkerProcessReport;
-import net.grinder.console.common.Resources;
-import net.grinder.console.common.StubResources;
 import net.grinder.console.common.processidentity.StubAgentProcessReport;
 import net.grinder.console.common.processidentity.StubWorkerProcessReport;
 import net.grinder.console.communication.ProcessControl;
-import net.grinder.console.communication.StubProcessReports;
 import net.grinder.console.communication.ProcessControl.ProcessReports;
+import net.grinder.console.communication.StubProcessReports;
 import net.grinder.engine.agent.StubAgentIdentity;
 import net.grinder.testutility.RandomStubFactory;
+import net.grinder.translation.Translations;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 
 /**
@@ -42,29 +47,49 @@ import net.grinder.testutility.RandomStubFactory;
  *
  * @author Philip Aston
  */
-public class TestProcessStatusTableModel extends TestCase {
+public class TestProcessStatusTableModel {
 
-  private Resources m_resources =
-    new StubResources<String>(
-      new HashMap<String, String>() { {
-        put("processTable.nameColumn.label", "NaMe");
-        put("processTable.processTypeColumn.label", "type");
-        put("processTable.stateColumn.label", "STATE");
-        put("processTable.processes.label", "workers");
-        put("processTable.threads.label", "threads");
-        put("processState.connected.label", "connected");
-        put("processState.disconnected.label", "disconnected");
-        put("processState.finished.label", "finished");
-        put("processTable.agentProcess.label", "Agent");
-        put("processTable.workerProcess.label", "Worker");
-      } }
-    );
+  @Mock private Translations m_translations;
+
+  @Before public void setUp() {
+    initMocks(this);
+
+    when(m_translations.translate("console.process/name"))
+      .thenReturn("NaMe");
+
+    when(m_translations.translate("console.process/type"))
+      .thenReturn("type");
+
+    when(m_translations.translate("console.process/state"))
+      .thenReturn("STATE");
+
+    when(m_translations.translate("console.process/label"))
+      .thenReturn("workers");
+
+    when(m_translations.translate("console.term/threads"))
+      .thenReturn("threads");
+
+    when(m_translations.translate("console.state/running-agent"))
+      .thenReturn("connected");
+
+    when(m_translations.translate("console.state/finished-agent"))
+      .thenReturn("disconnected");
+
+    when(m_translations.translate("console.state/finished"))
+      .thenReturn("finished");
+
+    when(m_translations.translate("console.term/agent"))
+      .thenReturn("Agent");
+
+    when(m_translations.translate("console.term/worker"))
+      .thenReturn("Worker");
+  }
 
   final RandomStubFactory<ProcessControl> m_processControlStubFactory =
     RandomStubFactory.create(ProcessControl.class);
   final ProcessControl m_processControl = m_processControlStubFactory.getStub();
 
-  public void testConstruction() throws Exception {
+  @Test public void testConstruction() throws Exception {
 
     final int[] swingDispatcherCallCount = new int[1];
 
@@ -77,7 +102,7 @@ public class TestProcessStatusTableModel extends TestCase {
       };
 
     final ProcessStatusTableModel processStatusTableModel =
-      new ProcessStatusTableModel(m_resources,
+      new ProcessStatusTableModel(m_translations,
                                   m_processControl,
                                   swingDispatcherFactory);
 
@@ -99,14 +124,14 @@ public class TestProcessStatusTableModel extends TestCase {
     assertEquals(1, swingDispatcherCallCount[0]);
   }
 
-  public void testWithData() throws Exception {
+  @Test public void testWithData() throws Exception {
     final SwingDispatcherFactory swingDispatcherFactory =
       new SwingDispatcherFactory() {
         public <T> T create(Class<T> clazz, T delegate) { return delegate; }
       };
 
     final ProcessStatusTableModel processStatusTableModel =
-      new ProcessStatusTableModel(m_resources,
+      new ProcessStatusTableModel(m_translations,
                                   m_processControl,
                                   swingDispatcherFactory);
 

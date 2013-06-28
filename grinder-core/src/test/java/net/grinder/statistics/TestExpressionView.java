@@ -120,6 +120,7 @@ public class TestExpressionView  {
       statisticExpressionFactory
       .createExpressionView(displayName, expressionString, false);
 
-    assertEquals("statistic.My_view", expressionView.getTranslationKey());
+    assertEquals("console.statistic/My_view",
+                 expressionView.getTranslationKey());
   }
 }

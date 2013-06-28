@@ -25,6 +25,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.awt.Color;
@@ -72,6 +73,15 @@ public class TestCumulativeStatisticsTableModel
   @Before public void setUp() throws Exception {
     initMocks(this);
     m_file = new File(getDirectory(), "properties");
+
+    when(m_translations.translate("console.term/test"))
+      .thenReturn("t3st");
+
+    when(m_translations.translate("console.term/test-description"))
+      .thenReturn("Test Description Column");
+
+    when(m_translations.translate("console.term/total"))
+    .thenReturn("Total Label");
   }
 
   public static class NullSwingDispatcherFactory
@@ -134,7 +144,7 @@ public class TestCumulativeStatisticsTableModel
     final CumulativeStatisticsTableModel model =
       new CumulativeStatisticsTableModel(m_sampleModel,
                                          m_sampleModelViews,
-                                         m_resources,
+                                         m_translations,
                                          m_swingDispatcherFactory);
 
     // The dispatcher factory is used a couple of times to wrap
@@ -183,7 +193,7 @@ public class TestCumulativeStatisticsTableModel
     final CumulativeStatisticsTableModel model =
       new CumulativeStatisticsTableModel(m_sampleModel,
                                          m_sampleModelViews,
-                                         m_resources,
+                                         m_translations,
                                          m_swingDispatcherFactory);
 
     final StringWriter writer = new StringWriter();
@@ -198,7 +208,7 @@ public class TestCumulativeStatisticsTableModel
     final CumulativeStatisticsTableModel model =
       new CumulativeStatisticsTableModel(m_sampleModel,
                                          m_sampleModelViews,
-                                         m_resources,
+                                         m_translations,
                                          m_swingDispatcherFactory);
 
     final StringWriter writer = new StringWriter();
@@ -213,7 +223,7 @@ public class TestCumulativeStatisticsTableModel
     final CumulativeStatisticsTableModel model =
       new CumulativeStatisticsTableModel(m_sampleModel,
                                          m_sampleModelViews,
-                                         m_resources,
+                                         m_translations,
                                          m_swingDispatcherFactory);
 
     m_resources.put("statistic.Errors.label", "Blah");
@@ -251,7 +261,7 @@ public class TestCumulativeStatisticsTableModel
     final CumulativeStatisticsTableModel model =
       new CumulativeStatisticsTableModel(sampleModelImplementation,
                                          m_sampleModelViews,
-                                         m_resources,
+                                         m_translations,
                                          m_swingDispatcherFactory);
 
     model.newTests(null, new ModelTestIndex());

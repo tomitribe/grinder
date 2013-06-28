@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2012 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,17 +21,22 @@
 
 package net.grinder.console.common;
 
-import java.util.HashMap;
-
-import junit.framework.TestCase;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 import net.grinder.common.processidentity.AgentProcessReport;
 import net.grinder.common.processidentity.ProcessReport;
+import net.grinder.common.processidentity.ProcessReport.State;
 import net.grinder.common.processidentity.WorkerIdentity;
 import net.grinder.common.processidentity.WorkerProcessReport;
-import net.grinder.common.processidentity.ProcessReport.State;
 import net.grinder.console.common.ProcessReportDescriptionFactory.ProcessDescription;
 import net.grinder.engine.agent.StubAgentIdentity;
 import net.grinder.testutility.RandomStubFactory;
+import net.grinder.translation.Translations;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 
 /**
@@ -39,24 +44,42 @@ import net.grinder.testutility.RandomStubFactory;
  *
  * @author Philip Aston
  */
-public class TestProcessReportDescriptionFactory extends TestCase {
+public class TestProcessReportDescriptionFactory {
 
-  private Resources m_resources =
-    new StubResources<String>(
-      new HashMap<String, String>() { {
-        put("processTable.threads.label", "strings");
-        put("processTable.agentProcess.label", "AG");
-        put("processTable.workerProcess.label", "WK");
-        put("processState.started.label", "hot to trot");
-        put("processState.running.label", "rolling");
-        put("processState.connected.label", "plugged in");
-        put("processState.finished.label", "fini");
-        put("processState.disconnected.label", "that's all folks");
-        put("processState.unknown.label", "huh");
-      } }
-    );
+  @Mock private Translations m_translations;
 
-  public void testWithAgentProcessReport() throws Exception {
+  @Before public void setUp() {
+    initMocks(this);
+
+    when(m_translations.translate("console.term/threads"))
+      .thenReturn("strings");
+
+    when(m_translations.translate("console.term/agent"))
+      .thenReturn("AG");
+
+    when(m_translations.translate("console.term/worker"))
+      .thenReturn("WK");
+
+    when(m_translations.translate("console.state/started"))
+      .thenReturn("hot to trot");
+
+    when(m_translations.translate("console.state/running"))
+      .thenReturn("rolling");
+
+    when(m_translations.translate("console.state/running-agent"))
+      .thenReturn("plugged in");
+
+    when(m_translations.translate("console.state/finished"))
+      .thenReturn("fini");
+
+    when(m_translations.translate("console.state/finished-agent"))
+      .thenReturn("that's all folks");
+
+    when(m_translations.translate("console.state/unknown"))
+      .thenReturn("huh");
+  }
+
+  @Test public void testWithAgentProcessReport() throws Exception {
     final StubAgentIdentity agentIdentity =
       new StubAgentIdentity("my agent");
 
@@ -69,7 +92,7 @@ public class TestProcessReportDescriptionFactory extends TestCase {
       "getState", ProcessReport.State.UNKNOWN);
 
     final ProcessReportDescriptionFactory processReportDescriptionFactory =
-      new ProcessReportDescriptionFactory(m_resources);
+      new ProcessReportDescriptionFactory(m_translations);
 
     final ProcessDescription description1 =
       processReportDescriptionFactory.create(agentProcessReport);
@@ -117,7 +140,7 @@ public class TestProcessReportDescriptionFactory extends TestCase {
     assertEquals("my agent (AG 10)", description6.getName());
   }
 
-  public void testWithWorkerProcessReport() throws Exception {
+  @Test public void testWithWorkerProcessReport() throws Exception {
     final StubAgentIdentity agentIdentity =
       new StubAgentIdentity("agent");
 
@@ -136,7 +159,7 @@ public class TestProcessReportDescriptionFactory extends TestCase {
       "getState", ProcessReport.State.UNKNOWN);
 
     final ProcessReportDescriptionFactory processReportDescriptionFactory =
-      new ProcessReportDescriptionFactory(m_resources);
+      new ProcessReportDescriptionFactory(m_translations);
 
     final ProcessDescription description1 =
       processReportDescriptionFactory.create(workerProcessReport);

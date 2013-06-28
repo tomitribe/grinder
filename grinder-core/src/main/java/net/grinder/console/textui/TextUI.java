@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2011 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -24,8 +24,6 @@ package net.grinder.console.textui;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import org.slf4j.Logger;
-
 import net.grinder.common.GrinderBuild;
 import net.grinder.common.processidentity.AgentProcessReport;
 import net.grinder.common.processidentity.ProcessReport;
@@ -33,10 +31,12 @@ import net.grinder.common.processidentity.WorkerProcessReport;
 import net.grinder.console.ConsoleFoundation.UI;
 import net.grinder.console.common.ErrorHandler;
 import net.grinder.console.common.ProcessReportDescriptionFactory;
-import net.grinder.console.common.Resources;
 import net.grinder.console.communication.ProcessControl;
 import net.grinder.console.communication.ProcessControl.ProcessReports;
 import net.grinder.console.model.SampleModel;
+import net.grinder.translation.Translations;
+
+import org.slf4j.Logger;
 
 
 /**
@@ -58,29 +58,30 @@ public class TextUI implements UI {
   /**
    * Constructor.
    *
-   * @param resources Console resources.
+   * @param translations Translation service.
    * @param processControl Console process control.
    * @param sampleModel Console sample model.
    * @param logger Logger.
    */
-  public TextUI(Resources resources,
-                ProcessControl processControl,
-                SampleModel sampleModel,
-                Logger logger) {
+  public TextUI(final Translations translations,
+                final ProcessControl processControl,
+                final SampleModel sampleModel,
+                final Logger logger) {
 
     m_logger = logger;
     m_logger.info(GrinderBuild.getName());
 
-    m_shutdownHook = new Thread(new ShutdownHook(resources));
+    m_shutdownHook = new Thread(new ShutdownHook(translations));
     Runtime.getRuntime().addShutdownHook(m_shutdownHook);
 
     m_errorHandler = new ErrorHandlerImplementation();
 
-    processControl.addProcessStatusListener(new ProcessListener(resources));
+    processControl.addProcessStatusListener(new ProcessListener(translations));
 
     m_sampleModel = sampleModel;
     m_sampleModel.addModelListener(
       new SampleModel.AbstractListener() {
+        @Override
         public void stateChanged() {
           m_logger.info(m_sampleModel.getState().getDescription());
         }
@@ -101,6 +102,7 @@ public class TextUI implements UI {
    *
    * @return The error handler.
    */
+  @Override
   public ErrorHandler getErrorHandler() {
     return m_errorHandler;
   }
@@ -117,12 +119,17 @@ public class TextUI implements UI {
     private final String m_noConnectedAgents;
     private String m_lastReport = null;
 
-    public ProcessListener(Resources resources) {
-      m_descriptionFactory = new ProcessReportDescriptionFactory(resources);
-      m_noConnectedAgents = resources.getString("noConnectedAgents.text");
+    public ProcessListener(final Translations translations) {
+      m_descriptionFactory = new ProcessReportDescriptionFactory(translations);
+      m_noConnectedAgents =
+        "<" +
+        translations.translate("console.state/no-connected-agents")
+          .toLowerCase() +
+        ">";
     }
 
-    public void update(ProcessControl.ProcessReports[] processReports) {
+    @Override
+    public void update(final ProcessControl.ProcessReports[] processReports) {
 
       final String reportString;
 
@@ -178,23 +185,29 @@ public class TextUI implements UI {
   }
 
   private final class ErrorHandlerImplementation implements ErrorHandler {
-    public void handleErrorMessage(String errorMessage) {
+    @Override
+    public void handleErrorMessage(final String errorMessage) {
       m_logger.error(errorMessage);
     }
 
-    public void handleErrorMessage(String errorMessage, String title) {
+    @Override
+    public void handleErrorMessage(final String errorMessage,
+                                   final String title) {
       m_logger.error("[" + title + "] " + errorMessage);
     }
 
-    public void handleException(Throwable throwable) {
+    @Override
+    public void handleException(final Throwable throwable) {
       m_logger.error(throwable.getMessage(), throwable);
     }
 
-    public void handleException(Throwable throwable, String title) {
+    @Override
+    public void handleException(final Throwable throwable, final String title) {
       m_logger.error(title, throwable);
     }
 
-    public void handleInformationMessage(String informationMessage) {
+    @Override
+    public void handleInformationMessage(final String informationMessage) {
       m_logger.info(informationMessage);
     }
   }
@@ -203,10 +216,12 @@ public class TextUI implements UI {
     private final String m_shutdownMessage;
     private boolean m_stopped = false;
 
-    public ShutdownHook(Resources resources) {
-      m_shutdownMessage = resources.getString("finished.text");
+    public ShutdownHook(final Translations translations) {
+      m_shutdownMessage =
+          translations.translate("console.term/finished").toLowerCase();
     }
 
+    @Override
     public synchronized void run() {
       if (!m_stopped) {
         m_stopped = true;

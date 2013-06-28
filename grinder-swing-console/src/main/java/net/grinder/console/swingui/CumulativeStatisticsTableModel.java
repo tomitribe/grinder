@@ -25,10 +25,10 @@ import java.awt.Color;
 import java.io.IOException;
 import java.io.Writer;
 
-import net.grinder.console.common.Resources;
 import net.grinder.console.model.SampleModel;
 import net.grinder.console.model.SampleModelViews;
 import net.grinder.statistics.StatisticsSet;
+import net.grinder.translation.Translations;
 
 
 /**
@@ -44,29 +44,33 @@ final class CumulativeStatisticsTableModel extends DynamicStatisticsTableModel {
   public CumulativeStatisticsTableModel(
     SampleModel model,
     SampleModelViews sampleModelViews,
-    Resources resources,
+    Translations translations,
     SwingDispatcherFactory swingDispatcherFactory) {
 
-    super(model, sampleModelViews, resources, swingDispatcherFactory);
+    super(model, sampleModelViews, translations, swingDispatcherFactory);
 
-    m_totalString = resources.getString("table.total.label");
+    m_totalString = translations.translate("console.term/total");
 
     resetStatisticsViews();
   }
 
+  @Override
   public synchronized void resetStatisticsViews() {
     super.resetStatisticsViews();
     addColumns(getModelViews().getCumulativeStatisticsView());
   }
 
+  @Override
   protected StatisticsSet getStatistics(int row) {
     return getLastModelTestIndex().getCumulativeStatistics(row);
   }
 
+  @Override
   public synchronized int getRowCount() {
     return super.getRowCount() + (m_includeTotals ? 1 : 0);
   }
 
+  @Override
   public synchronized Object getValueAt(int row, int column) {
 
     if (row < getLastModelTestIndex().getNumberOfTests()) {
@@ -87,6 +91,7 @@ final class CumulativeStatisticsTableModel extends DynamicStatisticsTableModel {
     }
   }
 
+  @Override
   public boolean isBold(int row, int column) {
 
     if (row < getLastModelTestIndex().getNumberOfTests()) {
@@ -97,6 +102,7 @@ final class CumulativeStatisticsTableModel extends DynamicStatisticsTableModel {
     }
   }
 
+  @Override
   public Color getForeground(int row, int column) {
 
     if (row < getLastModelTestIndex().getNumberOfTests()) {
@@ -114,6 +120,7 @@ final class CumulativeStatisticsTableModel extends DynamicStatisticsTableModel {
     }
   }
 
+  @Override
   public Color getBackground(int row, int column) {
 
     if (row < getLastModelTestIndex().getNumberOfTests()) {

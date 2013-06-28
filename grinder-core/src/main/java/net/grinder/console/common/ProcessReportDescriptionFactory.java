@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2012 Philip Aston
+// Copyright (C) 2008 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -24,6 +24,7 @@ package net.grinder.console.common;
 import net.grinder.common.processidentity.AgentIdentity;
 import net.grinder.common.processidentity.AgentProcessReport;
 import net.grinder.common.processidentity.WorkerProcessReport;
+import net.grinder.translation.Translations;
 
 
 /**
@@ -46,22 +47,23 @@ public final class ProcessReportDescriptionFactory {
   /**
    * Constructor.
    *
-   * @param resources Console resources.
+   * @param translations Translation service.
    */
-  public ProcessReportDescriptionFactory(Resources resources) {
-    m_threadsString = resources.getString("processTable.threads.label");
+  public ProcessReportDescriptionFactory(final Translations translations) {
+    m_threadsString =
+      translations.translate("console.term/threads").toLowerCase();
 
-    m_agentString = resources.getString("processTable.agentProcess.label");
-    m_workerString = resources.getString("processTable.workerProcess.label");
+    m_agentString = translations.translate("console.term/agent");
+    m_workerString = translations.translate("console.term/worker");
 
-    m_stateStartedString = resources.getString("processState.started.label");
-    m_stateRunningString = resources.getString("processState.running.label");
-    m_stateFinishedString = resources.getString("processState.finished.label");
+    m_stateStartedString = translations.translate("console.state/started");
+    m_stateRunningString = translations.translate("console.state/running");
+    m_stateFinishedString = translations.translate("console.state/finished");
     m_stateConnectedString =
-      resources.getString("processState.connected.label");
+      translations.translate("console.state/running-agent");
     m_stateDisconnectedString =
-      resources.getString("processState.disconnected.label");
-    m_stateUnknownString = resources.getString("processState.unknown.label");
+      translations.translate("console.state/finished-agent");
+    m_stateUnknownString = translations.translate("console.state/unknown");
   }
 
   /**
@@ -70,7 +72,8 @@ public final class ProcessReportDescriptionFactory {
    * @param agentProcessReport The process report.
    * @return The description.
    */
-  public ProcessDescription create(AgentProcessReport agentProcessReport) {
+  public ProcessDescription create(
+    final AgentProcessReport agentProcessReport) {
 
     final String state;
 
@@ -111,7 +114,8 @@ public final class ProcessReportDescriptionFactory {
    * @param workerProcessReport The process report.
    * @return The description.
    */
-  public ProcessDescription create(WorkerProcessReport workerProcessReport) {
+  public ProcessDescription create(
+    final WorkerProcessReport workerProcessReport) {
 
     final String state;
 
@@ -150,9 +154,9 @@ public final class ProcessReportDescriptionFactory {
     private final String m_processType;
     private final String m_state;
 
-    private ProcessDescription(String name,
-                               String processType,
-                               String state) {
+    private ProcessDescription(final String name,
+                               final String processType,
+                               final String state) {
       m_name = name;
       m_processType = processType;
       m_state = state;

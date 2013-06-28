@@ -24,6 +24,7 @@ package net.grinder.console.swingui;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
@@ -68,6 +69,15 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
     initMocks(this);
 
     m_file = new File(getDirectory(), "properties");
+
+    when(m_translations.translate("console.term/test"))
+    .thenReturn("t3st");
+
+    when(m_translations.translate("console.term/test-description"))
+      .thenReturn("Test Description Column");
+
+    when(m_translations.translate("console.term/total"))
+    .thenReturn("Total Label");
   }
 
   public static class NullSwingDispatcherFactory
@@ -131,7 +141,7 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
     final SampleStatisticsTableModel model =
       new SampleStatisticsTableModel(m_sampleModel,
                                      m_sampleModelViews,
-                                     m_resources,
+                                     m_translations,
                                      m_swingDispatcherFactory);
 
     // The dispatcher factory is used a couple of times to wrap
@@ -161,7 +171,7 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
     final SampleStatisticsTableModel model =
       new SampleStatisticsTableModel(m_sampleModel,
                                      m_sampleModelViews,
-                                     m_resources,
+                                     m_translations,
                                      m_swingDispatcherFactory);
 
     final StringWriter writer = new StringWriter();
@@ -176,7 +186,7 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
     final SampleStatisticsTableModel model =
       new SampleStatisticsTableModel(m_sampleModel,
                                      m_sampleModelViews,
-                                     m_resources,
+                                     m_translations,
                                      m_swingDispatcherFactory);
 
     m_resources.put("statistic.Errors.label", "Blah");
@@ -214,7 +224,7 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
     final SampleStatisticsTableModel model =
       new SampleStatisticsTableModel(sampleModelImplementation,
                                      m_sampleModelViews,
-                                     m_resources,
+                                     m_translations,
                                      m_swingDispatcherFactory);
 
     model.newTests(null, new ModelTestIndex());
