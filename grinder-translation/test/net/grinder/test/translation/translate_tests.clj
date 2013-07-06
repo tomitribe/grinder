@@ -90,6 +90,7 @@
           "missing for en" :not-there
           )
         (is "Hi World" (translate/t :hi "World"))
+        (is "Underscore" (translate/t :inder_score))
 
         (is "" (translate/t :empty))))))
 

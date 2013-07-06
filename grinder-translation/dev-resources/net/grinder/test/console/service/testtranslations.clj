@@ -1,6 +1,7 @@
-{:en {:test {:foo       "blah"
-             :hi       "Hi {0}"
-             :empty    ""
+{:en {:test {:foo         "blah"
+             :hi          "Hi {0}"
+             :under_score "Underscore"
+             :empty       ""
             }
 
       :missing "missing for en"
