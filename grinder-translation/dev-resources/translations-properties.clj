@@ -50,7 +50,6 @@
                           }
 
                 :option {:chart-statistic "Statistic"
-                         :save-defaults "options.save.label"
                          :save-totals-with-results "saveTotalsWithResults.label"
                          :save-totals-with-results.detail "Save totals with results"
 
@@ -59,7 +58,7 @@
                          :editor :console.section/editor
                          :editor-detail "options.editorTab.tip"
                          :miscellaneous "options.miscellaneousTab.title"
-                         :miscellaneous-details "options.miscellaneousTab.tip"
+                         :miscellaneous-detail "options.miscellaneousTab.tip"
 
                          :sample-interval "sampleInterval.label"
                          :significant-figures "significantFigures.label"
@@ -98,6 +97,7 @@
                          :ok "error.ok.label"
                          :cancel "options.cancel.label"
                          :copy-to-clipboard "errorDetails.copytoclipboard.label"
+                         :save-defaults "options.save.label"
 
                          ; An underscore in the label explicitly marks the next character as a mnemonic.
 
@@ -195,8 +195,8 @@
                        :mean "graph.peakSuffix.label" ; CAPITAL CASE
                        :error "error.unit" ; CAPTIAL CASE
                        :errors "error.units" ; CAPITAL CASE
-                       :milisecond "ms.unit" ; CAPITAL CASE
-                       :miliseconds "ms.units" ; CAPITAL CASE
+                       :millisecond "ms.unit" ; CAPITAL CASE
+                       :milliseconds "ms.units" ; CAPITAL CASE
                        :sample "sample.unit" ; CAPITAL CASE
                        :samples "sample.units" ; CAPITAL CASE
                        :tps "tps.units" ; CAPITAL CASE

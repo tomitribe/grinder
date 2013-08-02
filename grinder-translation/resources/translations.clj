@@ -50,7 +50,6 @@
                           }
 
                 :option {:chart-statistic "Statistic"
-                         :save-defaults "Save defaults"
                          :save-totals-with-results "Include totals"
                          :save-totals-with-results.detail "Save totals with results"
 
@@ -59,7 +58,7 @@
                          :editor :console.section/editor
                          :editor-detail "Script editor options"
                          :miscellaneous "Miscellaneous"
-                         :miscellaneous-details "Other options"
+                         :miscellaneous-detail "Other options"
 
                          :sample-interval "Sample interval"
                          :significant-figures "Significant figures"
@@ -98,6 +97,7 @@
                          :ok "OK"
                          :cancel "Cancel"
                          :copy-to-clipboard "Copy to clipboard"
+                         :save-defaults "Save defaults"
 
                          ; An underscore in the label explicitly marks the next character as a mnemonic.
 
@@ -197,8 +197,8 @@
                        ; transform to lower case where required
                        :error "Error"
                        :errors "Errors"
-                       :milisecond "ms"
-                       :miliseconds "ms"
+                       :millisecond "ms"
+                       :milliseconds "ms"
                        :sample "Sample"
                        :samples "Samples"
                        :tps "TPS"

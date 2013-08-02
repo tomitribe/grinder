@@ -120,7 +120,7 @@ abstract class DynamicStatisticsTableModel
 
       for (int i = 0; i < m_columnLabels.length; ++i) {
         final String resource =
-          m_translations.translate(m_columnViews[i].getTranslationKey(), false);
+          m_translations.translate(m_columnViews[i].getTranslationKey());
 
         m_columnLabels[i] =
           resource != null ?

@@ -78,7 +78,9 @@ public final class ExpressionView implements Translatable {
       (expressionString != null ? m_expressionString.hashCode() : 0);
 
     m_translationKey =
-        "console.statistic/" + m_displayName.replaceAll("\\s+", "_");
+        "console.statistic/" +
+        m_displayName.replaceAll("\\s+", "_")
+        .replaceAll("\\(|\\)", "");
 
     // Code outside this package can only obtain ExpressionViews through a
     // StatisticExpressionFactory instance, and in turn this factory must be

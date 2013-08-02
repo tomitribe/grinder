@@ -81,7 +81,7 @@ public class TestCumulativeStatisticsTableModel
       .thenReturn("Test Description Column");
 
     when(m_translations.translate("console.term/total"))
-    .thenReturn("Total Label");
+      .thenReturn("Total Label");
   }
 
   public static class NullSwingDispatcherFactory
@@ -226,8 +226,10 @@ public class TestCumulativeStatisticsTableModel
                                          m_translations,
                                          m_swingDispatcherFactory);
 
-    m_resources.put("statistic.Errors.label", "Blah");
-    m_resources.put("statistic.Mean_Test_Time_(ms).label", "meantime");
+    when(m_translations.translate("console.statistic/Errors"))
+      .thenReturn("Blah");
+    when(m_translations.translate("console.statistic/Mean_Test_Time_ms"))
+    .thenReturn("meantime");
 
     assertEquals(7, model.getColumnCount());
 

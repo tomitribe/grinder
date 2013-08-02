@@ -154,7 +154,7 @@ abstract class OptionsDialogHandler {
     final JPanel sfPanel = new JPanel(new GridLayout(0, 2));
     sfPanel.add(
       new JLabel(
-        m_translations.translate("console.option/signficant-figures")));
+        m_translations.translate("console.option/significant-figures")));
     sfPanel.add(m_sfSlider);
 
     final JPanel editorLabelPanel = new JPanel(new GridLayout(0, 1, 0, 1));
@@ -189,7 +189,7 @@ abstract class OptionsDialogHandler {
     m_resetConsoleWithProcessesCheckBox =
       new JCheckBox(
         m_translations.translate(
-          "console.options/reset-console-with-processes"));
+          "console.option/reset-console-with-processes"));
     final JPanel checkBoxPanel = new JPanel();
     checkBoxPanel.add(m_resetConsoleWithProcessesCheckBox);
 
@@ -244,7 +244,7 @@ abstract class OptionsDialogHandler {
     final Object[] options = {
       m_translations.translate("console.action/ok"),
       m_translations.translate("console.action/cancel"),
-      m_translations.translate("console.tion/save-defaults"),
+      m_translations.translate("console.action/save-defaults"),
     };
 
     final JOptionPane optionPane =
