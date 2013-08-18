@@ -48,9 +48,7 @@
     Translations
     (^String translate [^Translations this ^String k ^objects format-args]
 
-      ; Use scope to partition concerns.
-      ; - Check it works with strings.
-      ; Fix passing of format-args.
+      ; Fix passing of format-args. (Still a problem??)
       ; Resource bundle support will go away.
       ; Where to place translations file?
       (binding [tower/*Locale* locale]

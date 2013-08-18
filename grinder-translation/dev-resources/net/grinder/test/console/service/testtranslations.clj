@@ -4,6 +4,8 @@
              :empty       ""
             }
 
+      :test2 {:bah :test/foo}
+
       :missing "missing for en"
       }
 

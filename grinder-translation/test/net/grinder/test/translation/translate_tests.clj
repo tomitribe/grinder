@@ -68,65 +68,101 @@
     (are [x k] (= x (#'translate/resource-bundle-result k))
       "Hello World" :hello)))
 
+(defmacro preserve-tower-config
+  "Save and restore tower/config."
+  [& body]
+  `(let [c# @tower/config]
+     (try
+       ~@body
+       (finally
+         (swap! tower/config (fn [_#] c#) )))))
+
 (defn- load-test-tower-config
-  []
-  (tower/set-config! [:dictionary] {}) ; Discard any configuration.
-  (tower/set-config! [:log-missing-translation!-fn] (fn [x])) ; Don't log.
-  (tower/load-dictionary-from-map-resource!
-    "net/grinder/test/console/service/testtranslations.clj"))
+  ([]
+    (load-test-tower-config
+      "net/grinder/test/console/service/testtranslations.clj"))
+  ([d]
+    (tower/set-config! [:dictionary] {}) ; Discard any configuration.
+    (tower/set-config! [:log-missing-translation!-fn] (fn [x])) ; Don't log.
+    (tower/load-dictionary-from-map-resource! d)))
 
 (deftest test-t
-  (load-test-tower-config)
-  (translate/with-resource-bundle tb
-    (tower/with-locale :en
-      (tower/with-scope :test
-        (are [x k] (= x (translate/t k))
-          "blah" :foo
-          "blah" [:bah :foo]
-          "Hello World" :hello
-          "Hello World" [:hello]
-          "Hello World" [:x :hello :y]
-          "Hello World" (reify Translatable (getTranslationKey [this] "hello"))
-          "missing for en" :not-there
-          )
-        (is "Hi World" (translate/t :hi "World"))
-        (is "Underscore" (translate/t :inder_score))
+  (preserve-tower-config
+    (load-test-tower-config)
+    (translate/with-resource-bundle tb
+      (tower/with-locale :en
+        (tower/with-scope :test
+          (are [x k] (= x (translate/t k))
+            "blah" :foo
+            "blah" [:bah :foo]
+            "Hello World" :hello
+            "Hello World" [:hello]
+            "Hello World" [:x :hello :y]
+            "Hello World" (reify Translatable (getTranslationKey [this] "hello"))
+            "missing for en" :not-there
+            )
+          (is "Hi World" (translate/t :hi "World"))
+          (is "Underscore" (translate/t :inder_score))
 
-        (is "" (translate/t :empty))))))
+          (is "" (translate/t :empty)))
+
+        (is "blah" (translate/t :test2/bah))
+
+        ))))
+
+(deftest test-t-standard-dictionary
+  (preserve-tower-config
+    (load-test-tower-config "translations.clj")
+    (tower/with-locale :en
+      (are [x k] (= x (translate/t k))
+        "console" :console/terminal-label
+        "Script Editor" :console.option/editor ; Test alias
+    ))))
 
 (deftest test-make-wrap-with-translation
-  (load-test-tower-config)
-  (let [mw (translate/make-wrap-with-translation
-             :test
-             tb)
-        request {}
-        tr-request {:params {:locale "tr"}}
-        response {:some "response"}]
-    (is (= response
-      ((mw (fn [r]
-            (is (= r request))
-            (are [x k] (= x (translate/t k))
-              "blah" :foo
-              "Hello World" :hello)
-            response))
-        request)))
+  (preserve-tower-config
+    (load-test-tower-config)
+    (let [mw (translate/make-wrap-with-translation
+               :test
+               tb)
+          request {}
+          tr-request {:params {:locale "tr"}}
+          response {:some "response"}]
+      (is (= response
+        ((mw (fn [r]
+              (is (= r request))
+              (are [x k] (= x (translate/t k))
+                "blah" :foo
+                "Hello World" :hello)
+              response))
+          request)))
 
-    (is (= response
-      ((mw (fn [r]
-            (is (= r tr-request))
-            (are [x k] (= x (translate/t k))
-              "blah" :foo
-              "Merhaba Dünya" :hello)
-            response
-            ))
-        tr-request)))
-    ))
-
+      (is (= response
+        ((mw (fn [r]
+              (is (= r tr-request))
+              (are [x k] (= x (translate/t k))
+                "blah" :foo
+                "Merhaba Dünya" :hello)
+              response
+              ))
+          tr-request)))
+      )))
 
 (deftest test-java-access
-  (load-test-tower-config)
-  (tower/with-scope :test
+  (preserve-tower-config
+    (load-test-tower-config)
+    (tower/with-scope :test
+      (let [ts (net.grinder.translation.impl.TranslationsSource.)
+            t (.getTranslations ts (java.util.Locale. "en"))]
+        (is (= "blah" (.translate t "foo" nil))
+          ))))
+
+  (preserve-tower-config
+    (load-test-tower-config  "translations.clj")
+
     (let [ts (net.grinder.translation.impl.TranslationsSource.)
           t (.getTranslations ts (java.util.Locale. "en"))]
-      (is (= "blah" (.translate t "foo" nil))
-        ))))
+      (are [x k] (= x (.translate t k nil))
+        "console" "console/terminal-label"
+        "Script Editor" "console.option/editor" ; Test alias
+          ))))
