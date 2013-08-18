@@ -238,7 +238,7 @@ abstract class OptionsDialogHandler {
 
     tabbedPane.addTab(
       m_translations.translate("console.option/miscellaneous"),
-      null, editorTab,
+      null, miscellaneousTab,
       m_translations.translate("console.option/miscellaneous-detail"));
 
     final Object[] options = {
