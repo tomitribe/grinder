@@ -28,7 +28,7 @@
     [hiccup core def element form page
      [middleware :only [wrap-base-url]]
      [util :only [to-str to-uri]]]
-    [net.grinder.console.service.translate :only [t make-wrap-with-translation]]
+    [net.grinder.translation.translate :only [t make-wrap-with-translation]]
     [net.grinder.console.web.ringutil
      :only [root-relative-url] :rename {root-relative-url rr}]
     [org.httpkit.server :only [with-channel send!]]
