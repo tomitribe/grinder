@@ -4,7 +4,6 @@
   :url "http://grinder.sourceforge.net"
   :dependencies [[cheshire "4.0.0"]
                  [clj-stacktrace "0.2.5"]
-                 [com.taoensso/tower "1.2.0"]
                  [compojure "1.1.3"]
                  [http-kit "2.0.1"]
                  [hiccup "1.0.2"]
