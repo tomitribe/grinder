@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2009 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,124 +21,108 @@
 
 package net.grinder.util;
 
-import java.util.List;
-import java.util.ArrayList;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
+import net.grinder.util.ListenerSupport.HandlingInformer;
+import net.grinder.util.ListenerSupport.Informer;
 
-import junit.framework.TestCase;
-
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.InOrder;
+import org.mockito.Mock;
 
 /**
- * Unit test case for {@link ListenerSupport}.
+ * Unit tests for {@link ListenerSupport}.
  *
  * @author Philip Aston
  */
-public class TestListenerSupport extends TestCase {
+public class TestListenerSupport {
 
+  @Mock
+  private Informer<Object> informer; // a licky boom boom down
+
+  @Mock
+  private HandlingInformer<Object> handlingInformer;
+
+  private final ListenerSupport<Object> listenerSupport =
+      new ListenerSupport<Object>();
+
+  private final Object listener1 = new Object();
+
+  private final Object listener2 = new Object();
+
+  private final Object listener3 = new Object();
+
+  @Before
+  public void setUp() {
+    initMocks(this);
+  }
+
+  @Test
   public void testWithInformer() throws Exception {
 
-    final ListenerSupport<Object> listenerSupport =
-      new ListenerSupport<Object>();
-
-    final Object listener1 = new Object();
-    final Object listener2 = new Object();
-    final Object listener3 = new Object();
-
     listenerSupport.add(listener1);
     listenerSupport.add(listener2);
     listenerSupport.add(listener3);
     listenerSupport.add(listener1);
+    verifyNoMoreInteractions(informer);
 
-    final List<Object> listeners = new ArrayList<Object>();
+    listenerSupport.apply(informer);
 
-    listenerSupport.apply(new ListenerSupport.Informer<Object>() {
-      public void inform(Object listener) {
-        listeners.add(listener);
-      }
-    });
-
-    final Object[] calledListeners = listeners.toArray();
-    assertEquals(4, calledListeners.length);
-
-    assertEquals(listener1, calledListeners[0]);
-    assertEquals(listener2, calledListeners[1]);
-    assertEquals(listener3, calledListeners[2]);
-    assertEquals(listener1, calledListeners[3]);
+    final InOrder inOrder = inOrder(informer);
+    inOrder.verify(informer).inform(listener1);
+    inOrder.verify(informer).inform(listener2);
+    inOrder.verify(informer).inform(listener3);
+    inOrder.verify(informer).inform(listener1);
+    verifyNoMoreInteractions(informer);
   }
 
-  public void testWithHandlingInformer() throws Exception {
+  @Test
+  public void testWithHandlingInformerNotHandled() {
 
-    final ListenerSupport<Object> listenerSupport =
-      new ListenerSupport<Object>();
-
-    final Object listener1 = new Object();
-    final Object listener2 = new Object();
-    final Object listener3 = new Object();
-
-    final List<Object> listeners = new ArrayList<Object>();
-
-    final ListenerSupport.HandlingInformer<Object> informUpToListener3 =
-      new ListenerSupport.HandlingInformer<Object>() {
-        public boolean inform(Object listener) {
-          if (listener == listener3) {
-            return true;
-          }
-
-          listeners.add(listener);
-          return false;
-        }
-      };
-
-    assertFalse(listenerSupport.apply(informUpToListener3));
+    assertFalse(listenerSupport.apply(handlingInformer));
 
     listenerSupport.add(listener1);
     listenerSupport.add(listener2);
     listenerSupport.add(listener1);
+    verifyNoMoreInteractions(handlingInformer);
 
-    assertFalse(listenerSupport.apply(informUpToListener3));
-    listeners.clear();
+    assertFalse(listenerSupport.apply(handlingInformer));
 
-    listenerSupport.add(listener3);
-    listenerSupport.add(listener2);
-
-    assertTrue(listenerSupport.apply(informUpToListener3));
-
-    final Object[] calledListeners = listeners.toArray();
-    assertEquals(3, calledListeners.length);
-
-    assertEquals(listener1, calledListeners[0]);
-    assertEquals(listener2, calledListeners[1]);
-    assertEquals(listener1, calledListeners[2]);
-
-    listeners.clear();
-
-    final ListenerSupport.HandlingInformer<Object> informAll =
-      new ListenerSupport.HandlingInformer<Object>() {
-        public boolean inform(Object listener) {
-          listeners.add(listener);
-          return false;
-        }
-      };
-
-    assertFalse(listenerSupport.apply(informAll));
-
-    final Object[] calledListeners2 = listeners.toArray();
-    assertEquals(5, calledListeners2.length);
-
-    assertEquals(listener1, calledListeners2[0]);
-    assertEquals(listener2, calledListeners2[1]);
-    assertEquals(listener1, calledListeners2[2]);
-    assertEquals(listener3, calledListeners2[3]);
-    assertEquals(listener2, calledListeners2[4]);
+    final InOrder inOrder = inOrder(handlingInformer);
+    inOrder.verify(handlingInformer).inform(listener1);
+    inOrder.verify(handlingInformer).inform(listener2);
+    inOrder.verify(handlingInformer).inform(listener1);
+    verifyNoMoreInteractions(handlingInformer);
   }
 
+  @Test
+  public void testWithHandlingInformer() {
+
+    when(handlingInformer.inform(listener2)).thenReturn(true);
+
+    assertFalse(listenerSupport.apply(handlingInformer));
+
+    listenerSupport.add(listener1);
+    listenerSupport.add(listener2);
+    listenerSupport.add(listener1);
+    listenerSupport.add(listener2);
+    verifyNoMoreInteractions(handlingInformer);
+
+    assertTrue(listenerSupport.apply(handlingInformer));
+
+    final InOrder inOrder = inOrder(handlingInformer);
+    inOrder.verify(handlingInformer).inform(listener1);
+    inOrder.verify(handlingInformer).inform(listener2);
+    verifyNoMoreInteractions(handlingInformer);
+  }
+
+  @Test
   public void testRemove() {
-    final ListenerSupport<Object> listenerSupport =
-      new ListenerSupport<Object>();
-
-    final Object listener1 = new Object();
-    final Object listener2 = new Object();
-    final Object listener3 = new Object();
-
     listenerSupport.add(listener1);
     listenerSupport.add(listener2);
     listenerSupport.add(listener3);
@@ -146,38 +130,25 @@ public class TestListenerSupport extends TestCase {
 
     listenerSupport.remove(listener2);
 
-    final List<Object> listeners = new ArrayList<Object>();
-
-    final ListenerSupport.Informer<Object> informer =
-      new ListenerSupport.Informer<Object>() {
-        public void inform(Object listener) {
-          listeners.add(listener);
-        }
-      };
-
     listenerSupport.apply(informer);
 
-    final Object[] calledListeners = listeners.toArray();
-    assertEquals(3, calledListeners.length);
-
-    assertEquals(listener1, calledListeners[0]);
-    assertEquals(listener3, calledListeners[1]);
-    assertEquals(listener1, calledListeners[2]);
-
-    listeners.clear();
+    final InOrder inOrder = inOrder(informer);
+    inOrder.verify(informer).inform(listener1);
+    inOrder.verify(informer).inform(listener3);
+    inOrder.verify(informer).inform(listener1);
+    verifyNoMoreInteractions(informer);
 
     listenerSupport.remove(listener1);
 
     listenerSupport.apply(informer);
-    assertEquals(1, listeners.size());
-    assertEquals(listener3, listeners.get(0));
 
-    listeners.clear();
+    inOrder.verify(informer).inform(listener3);
+    verifyNoMoreInteractions(informer);
 
     listenerSupport.remove(listener1);
 
     listenerSupport.apply(informer);
-    assertEquals(1, listeners.size());
-    assertEquals(listener3, listeners.get(0));
+    inOrder.verify(informer).inform(listener3);
+    verifyNoMoreInteractions(informer);
   }
 }
