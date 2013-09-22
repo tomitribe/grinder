@@ -247,16 +247,16 @@
 
                 :statistic {:Tests "Successful Tests"
                             :Errors :console.term/errors
-                            :Mean_Test_Time_ms "Mean Time"
-                            :Test_Time_Standard_Deviation_ms "Mean Time Standard Deviation"
+                            :Mean-Test-Time-ms "Mean Time"
+                            :Test-Time-Standard-Deviation-ms "Mean Time Standard Deviation"
                             :TPS :console.term/tps
-                            :Peak_TPS "Peak TPS"
-                            :Mean_response_length "Mean Response Length"
-                            :Response_bytes_per_second "Response Bytes Per Second"
-                            :Response_errors "Response Errors"
-                            :Mean_time_to_resolve_host "Mean time to resolve host"
-                            "Mean_time_to_establish_connection" "Mean time to establish connection"
-                            :Mean_time_to_first_byte "Mean time to first byte"
+                            :Peak-TPS "Peak TPS"
+                            :Mean-response-length "Mean Response Length"
+                            :Response-bytes-per-second "Response Bytes Per Second"
+                            :Response-errors "Response Errors"
+                            :Mean-time-to-resolve-host "Mean time to resolve host"
+                            "Mean-time-to-establish-connection" "Mean time to establish connection"
+                            :Mean-time-to-first-byte "Mean time to first byte"
                             }
 
                 :process {

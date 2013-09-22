@@ -79,7 +79,7 @@ public final class ExpressionView implements Translatable {
 
     m_translationKey =
         "console.statistic/" +
-        m_displayName.replaceAll("\\s+", "_")
+        m_displayName.replaceAll("\\s+", "-")
         .replaceAll("\\(|\\)", "");
 
     // Code outside this package can only obtain ExpressionViews through a
