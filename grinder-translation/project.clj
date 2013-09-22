@@ -13,6 +13,6 @@
   ;:repositories {"sonatype-nexus-snapshots" "https://oss.sonatype.org/content/repositories/snapshots/"
   ;               "sonatype-nexus-staging" "https://oss.sonatype.org/service/local/staging/deploy/maven2/"}
 
-  :aot [ net.grinder.translation.impl.translations_source ]
+  :aot [ net.grinder.translation.impl.translations-source ]
 
   :min-lein-version "2.0.0")
