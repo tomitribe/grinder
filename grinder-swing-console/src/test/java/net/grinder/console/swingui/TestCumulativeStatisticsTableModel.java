@@ -100,7 +100,6 @@ public class TestCumulativeStatisticsTableModel
     new StubResources<String>(
       new HashMap<String, String>() { {
         put("table.test.label", "t3st");
-        put("table.testColumn.label", "Test Column");
         put("table.descriptionColumn.label", "Test Description Column");
         put("table.total.label", "Total Label");
       } }
@@ -166,7 +165,7 @@ public class TestCumulativeStatisticsTableModel
     assertEquals(1, model.getRowCount());
     assertEquals(0, model.getLastModelTestIndex().getNumberOfTests());
 
-    assertEquals("Test Column", model.getColumnName(0));
+    assertEquals("t3st", model.getColumnName(0));
     assertEquals("Test Description Column", model.getColumnName(1));
     assertEquals("Errors", model.getColumnName(3));
 
@@ -200,7 +199,7 @@ public class TestCumulativeStatisticsTableModel
 
     model.write(writer, "::", "**");
 
-    assertEquals("Test Column::Test Description Column::Tests::Errors::Mean Test Time (ms)::Test Time Standard Deviation (ms)::TPS::**Total Label::::0::0::::0.0::::**",
+    assertEquals("t3st::Test Description Column::Tests::Errors::Mean Test Time (ms)::Test Time Standard Deviation (ms)::TPS::**Total Label::::0::0::::0.0::::**",
                  writer.toString());
   }
 
@@ -215,7 +214,7 @@ public class TestCumulativeStatisticsTableModel
 
     model.writeWithoutTotals(writer, "::", "**");
 
-    assertEquals("Test Column::Test Description Column::Tests::Errors::Mean Test Time (ms)::Test Time Standard Deviation (ms)::TPS::**",
+    assertEquals("t3st::Test Description Column::Tests::Errors::Mean Test Time (ms)::Test Time Standard Deviation (ms)::TPS::**",
                  writer.toString());
   }
 
@@ -228,8 +227,8 @@ public class TestCumulativeStatisticsTableModel
 
     when(m_translations.translate("console.statistic/Errors"))
       .thenReturn("Blah");
-    when(m_translations.translate("console.statistic/Mean_Test_Time_ms"))
-    .thenReturn("meantime");
+    when(m_translations.translate("console.statistic/Mean-Test-Time-ms"))
+      .thenReturn("meantime");
 
     assertEquals(7, model.getColumnCount());
 

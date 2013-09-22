@@ -43,7 +43,6 @@ import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.TestStatisticsQueries;
 import net.grinder.translation.Translations;
 
-
 /**
  * This class is used graphically show statistics.
  *
@@ -52,39 +51,45 @@ import net.grinder.translation.Translations;
  */
 class LabelledGraph extends JPanel {
   private static double s_peak = 0d;
+
   private static double s_lastPeak = 0d;
 
   private static Border s_thinBevelBorder;
 
   private static final Color[] s_colors = {
-    new Color(0xF0, 0xFF, 0x00),
-    new Color(0xF0, 0xF0, 0x00),
-    new Color(0xF0, 0xE0, 0x00),
-    new Color(0xF0, 0xD0, 0x00),
-    new Color(0xF0, 0xC0, 0x00),
-    new Color(0xF0, 0xB0, 0x00),
-    new Color(0xF0, 0xA0, 0x00),
-    new Color(0xF0, 0x90, 0x00),
-    new Color(0xF0, 0x80, 0x00),
-    new Color(0xF0, 0x70, 0x00),
-    new Color(0xF0, 0x60, 0x00),
-    new Color(0xF0, 0x50, 0x00),
-    new Color(0xF0, 0x40, 0x00),
-    new Color(0xF0, 0x30, 0x00),
-    new Color(0xF0, 0x20, 0x00),
-    new Color(0xF0, 0x10, 0x00),
-    new Color(0xF0, 0x00, 0x00),
+                                           new Color(0xF0, 0xFF, 0x00),
+                                           new Color(0xF0, 0xF0, 0x00),
+                                           new Color(0xF0, 0xE0, 0x00),
+                                           new Color(0xF0, 0xD0, 0x00),
+                                           new Color(0xF0, 0xC0, 0x00),
+                                           new Color(0xF0, 0xB0, 0x00),
+                                           new Color(0xF0, 0xA0, 0x00),
+                                           new Color(0xF0, 0x90, 0x00),
+                                           new Color(0xF0, 0x80, 0x00),
+                                           new Color(0xF0, 0x70, 0x00),
+                                           new Color(0xF0, 0x60, 0x00),
+                                           new Color(0xF0, 0x50, 0x00),
+                                           new Color(0xF0, 0x40, 0x00),
+                                           new Color(0xF0, 0x30, 0x00),
+                                           new Color(0xF0, 0x20, 0x00),
+                                           new Color(0xF0, 0x10, 0x00),
+                                           new Color(0xF0, 0x00, 0x00),
   };
 
   private final Color m_color;
+
   private final Graph m_graph;
+
   private final StatisticExpression m_tpsExpression;
+
   private final StatisticExpression m_peakTPSExpression;
+
   private final TestStatisticsQueries m_testStatisticsQueries;
 
   private static final class Label extends JLabel {
 
     private static final Font s_plainFont;
+
     private static final Font s_boldFont;
 
     static {
@@ -97,7 +102,9 @@ class LabelledGraph extends JPanel {
     }
 
     private final String m_suffix;
+
     private final String m_unit;
+
     private final String m_units;
 
     public Label(String unit, String units, String suffix) {
@@ -110,14 +117,14 @@ class LabelledGraph extends JPanel {
 
     public void set(long value) {
       super.setText(Long.toString(value) +
-                    (value == 1 ? m_unit : m_units) +
-                    m_suffix);
+          (value == 1 ? m_unit : m_units) +
+          m_suffix);
     }
 
     public void set(double value, NumberFormat numberFormat) {
       super.setText(numberFormat.format(value) +
-                    m_units +
-                    m_suffix);
+          m_units +
+          m_suffix);
     }
 
     public void set(String value) {
@@ -125,8 +132,7 @@ class LabelledGraph extends JPanel {
     }
 
     /**
-     * Make all labels the same width.
-     * Pack more tightly vertically.
+     * Make all labels the same width. Pack more tightly vertically.
      */
     @Override
     public Dimension getPreferredSize() {
@@ -154,10 +160,15 @@ class LabelledGraph extends JPanel {
   }
 
   private final Label m_averageTimeLabel;
+
   private final Label m_averageTPSLabel;
+
   private final Label m_peakTPSLabel;
+
   private final Label m_testsLabel;
+
   private final Label m_errorsLabel;
+
   private final Dimension m_preferredSize = new Dimension(250, 110);
 
   public LabelledGraph(String title,
@@ -166,7 +177,7 @@ class LabelledGraph extends JPanel {
                        StatisticExpression peakTPSExpression,
                        TestStatisticsQueries testStatisticsQueries) {
     this(title, translations, null, tpsExpression, peakTPSExpression,
-         testStatisticsQueries);
+      testStatisticsQueries);
   }
 
   public LabelledGraph(String title,
@@ -179,25 +190,18 @@ class LabelledGraph extends JPanel {
     m_peakTPSExpression = peakTPSExpression;
     m_testStatisticsQueries = testStatisticsQueries;
 
-    final String msUnit =
-      translations.translate("console.term/millisecond").toLowerCase();
-    final String msUnits =
-      translations.translate("console.term/milliseconds").toLowerCase();
-    final String tpsUnits =
-      translations.translate("console.term/tps").toLowerCase();
-    final String testUnit =
-      translations.translate("console.term/test").toLowerCase();
-    final String testUnits =
-      translations.translate("console.term/tests").toLowerCase();
-    final String errorUnit =
-      translations.translate("console.term/error").toLowerCase();
-    final String errorUnits =
-      translations.translate("console.term/errors").toLowerCase();
+    final String msUnit = translations.translate("console.term/millisecond");
+    final String msUnits = translations.translate("console.term/milliseconds");
+    final String tpsUnits = translations.translate("console.term/tps");
+    final String testUnit = translations.translate("console.term/test");
+    final String testUnits = translations.translate("console.term/tests");
+    final String errorUnit = translations.translate("console.term/error");
+    final String errorUnits = translations.translate("console.term/errors");
 
     final String averageSuffix =
-      "(" +  translations.translate("console.term/mean").toLowerCase() + ")";
+        "(" + translations.translate("console.term/mean") + ")";
     final String peakSuffix =
-      "(" +  translations.translate("console.term/peak").toLowerCase() + ")";
+        "(" + translations.translate("console.term/peak") + ")";
 
     m_averageTimeLabel = new Label(msUnit, msUnits, averageSuffix);
     m_averageTPSLabel = new Label(tpsUnits, tpsUnits, averageSuffix);
@@ -214,11 +218,11 @@ class LabelledGraph extends JPanel {
 
     if (s_thinBevelBorder == null) {
       s_thinBevelBorder =
-        BorderFactory.createBevelBorder(BevelBorder.LOWERED,
-                                        getBackground(),
-                                        getBackground().brighter(),
-                                        getBackground(),
-                                        getBackground().darker());
+          BorderFactory.createBevelBorder(BevelBorder.LOWERED,
+            getBackground(),
+            getBackground().brighter(),
+            getBackground(),
+            getBackground().darker());
     }
 
     graphPanel.setBorder(s_thinBevelBorder);
@@ -255,15 +259,15 @@ class LabelledGraph extends JPanel {
   }
 
   public void add(StatisticsSet intervalStatistics,
-                  StatisticsSet cumulativeStatistics,
-                  NumberFormat numberFormat) {
+    StatisticsSet cumulativeStatistics,
+    NumberFormat numberFormat) {
 
     final double averageTime =
-      m_testStatisticsQueries.getAverageTestTime(cumulativeStatistics);
+        m_testStatisticsQueries.getAverageTestTime(cumulativeStatistics);
     final long errors =
-      m_testStatisticsQueries.getNumberOfErrors(cumulativeStatistics);
+        m_testStatisticsQueries.getNumberOfErrors(cumulativeStatistics);
     final double peakTPS =
-      m_peakTPSExpression.getDoubleValue(cumulativeStatistics);
+        m_peakTPSExpression.getDoubleValue(cumulativeStatistics);
 
     m_graph.setMaximum(peakTPS);
     m_graph.add(m_tpsExpression.getDoubleValue(intervalStatistics));
@@ -283,7 +287,7 @@ class LabelledGraph extends JPanel {
     m_peakTPSLabel.set(peakTPS, numberFormat);
 
     m_testsLabel.set(
-      m_testStatisticsQueries.getNumberOfTests(cumulativeStatistics));
+        m_testStatisticsQueries.getNumberOfTests(cumulativeStatistics));
 
     m_errorsLabel.set(errors);
     m_errorsLabel.setHighlight(errors > 0);
@@ -301,7 +305,7 @@ class LabelledGraph extends JPanel {
         s_peak = time;
       }
 
-      final int colorIndex = (int)(s_colors.length * (time / s_lastPeak));
+      final int colorIndex = (int) (s_colors.length * (time / s_lastPeak));
 
       if (colorIndex >= s_colors.length) {
         return s_colors[s_colors.length - 1];

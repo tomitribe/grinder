@@ -61,23 +61,25 @@ import org.mockito.Mock;
  */
 public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
 
-  @Mock private Translations m_translations;
+  @Mock
+  private Translations m_translations;
 
   private File m_file;
 
-  @Before public void setUp() throws Exception {
+  @Before
+  public void setUp() throws Exception {
     initMocks(this);
 
     m_file = new File(getDirectory(), "properties");
 
     when(m_translations.translate("console.term/test"))
-    .thenReturn("t3st");
+        .thenReturn("t3st");
 
     when(m_translations.translate("console.term/test-description"))
-      .thenReturn("Test Description Column");
+        .thenReturn("Test Description Column");
 
     when(m_translations.translate("console.term/total"))
-    .thenReturn("Total Label");
+        .thenReturn("Total Label");
   }
 
   public static class NullSwingDispatcherFactory
@@ -90,46 +92,48 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
   }
 
   private final SwingDispatcherFactory m_swingDispatcherFactoryDelegate =
-    new NullSwingDispatcherFactory();
+      new NullSwingDispatcherFactory();
 
   private final StubResources<String> m_resources =
-    new StubResources<String>(
-      new HashMap<String, String>() { {
-        put("table.test.label", "t3st");
-        put("table.testColumn.label", "Test Column");
-        put("table.descriptionColumn.label", "Test Description Column");
-        put("table.total.label", "Total Label");
-      } }
-    );
+      new StubResources<String>(
+        new HashMap<String, String>() {
+          {
+            put("table.test.label", "t3st");
+            put("table.descriptionColumn.label", "Test Description Column");
+            put("table.total.label", "Total Label");
+          }
+        }
+      );
 
-  private final DelegatingStubFactory<SwingDispatcherFactory>
-    m_swingDispatcherFactoryStubFactory =
+  private final DelegatingStubFactory<SwingDispatcherFactory> m_swingDispatcherFactoryStubFactory =
       DelegatingStubFactory.create(m_swingDispatcherFactoryDelegate);
+
   private final SwingDispatcherFactory m_swingDispatcherFactory =
-    m_swingDispatcherFactoryStubFactory.getStub();
+      m_swingDispatcherFactoryStubFactory.getStub();
 
   private final RandomStubFactory<SampleModel> m_sampleModelStubFactory =
-    RandomStubFactory.create(SampleModel.class);
-  private final SampleModel m_sampleModel =
-    m_sampleModelStubFactory.getStub();
+      RandomStubFactory.create(SampleModel.class);
 
-  private final RandomStubFactory<SampleModelViews>
-    m_sampleModelViewsStubFactory =
+  private final SampleModel m_sampleModel =
+      m_sampleModelStubFactory.getStub();
+
+  private final RandomStubFactory<SampleModelViews> m_sampleModelViewsStubFactory =
       RandomStubFactory.create(SampleModelViews.class);
+
   private final SampleModelViews m_sampleModelViews =
-    m_sampleModelViewsStubFactory.getStub();
+      m_sampleModelViewsStubFactory.getStub();
 
   private final StatisticsServices m_statisticsServices =
-    StatisticsServicesTestFactory.createTestInstance();
+      StatisticsServicesTestFactory.createTestInstance();
 
   private final TestStatisticsQueries m_testStatisticsQueries =
-    m_statisticsServices.getTestStatisticsQueries();
+      m_statisticsServices.getTestStatisticsQueries();
 
   {
     m_sampleModelViewsStubFactory.setResult("getIntervalStatisticsView",
       m_statisticsServices.getSummaryStatisticsView());
     m_sampleModelViewsStubFactory.setResult("getTestStatisticsQueries",
-                                            m_testStatisticsQueries);
+      m_testStatisticsQueries);
     m_sampleModelViewsStubFactory.setResult("getNumberFormat",
       new DecimalFormat("0.0"));
 
@@ -137,22 +141,23 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
       m_statisticsServices.getStatisticsSetFactory().create());
   }
 
-  @Test public void testConstruction() throws Exception {
+  @Test
+  public void testConstruction() throws Exception {
     final SampleStatisticsTableModel model =
-      new SampleStatisticsTableModel(m_sampleModel,
-                                     m_sampleModelViews,
-                                     m_translations,
-                                     m_swingDispatcherFactory);
+        new SampleStatisticsTableModel(m_sampleModel,
+          m_sampleModelViews,
+          m_translations,
+          m_swingDispatcherFactory);
 
     // The dispatcher factory is used a couple of times to wrap
     // listeners.
     m_swingDispatcherFactoryStubFactory.assertSuccess("create",
-                                                      Class.class,
-                                                      Object.class);
+      Class.class,
+      Object.class);
 
     m_swingDispatcherFactoryStubFactory.assertSuccess("create",
-                                                      Class.class,
-                                                      Object.class);
+      Class.class,
+      Object.class);
     m_swingDispatcherFactoryStubFactory.assertNoMoreCalls();
 
     assertSame(m_sampleModel, model.getModel());
@@ -162,35 +167,40 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
     assertEquals(0, model.getRowCount());
     assertEquals(0, model.getLastModelTestIndex().getNumberOfTests());
 
-    assertEquals("Test Column", model.getColumnName(0));
+    assertEquals("t3st", model.getColumnName(0));
     assertEquals("Test Description Column", model.getColumnName(1));
     assertEquals("Errors", model.getColumnName(3));
   }
 
-  @Test public void testDefaultWrite() throws Exception {
+  @Test
+  public void testDefaultWrite() throws Exception {
     final SampleStatisticsTableModel model =
-      new SampleStatisticsTableModel(m_sampleModel,
-                                     m_sampleModelViews,
-                                     m_translations,
-                                     m_swingDispatcherFactory);
+        new SampleStatisticsTableModel(m_sampleModel,
+          m_sampleModelViews,
+          m_translations,
+          m_swingDispatcherFactory);
 
     final StringWriter writer = new StringWriter();
 
     model.write(writer, "::", "**");
 
-    assertEquals("Test Column::Test Description Column::Tests::Errors::Mean Test Time (ms)::Test Time Standard Deviation (ms)::TPS::**",
-                 writer.toString());
+    assertEquals(
+      "t3st::Test Description Column::Tests::Errors::Mean Test Time (ms)::Test Time Standard Deviation (ms)::TPS::**",
+      writer.toString());
   }
 
-  @Test public void testAddColumns() throws Exception {
+  @Test
+  public void testAddColumns() throws Exception {
     final SampleStatisticsTableModel model =
-      new SampleStatisticsTableModel(m_sampleModel,
-                                     m_sampleModelViews,
-                                     m_translations,
-                                     m_swingDispatcherFactory);
+        new SampleStatisticsTableModel(m_sampleModel,
+          m_sampleModelViews,
+          m_translations,
+          m_swingDispatcherFactory);
 
-    m_resources.put("statistic.Errors.label", "Blah");
-    m_resources.put("statistic.Mean_Test_Time_(ms).label", "meantime");
+    when(m_translations.translate("console.statistic/Errors"))
+        .thenReturn("Blah");
+    when(m_translations.translate("console.statistic/Mean-Test-Time-ms"))
+        .thenReturn("meantime");
 
     assertEquals(7, model.getColumnCount());
 
@@ -210,30 +220,31 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
     assertEquals("meantime", model.getColumnName(5));
   }
 
-  @Test public void testWithData() throws Exception {
+  @Test
+  public void testWithData() throws Exception {
     final Timer timer = new StubTimer();
 
     final SampleModelImplementation sampleModelImplementation =
-      new SampleModelImplementation(
-        new ConsoleProperties(m_translations, m_file),
-        m_statisticsServices,
-        timer,
-        m_resources,
-        null);
+        new SampleModelImplementation(
+          new ConsoleProperties(m_translations, m_file),
+          m_statisticsServices,
+          timer,
+          m_resources,
+          null);
 
     final SampleStatisticsTableModel model =
-      new SampleStatisticsTableModel(sampleModelImplementation,
-                                     m_sampleModelViews,
-                                     m_translations,
-                                     m_swingDispatcherFactory);
+        new SampleStatisticsTableModel(sampleModelImplementation,
+          m_sampleModelViews,
+          m_translations,
+          m_swingDispatcherFactory);
 
     model.newTests(null, new ModelTestIndex());
 
     assertEquals(0, model.getRowCount());
 
     final net.grinder.common.Test[] tests = {
-        new StubTest(1, "test 1"),
-        new StubTest(2, "test 2"),
+                                             new StubTest(1, "test 1"),
+                                             new StubTest(2, "test 2"),
     };
 
     sampleModelImplementation.registerTests(Arrays.asList(tests));
