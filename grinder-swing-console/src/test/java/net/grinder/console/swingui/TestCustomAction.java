@@ -30,14 +30,12 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.awt.event.ActionEvent;
-import java.util.HashMap;
 
 import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 import net.grinder.console.common.Resources;
-import net.grinder.console.common.StubResources;
 import net.grinder.translation.Translations;
 
 import org.junit.Before;
@@ -55,13 +53,8 @@ public class TestCustomAction {
   private static ImageIcon s_image1 = new ImageIcon();
   private static ImageIcon s_image2 = new ImageIcon();
 
-  private static Resources s_resources =
-    new StubResources<Object>(
-      new HashMap<String, Object>() { {
-        put("blah.rollover-image", s_image2);
-        put("x.image", s_image1);
-      } }
-    );
+  @Mock
+  private Resources m_resources;
 
   @Mock
   private Translations m_translations;
@@ -69,6 +62,9 @@ public class TestCustomAction {
   @Before
   public void setUp() {
     initMocks(this);
+
+    when(m_resources.getImageIcon("x.image")).thenReturn(s_image1);
+    when(m_resources.getImageIcon("blah.rollover-image")).thenReturn(s_image2);
 
     when(m_translations.translate("console.action/blah"))
     .thenReturn("lah");
@@ -83,11 +79,11 @@ public class TestCustomAction {
   private class MyAction extends CustomAction {
 
     public MyAction(String key) {
-      super(s_resources, m_translations, key);
+      super(m_resources, m_translations, key);
     }
 
     public MyAction(String key, boolean isDialogAction) {
-      super(s_resources, m_translations, key, isDialogAction);
+      super(m_resources, m_translations, key, isDialogAction);
     }
 
     public void actionPerformed(ActionEvent e) {

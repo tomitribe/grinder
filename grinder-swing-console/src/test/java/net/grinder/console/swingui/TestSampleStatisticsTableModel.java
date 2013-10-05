@@ -31,11 +31,9 @@ import java.io.File;
 import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Timer;
 
 import net.grinder.common.StubTest;
-import net.grinder.console.common.StubResources;
 import net.grinder.console.model.ConsoleProperties;
 import net.grinder.console.model.ModelTestIndex;
 import net.grinder.console.model.SampleModel;
@@ -93,17 +91,6 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
 
   private final SwingDispatcherFactory m_swingDispatcherFactoryDelegate =
       new NullSwingDispatcherFactory();
-
-  private final StubResources<String> m_resources =
-      new StubResources<String>(
-        new HashMap<String, String>() {
-          {
-            put("table.test.label", "t3st");
-            put("table.descriptionColumn.label", "Test Description Column");
-            put("table.total.label", "Total Label");
-          }
-        }
-      );
 
   private final DelegatingStubFactory<SwingDispatcherFactory> m_swingDispatcherFactoryStubFactory =
       DelegatingStubFactory.create(m_swingDispatcherFactoryDelegate);
@@ -229,7 +216,7 @@ public class TestSampleStatisticsTableModel extends AbstractJUnit4FileTestCase {
           new ConsoleProperties(m_translations, m_file),
           m_statisticsServices,
           timer,
-          m_resources,
+          m_translations,
           null);
 
     final SampleStatisticsTableModel model =

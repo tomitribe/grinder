@@ -1,4 +1,4 @@
-// Copyright (C) 2004, 2005 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -21,102 +21,111 @@
 
 package net.grinder.console.common;
 
-import junit.framework.TestCase;
+import static net.grinder.testutility.FileUtilities.setCanAccess;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 import java.io.File;
+import java.io.PrintWriter;
 
-import net.grinder.testutility.StubPrintWriter;
-import net.grinder.testutility.FileUtilities;
-
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 
 /**
- *  Unit test case for {@link ResourcesImplementation}.
+ * Unit test case for {@link ResourcesImplementation}.
  *
  * @author Philip Aston
  */
-public class TestResources extends TestCase {
+public class TestResources {
 
-  private final StubPrintWriter m_errorWriter =
-    new StubPrintWriter();
+  private final ResourcesImplementation resources =
+      new ResourcesImplementation(getClass().getName());
 
-  public void testResources() throws Exception {
-    final ResourcesImplementation resources = new ResourcesImplementation(getClass().getName());
-    final ResourcesImplementation resources2 = new ResourcesImplementation("TestResources");
+  @Mock
+  private PrintWriter m_errorWriter;
 
+  @Before
+  public void setUp() {
+    initMocks(this);
     resources.setErrorWriter(m_errorWriter);
+  }
+
+  @After
+  public void postConditions() {
+    verifyNoMoreInteractions(m_errorWriter);
+  }
+
+  @Test
+  public void testResources() throws Exception {
+    final ResourcesImplementation resources2 =
+        new ResourcesImplementation("TestResources");
+
     resources2.setErrorWriter(m_errorWriter);
 
     assertEquals("file1", resources.getString("resourceFile"));
     assertEquals("file2", resources2.getString("resourceFile"));
-
-    assertTrue(!(m_errorWriter.getOutputAndReset().length() > 0));
   }
 
+  @Test
   public void testGetString() throws Exception {
-    final ResourcesImplementation resources = new ResourcesImplementation(getClass().getName());
-    resources.setErrorWriter(m_errorWriter);
-
-    assertEquals("", resources.getString("notthere"));
-    assertTrue((m_errorWriter.getOutputAndReset().length() > 0));
-
-    assertNull(resources.getString("notthere", false));
-    assertTrue(!(m_errorWriter.getOutputAndReset().length() > 0));
-
-    assertEquals("", resources.getString("notthere", true));
-    assertTrue((m_errorWriter.getOutputAndReset().length() > 0));
-
     assertEquals("A property value", resources.getString("key"));
-    assertTrue(!(m_errorWriter.getOutputAndReset().length() > 0));
   }
 
+  @Test
+  public void testGetStringMissing() throws Exception {
+    assertEquals("", resources.getString("notthere"));
+    verify(m_errorWriter).println(isA(String.class));
+  }
 
+  @Test
   public void testGetImageIcon() throws Exception {
-    final ResourcesImplementation resources = new ResourcesImplementation(getClass().getName());
-    resources.setErrorWriter(m_errorWriter);
-
-    assertNull(resources.getImageIcon("notthere"));
-    assertTrue(!(m_errorWriter.getOutputAndReset().length() > 0));
-
-    assertNull(resources.getImageIcon("notthere", true));
-    assertTrue((m_errorWriter.getOutputAndReset().length() > 0));
-
-    assertNull(resources.getImageIcon("notthere", false));
-    assertTrue(!(m_errorWriter.getOutputAndReset().length() > 0));
-
-    assertNull(resources.getImageIcon("resourceFile", false));
-    assertTrue((m_errorWriter.getOutputAndReset().length() > 0));
-
-    assertNotNull(resources.getImageIcon("image", false));
-    assertTrue(!(m_errorWriter.getOutputAndReset().length() > 0));
+    assertNotNull(resources.getImageIcon("image"));
   }
 
+  @Test
+  public void testGetImageIconMissing() throws Exception {
+    assertNull(resources.getImageIcon("notthere"));
+  }
+
+  @Test
   public void testGetStringFromFile() throws Exception {
-    final ResourcesImplementation resources = new ResourcesImplementation(getClass().getName());
-    resources.setErrorWriter(m_errorWriter);
-
-    assertNull(resources.getStringFromFile("notthere", false));
-    assertTrue(!(m_errorWriter.getOutputAndReset().length() > 0));
-
-    assertNull(resources.getStringFromFile("notthere", true));
-    assertTrue((m_errorWriter.getOutputAndReset().length() > 0));
-
-    assertNull(resources.getStringFromFile("resourceFile", false));
-    assertTrue((m_errorWriter.getOutputAndReset().length() > 0));
-
     final String helloWorld = resources.getStringFromFile("aFile", true);
-    assertTrue(!(m_errorWriter.getOutputAndReset().length() > 0));
     assertEquals("Hello world\n", helloWorld);
+  }
+
+  @Test
+  public void testGetStringFromFileMissing() throws Exception {
+    assertNull(resources.getStringFromFile("notthere", false));
+  }
+
+  @Test
+  public void testGetStringFromFileMissing2() throws Exception {
+    assertNull(resources.getStringFromFile("notthere", true));
+    verify(m_errorWriter).println(isA(String.class));
+  }
+
+  @Test
+  public void testGetStringReadFailure() throws Exception {
 
     final File file =
-      new File(
-        ResourcesImplementation.class.getResource("resources/helloworld.txt").getFile());
+        new File(getClass().getResource("resources/helloworld.txt").getFile());
 
-    FileUtilities.setCanAccess(file, false);
+    setCanAccess(file, false);
 
-    final String noResource = resources.getStringFromFile("aFile", false);
-    assertNull(noResource);
-    assertTrue((m_errorWriter.getOutputAndReset().length() > 0));
-
-    FileUtilities.setCanAccess(file, true);
+    try {
+      final String noResource = resources.getStringFromFile("aFile", false);
+      assertNull(noResource);
+      verify(m_errorWriter).println(isA(String.class));
+    }
+    finally {
+      setCanAccess(file, true);
+    }
   }
 }

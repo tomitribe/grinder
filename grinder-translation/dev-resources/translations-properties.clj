@@ -220,7 +220,7 @@
                          :new-buffer "newBuffer.text"
                          :save-modified-buffer-confirmation "saveModifiedBufferConfirmation.text"
                          :external-edit-error "externalEditError.text"
-                         :external-edit-modified-buffer-confirmation "The file has unsaved changes in an open buffer.\nDo you still want to open it with the external editor?"
+                         :external-edit-modified-buffer-confirmation "externalEditModifiedBufferConfirmation.text"
                          :collect-negative-error "collectNegativeError.text"
                          :ignore-samples-negative-error "ignoreSamplesNegativeError.text"
                          :interval-less-than-one-error "intervalLessThanOneError.text"

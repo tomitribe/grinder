@@ -1,4 +1,4 @@
-// Copyright (C) 2005 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -31,8 +31,8 @@ import javax.swing.ImageIcon;
 public interface Resources {
 
   /**
-   * Overloaded version of {@link #getString(String, boolean)} which
-   * writes out a waning if the resource is missing.
+   * Look up a resource string. Write out a warning if the resource is missing.
+   *
    * @param key The resource key.
    * @return The string.
    */
@@ -40,16 +40,6 @@ public interface Resources {
 
   /**
    * Use key to look up resource which names image URL. Return the image.
-   * @param key The resource key.
-   * @param warnIfMissing true => write out an error message if the
-   * resource is missing.
-   * @return The string.
-   */
-  String getString(String key, boolean warnIfMissing);
-
-  /**
-   * Overloaded version of {@link #getImageIcon(String, boolean)}
-   * which doesn't write out a waning if the resource is missing.
    *
    * @param key The resource key.
    * @return The image.
@@ -57,17 +47,7 @@ public interface Resources {
   ImageIcon getImageIcon(String key);
 
   /**
-   * Use key to look up resource which names image URL. Return the image.
-   *
-   * @param key The resource key.
-   * @param warnIfMissing true => write out an error message if the
-   * resource is missing.
-   * @return The image
-   */
-  ImageIcon getImageIcon(String key, boolean warnIfMissing);
-
-  /**
-   * Use <code>key</code> to identify a file by URL. Return contents
+   * Use {@code key} to identify a file by URL. Return contents
    * of file as a String.
    *
    * @param key Resource key used to look up URL of file.

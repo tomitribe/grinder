@@ -35,7 +35,6 @@ import java.util.TreeSet;
 import net.grinder.common.GrinderException;
 import net.grinder.common.Test;
 import net.grinder.console.common.ErrorHandler;
-import net.grinder.console.common.Resources;
 import net.grinder.statistics.PeakStatisticExpression;
 import net.grinder.statistics.StatisticExpression;
 import net.grinder.statistics.StatisticExpressionFactory;
@@ -43,6 +42,7 @@ import net.grinder.statistics.StatisticsIndexMap;
 import net.grinder.statistics.StatisticsServices;
 import net.grinder.statistics.StatisticsSet;
 import net.grinder.statistics.TestStatisticsMap;
+import net.grinder.translation.Translations;
 import net.grinder.util.ListenerSupport;
 
 
@@ -101,7 +101,7 @@ public final class SampleModelImplementation implements SampleModel {
    * @param properties The console properties.
    * @param statisticsServices Statistics services.
    * @param timer A timer.
-   * @param resources Console resources.
+   * @param translations Console resources.
    * @param errorHandler Error handler
    *
    * @exception GrinderException if an error occurs
@@ -109,7 +109,7 @@ public final class SampleModelImplementation implements SampleModel {
   public SampleModelImplementation(final ConsoleProperties properties,
                                    final StatisticsServices statisticsServices,
                                    final Timer timer,
-                                   final Resources resources,
+                                   final Translations translations,
                                    final ErrorHandler errorHandler)
     throws GrinderException {
 
@@ -118,12 +118,16 @@ public final class SampleModelImplementation implements SampleModel {
     m_timer = timer;
     m_errorHandler = errorHandler;
 
-    m_stateIgnoringString = resources.getString("state.ignoring.label") + ": ";
-    m_stateWaitingString = resources.getString("state.waiting.label");
-    m_stateStoppedString = resources.getString("state.stopped.label");
+    m_stateIgnoringString =
+        translations.translate("console.state/ignoring-samples") + ": ";
+    m_stateWaitingString =
+        translations.translate("console.state/waiting-for-samples");
+    m_stateStoppedString =
+        translations.translate("console.state/collection-stopped");
     m_stateCapturingString =
-        resources.getString("state.capturing.label") + ": ";
-    m_unknownTestString = resources.getString("ignoringUnknownTest.text");
+        translations.translate("console.state/capturing-samples") + ": ";
+    m_unknownTestString =
+        translations.translate("console.phrase/ignoring-unknown-test");
 
     final StatisticsIndexMap indexMap =
       statisticsServices.getStatisticsIndexMap();

@@ -1,4 +1,4 @@
-// Copyright (C) 2004 - 2012 Philip Aston
+// Copyright (C) 2004 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -351,7 +351,8 @@ final class FileTree {
         }
         catch (ConsoleException e) {
           m_errorHandler.handleException(
-            e, m_resources.getString("fileError.title"));
+            e,
+            m_translations.translate("console.phrase/file-error"));
         }
       }
     }
@@ -381,8 +382,9 @@ final class FileTree {
           if (buffer != null && buffer.isDirty() &&
                 JOptionPane.showConfirmDialog(
                   getComponent(),
-                  m_resources.getString(
-                    "externalEditModifiedBufferConfirmation.text"),
+                  m_translations.translate(
+                    "console.phrase/external-edit-modified-buffer-confirmation"
+                    ),
                   file.toString(),
                   JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION) {
               return;
@@ -393,7 +395,8 @@ final class FileTree {
           }
           catch (ConsoleException e) {
             m_errorHandler.handleException(
-              e, m_resources.getString("fileError.title"));
+              e,
+              m_translations.translate("console.phrase/file-error"));
           }
         }
       }
