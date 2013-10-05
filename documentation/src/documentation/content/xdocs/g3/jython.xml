@@ -19,7 +19,7 @@
       <title>Importing modules</title>
 
       <p>Scripts can use code packaged in Jython <a
-      href="site:python/modules>modules"> modules</a>. The Grinder
+      href="site:python/modules">modules</a>. The Grinder
       adds both the directory containing the script and the <a
       href="site:scripts-intro/cwd">working directory</a> of the worker
       process (which may be the same) to the Python path, allowing
