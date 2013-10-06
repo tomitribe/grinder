@@ -66,6 +66,19 @@
 	  java -classpath lib/grinder.jar net.grinder.Console -headless
 	</source>
       </section>
+
+      <section id="address-command-line">
+	<title>Setting the HTTP address and port on the command line</title>
+
+	<p>You can also specify the console service address and port
+	on the command line, overriding the console options:</p>
+
+	<source class="text">
+	  java -classpath lib/grinder.jar -Dgrinder.console.httpHost=myhost -Dgrinder.console.httpPort=8080 net.grinder.Console
+	</source>
+
+        <p>Here <code>myhost</code> should resolve to a local IP address.</p>
+      </section>
     </section>
 
     <section id="rest">
