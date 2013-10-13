@@ -1,4 +1,4 @@
-// Copyright (C) 2005 - 2012 Philip Aston
+// Copyright (C) 2005 - 2013 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -122,7 +122,7 @@ public class TestHTTPProxyTCPProxyEngine {
                                   null);
       fail("Expected UnknownHostException");
     }
-    catch (UnknownHostException e) {
+    catch (final UnknownHostException e) {
     }
   }
 
@@ -161,7 +161,7 @@ public class TestHTTPProxyTCPProxyEngine {
    * @throws InterruptedException If we're interrupted.
    */
   private String readResponse(final Socket clientSocket,
-                              String terminalExpression)
+                              final String terminalExpression)
     throws IOException, InterruptedException {
     final InputStream clientInputStream = clientSocket.getInputStream();
 
@@ -172,8 +172,8 @@ public class TestHTTPProxyTCPProxyEngine {
       clientSocket.getInputStream().read(new byte[0]);
     }
 
-    while (clientInputStream.available() <= 0) {
-      Thread.sleep(10);
+    if (!waitForData(clientInputStream)) {
+      fail("No data read from socket");
     }
 
     final ByteArrayOutputStream response = new ByteArrayOutputStream();
@@ -201,21 +201,28 @@ public class TestHTTPProxyTCPProxyEngine {
         return s;
       }
 
-      final long RETRIES = 100;
+      waitForData(clientInputStream);
 
-      for (int i=0; i<RETRIES && clientInputStream.available() == 0; ++i) {
-        Thread.sleep(10);
-      }
-
-      if (clientInputStream.available() == 0) {
-        fail("Stream has been idle for " + (RETRIES * 10/1000d) +
-             " seconds and the terminal expression '" + terminalExpression +
-             "' does not match received data:\n" + s);
+      if (!waitForData(clientInputStream)) {
+        fail("Stream idle and the terminal expression '" +
+             terminalExpression +
+             "' has not matched received data:\n" + s);
       }
     }
   }
 
-  private void waitUntilAllStreamThreadsStopped(AbstractTCPProxyEngine engine)
+  private static boolean waitForData(final InputStream is)
+      throws InterruptedException, IOException {
+    final long RETRIES = 1000;
+
+    for (int i=0; i<RETRIES && is.available() == 0; ++i) {
+      Thread.sleep(10);
+    }
+
+    return is.available() != 0;
+  }
+
+  private void waitUntilAllStreamThreadsStopped(final AbstractTCPProxyEngine engine)
     throws InterruptedException {
 
     for (int i = 0;
@@ -228,7 +235,7 @@ public class TestHTTPProxyTCPProxyEngine {
                  0, engine.getStreamThreadGroup().activeCount());
   }
 
-  private void httpProxyEngineBadRequestTests(AbstractTCPProxyEngine engine)
+  private void httpProxyEngineBadRequestTests(final AbstractTCPProxyEngine engine)
     throws Exception {
 
     final Socket clientSocket =
@@ -263,7 +270,7 @@ public class TestHTTPProxyTCPProxyEngine {
       readResponse(clientSocket, null);
       fail("Expected IOException");
     }
-    catch (IOException e) {
+    catch (final IOException e) {
     }
 
     clientSocket2.close();
@@ -294,7 +301,7 @@ public class TestHTTPProxyTCPProxyEngine {
     verifyNoMoreInteractions(m_requestFilter, m_responseFilter);
   }
 
-  private void httpProxyEngineGoodRequestTests(AbstractTCPProxyEngine engine)
+  private void httpProxyEngineGoodRequestTests(final AbstractTCPProxyEngine engine)
     throws Exception {
 
     final AcceptAndEcho echoer = new AcceptAndEcho();
@@ -399,7 +406,7 @@ public class TestHTTPProxyTCPProxyEngine {
     verifyNoMoreInteractions(m_requestFilter, m_responseFilter);
   }
 
-  private void httpsProxyEngineGoodRequestTest(AbstractTCPProxyEngine engine)
+  private void httpsProxyEngineGoodRequestTest(final AbstractTCPProxyEngine engine)
     throws Exception {
 
     final AcceptAndEcho echoer = new SSLAcceptAndEcho();
@@ -821,7 +828,7 @@ public class TestHTTPProxyTCPProxyEngine {
     clientWriter.flush();
 
     // Wait until the filter thread is spinning so that there's
-    // a good chancce it's hung.
+    // a good chance it's hung.
     for (int i = 0;
          i < 10 && engine.getStreamThreadGroup().activeCount() != 1;
          ++i) {
@@ -840,11 +847,13 @@ public class TestHTTPProxyTCPProxyEngine {
 
   private static class HungFilter implements TCPProxyFilter {
 
-    public void connectionClosed(ConnectionDetails connectionDetails)
+    @Override
+    public void connectionClosed(final ConnectionDetails connectionDetails)
       throws FilterException {
     }
 
-    public void connectionOpened(ConnectionDetails connectionDetails)
+    @Override
+    public void connectionOpened(final ConnectionDetails connectionDetails)
       throws FilterException {
 
       try {
@@ -852,14 +861,15 @@ public class TestHTTPProxyTCPProxyEngine {
           wait();
         }
       }
-      catch (InterruptedException e) {
+      catch (final InterruptedException e) {
         throw new UncheckedInterruptedException(e);
       }
     }
 
-    public byte[] handle(ConnectionDetails connectionDetails,
-                         byte[] buffer,
-                         int bytesRead) throws FilterException {
+    @Override
+    public byte[] handle(final ConnectionDetails connectionDetails,
+                         final byte[] buffer,
+                         final int bytesRead) throws FilterException {
       return null;
     }
   }
@@ -872,7 +882,7 @@ public class TestHTTPProxyTCPProxyEngine {
       this(new ServerSocket(0));
     }
 
-    protected AcceptAndEcho(ServerSocket serverSocket) throws IOException {
+    protected AcceptAndEcho(final ServerSocket serverSocket) throws IOException {
       m_serverSocket = serverSocket;
       new Thread(this, getClass().getName()).start();
       m_echoers.add(this);
@@ -882,6 +892,7 @@ public class TestHTTPProxyTCPProxyEngine {
       return EndPoint.serverEndPoint(m_serverSocket);
     }
 
+    @Override
     public void run() {
       try {
         while (true) {
@@ -893,10 +904,10 @@ public class TestHTTPProxyTCPProxyEngine {
             "Echo thread").start();
         }
       }
-      catch (SocketException e) {
+      catch (final SocketException e) {
         // Ignore - probably shutdown.
       }
-      catch (IOException e) {
+      catch (final IOException e) {
         fail("Got a " + e.getClass());
       }
     }
