@@ -215,15 +215,15 @@
                          :create-directory "Directory does not exist, create?"
                          :file-error "File Error"
                          :unexpected-error "Unexpected Error"
-                         :file-write-error "Could not write to file \"{0}\"{1}."
-                         :file-read-error "Could not read from file \"{0}\"{1}."
+                         :file-write-error! "Could not write to file \"{0}\"{1}."
+                         :file-read-error! "Could not read from file \"{0}\"{1}."
                          :could-not-load-options-error "Could not load console options"
                          :could-not-save-options-error "Could not save console options"
                          :new-buffer "New File"
-                         :save-modified-buffer-confirmation "The text in \"{0}\" has changed.\nDo you want to save the changes?"
+                         :save-modified-buffer-confirmation! "The text in \"{0}\" has changed.\nDo you want to save the changes?"
                          :external-edit-error "Open in external editor failed, check options."
                          :external-edit-modified-buffer-confirmation "The file has unsaved changes in an open buffer.\nDo you still want to open it with the external editor?"
-                         :collect-negative-error "You must collect at least one sample, zero means \"forever\"."
+                         :collect-negative-error! "You must collect at least one sample, zero means \"forever\"."
                          :ignore-samples-negative-error "The number of samples to ignore cannot be negative."
                          :interval-less-than-one-error "Minimum sample interval is 1 ms."
                          :significant-figures-negative-error "Number of significant figures cannot be negative."
@@ -241,7 +241,6 @@
                          :start-with-unsaved-buffers-confirmation "Some buffers have not been saved. Do you want to continue?"
                          :script-not-in-directory-error "The grinder.script property does not refer to a file in the current distribution directory.\nPlease set or correct the 'grinder.script' property."
                          :save-outside-of-distribution-confirmation "The filename you have selected is outside of the current distribution directory.\nDo you really want to save the file here?"
-                         ; Add colon
                          :ignoring-unknown-test "Ignoring unknown test"
                          }
 

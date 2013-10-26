@@ -23,7 +23,8 @@
 (ns net.grinder.test.console.model.recording-tests
   "Unit tests for net.grinder.console.model.recording."
   (:use [clojure.test]
-        [net.grinder.test])
+        [net.grinder.test]
+        )
   (:require [net.grinder.console.model.recording :as recording])
   (:import [net.grinder.console.common
             Resources]
@@ -37,6 +38,8 @@
            [net.grinder.statistics
             StatisticsServices
             StatisticsServicesImplementation]
+           [net.grinder.translation
+            Translations]
            [net.grinder.util
             SignificantFigureFormat]
            [java.util
@@ -134,8 +137,8 @@
                cp
                ss
                (make-null-timer)
-               (reify Resources
-                 (getString [this s] s))
+               (reify Translations
+                 (translate [this s _i] s))
                nil)
           sv (make-smv 3)]
 
@@ -143,7 +146,7 @@
       (recording/start sm)
 
       (is (= {:state :WaitingForFirstReport
-              :description "state.waiting.label"}
+              :description "console.state/waiting-for-samples"}
              (recording/status sm)))
 
       (.registerTests sm [(make-test 1 "test one")

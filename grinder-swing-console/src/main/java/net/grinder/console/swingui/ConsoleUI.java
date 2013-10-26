@@ -1335,8 +1335,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
           final int chosen =
             m_optionalConfirmDialog.show(
               m_translations.translate(
-              m_translations.translate(
-                "console.phrase/properties-not-set-confirmation")),
+                "console.phrase/properties-not-set-confirmation"),
               (String) getValue(NAME),
               JOptionPane.OK_CANCEL_OPTION,
               "propertiesNotSetAsk");

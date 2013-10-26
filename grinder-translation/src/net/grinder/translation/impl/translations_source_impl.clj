@@ -52,6 +52,6 @@
       ; Resource bundle support will go away.
       ; Where to place translations file?
       (binding [tower/*Locale* locale]
-        (translate/t k format-args)
+        (apply translate/t k format-args)
         ))))
 

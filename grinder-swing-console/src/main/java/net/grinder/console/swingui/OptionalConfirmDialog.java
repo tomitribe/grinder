@@ -99,7 +99,7 @@ final class OptionalConfirmDialog {
 
     final JCheckBox dontAskMeAgainCheckBox =
       new JCheckBox(
-        m_translations.translate("console.phrase/:dont-ask-me-again"));
+        m_translations.translate("console.phrase/dont-ask-me-again"));
     dontAskMeAgainCheckBox.setAlignmentX(Component.RIGHT_ALIGNMENT);
 
     final Object[] messageArray = {
