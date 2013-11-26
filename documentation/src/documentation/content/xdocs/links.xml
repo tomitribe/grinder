@@ -16,6 +16,19 @@
 
     <tr>
       <td>
+        <a href="https://bitbucket.org/travis_bear/grinder_to_graphite">Another Groovy script engine</a>
+      </td>
+
+      <td></td>
+
+      <td>
+        A second Groovy script engine from the <a href="ext:ngrinder">nGrinder</a> team.
+      </td>
+    </tr>
+
+
+    <tr>
+      <td>
         <a href="https://bitbucket.org/travis_bear/grinder_to_graphite">Grinder to Graphite</a>
       </td>
 
