@@ -51,7 +51,7 @@ public interface Translations {
    *          {@link java.text.MessageFormat#format(java.lang.Object[],
    *          java.lang.StringBuffer, java.text.FieldPosition)
    *          format} arguments.
-   * @return
+   * @return The translation.
    */
   String translate(String key, Object... formatArguments);
 }

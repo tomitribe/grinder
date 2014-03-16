@@ -67,6 +67,12 @@
           <showWarnings>true</showWarnings>
         </configuration>
       </plugin>
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <configuration>
+          <skip>false</skip>
+        </configuration>
+      </plugin>
 
       <!-- Sigh, because of MDEP-259 we have to always have 'install'
       as a goal for this to work when running from the parent project,

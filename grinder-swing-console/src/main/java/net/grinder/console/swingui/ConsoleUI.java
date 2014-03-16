@@ -164,6 +164,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
    * @param logger Logger to use.
    * @exception ConsoleException if an error occurs
    */
+  // CHECKSTYLE.OFF: MethodLengthCheck
   public ConsoleUI(Resources resources,
                    Translations translations,
                    ConsoleProperties consoleProperties,
@@ -566,6 +567,7 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
 
     return hackToFixLayout;
   }
+  // CHECKSTYLE.ON: MethodLengthCheck
 
   private final class LookAndFeelListener
     extends LookAndFeel.ComponentListener {
