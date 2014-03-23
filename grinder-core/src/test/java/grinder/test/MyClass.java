@@ -21,6 +21,9 @@
 
 package grinder.test;
 
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+
 /**
  * Test class used by
  * {@link net.grinder.scriptengine.jython.instrumentation.AbstractJythonInstrumenterTestCase}.
@@ -39,33 +42,34 @@ public class MyClass implements Adder {
     this(0, 0, 0);
   }
 
-  public MyClass(int a, int b, int c) {
+  public MyClass(final int a, final int b, final int c) {
     m_a = a;
     m_b = b;
     m_c = c;
   }
 
-  public int addOne(int i) {
+  @Override
+  public int addOne(final int i) {
     return i + 1;
   }
 
-  public int sum(int x, int y) {
+  public int sum(final int x, final int y) {
     return x + y;
   }
 
-  public int sum3(int x, int y, int z) {
+  public int sum3(final int x, final int y, final int z) {
     return x + y + z;
   }
 
-  public static int addTwo(int i) {
+  public static int addTwo(final int i) {
     return i + 2;
   }
 
-  public static int staticSum(int x, int y) {
+  public static int staticSum(final int x, final int y) {
     return x + y;
   }
 
-  public static int staticSum3(int x, int y, int z) {
+  public static int staticSum3(final int x, final int y, final int z) {
     return x + y + z;
   }
 
@@ -77,7 +81,7 @@ public class MyClass implements Adder {
     return m_a;
   }
 
-  public void setA(int a) {
+  public void setA(final int a) {
     m_a = a;
   }
 
@@ -85,7 +89,7 @@ public class MyClass implements Adder {
     return m_b;
   }
 
-  public void setB(int b) {
+  public void setB(final int b) {
     m_b = b;
   }
 
@@ -93,7 +97,25 @@ public class MyClass implements Adder {
     return m_c;
   }
 
-  public void setC(int c) {
+  public void setC(final int c) {
     m_c = c;
+  }
+
+  public interface IOOperation {
+    int run() throws IOException;
+  }
+
+  public int topLevelExceptionHandler(final IOOperation r) {
+    try {
+      return r.run();
+    }
+    catch (final SocketTimeoutException e) {
+      return 1;
+    }
+    catch (final Throwable e) {
+      return -1;
+    }
+    finally {
+    }
   }
 }

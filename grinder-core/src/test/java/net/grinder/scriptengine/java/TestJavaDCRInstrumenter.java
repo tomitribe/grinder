@@ -1,4 +1,4 @@
-// Copyright (C) 2009 - 2011 Philip Aston
+// Copyright (C) 2009 - 2014 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -33,13 +33,14 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
 import grinder.test.MyClass;
+import grinder.test.MyClass.IOOperation;
 import grinder.test.MyExtendedClass;
 
 import java.lang.instrument.Instrumentation;
 import java.lang.instrument.UnmodifiableClassException;
 import java.lang.reflect.Method;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
@@ -55,6 +56,7 @@ import net.grinder.util.weave.agent.ExposeInstrumentation;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -75,6 +77,10 @@ public class TestJavaDCRInstrumenter {
   private JavaDCRInstrumenter m_instrumenter;
   private Instrumentation m_originalInstrumentation;
 
+  @BeforeClass public static void beforeClass() {
+    RecorderLocatorAccess.clearRecorders();
+  }
+
   @Before public void setUp() throws Exception {
     MockitoAnnotations.initMocks(this);
 
@@ -88,12 +94,12 @@ public class TestJavaDCRInstrumenter {
     RecorderLocatorAccess.clearRecorders();
   }
 
-  private void assertNotWrappable(Object o) throws Exception {
+  private void assertNotWrappable(final Object o) throws Exception {
     try {
       m_instrumenter.createInstrumentedProxy(null, null, o);
       fail("Expected NotWrappableTypeException");
     }
-    catch (NotWrappableTypeException e) {
+    catch (final NotWrappableTypeException e) {
     }
   }
 
@@ -170,13 +176,11 @@ public class TestJavaDCRInstrumenter {
       instrumenter.createInstrumentedProxy(null, m_recorder, MyClass.class);
       fail("Expected NotWrappableTypeException");
     }
-    catch (NotWrappableTypeException e) {
+    catch (final NotWrappableTypeException e) {
     }
   }
 
   @Test public void testInstrumentInstance() throws Exception {
-
-    RecorderLocatorAccess.clearRecorders();
 
     final MyClass c1 = new MyExtendedClass();
 
@@ -200,15 +204,14 @@ public class TestJavaDCRInstrumenter {
 
   @Test public void testSelectivelyInstrumentInstance() throws Exception {
 
-    RecorderLocatorAccess.clearRecorders();
-
     final MyClass c1 = new MyExtendedClass();
 
     assertEquals(0, c1.getA());
 
     final InstrumentationFilter filter =
       new InstrumentationFilter() {
-        public boolean matches(Object item) {
+        @Override
+        public boolean matches(final Object item) {
           return ((Method)item).getName().equals("getA");
         }
     };
@@ -236,28 +239,24 @@ public class TestJavaDCRInstrumenter {
 
   @Test public void testArrays() throws Exception {
 
-    RecorderLocatorAccess.clearRecorders();
-
     try {
       m_instrumenter.createInstrumentedProxy(null, m_recorder, new MyClass[0]);
       fail("Expected NotWrappableTypeException");
     }
-    catch (NotWrappableTypeException e) {
+    catch (final NotWrappableTypeException e) {
     }
 
     try {
       m_instrumenter.createInstrumentedProxy(null, m_recorder, MyClass[].class);
       fail("Expected NotWrappableTypeException");
     }
-    catch (NotWrappableTypeException e) {
+    catch (final NotWrappableTypeException e) {
     }
 
     verifyNoMoreInteractions(m_recorder);
   }
 
   @Test public void testWithNoPackage() throws Exception {
-
-    RecorderLocatorAccess.clearRecorders();
 
     final BlockingClassLoader blockingClassLoader =
       new BlockingClassLoader(singleton(AnotherClass.class.getName()),
@@ -285,14 +284,31 @@ public class TestJavaDCRInstrumenter {
     verifyNoMoreInteractions(m_recorder);
   }
 
+  @Test public void testInstrumentExceptionHandling() throws Exception {
+
+    final IOOperation op = mock(IOOperation.class);
+    when(op.run()).thenThrow(new SocketTimeoutException());
+
+    final MyClass c = new MyClass();
+
+    assertEquals(1, c.topLevelExceptionHandler(op));
+
+    m_instrumenter.createInstrumentedProxy(null, m_recorder, c);
+
+    assertEquals(1, c.topLevelExceptionHandler(op));
+
+    verify(m_recorder).start();
+    verify(m_recorder).end(true);
+  }
+
   private static class NoPackageURLClassLoader extends URLClassLoader {
 
-    public NoPackageURLClassLoader(URL[] urls, ClassLoader parent) {
+    public NoPackageURLClassLoader(final URL[] urls, final ClassLoader parent) {
       super(urls, parent);
     }
 
     @Override
-    protected Package getPackage(String name) {
+    protected Package getPackage(final String name) {
       return null;
     }
   }
