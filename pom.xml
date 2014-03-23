@@ -270,6 +270,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <target.dir>target</target.dir>
   </properties>
 
   <dependencies>
@@ -368,6 +370,9 @@
   </dependencyManagement>
 
   <build>
+    <outputDirectory>${basedir}/${target.dir}/classes</outputDirectory>
+    <testOutputDirectory>${basedir}/${target.dir}/test-classes</testOutputDirectory>
+
     <plugins>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
@@ -590,5 +595,15 @@
     <module>grinder-translation</module>
     <module>grinder-xmlbeans</module>
   </modules>
+
+  <!-- http://wiki.eclipse.org/M2E_FAQ#How_to_configure_Maven_project_to_use_separate_output_folders_in_Eclipse -->
+  <profiles>
+    <profile>
+      <id>eclipse-folders</id>
+      <properties>
+        <target.dir>target-eclipse</target.dir>
+      </properties>
+    </profile>
+  </profiles>
 
 </project>
