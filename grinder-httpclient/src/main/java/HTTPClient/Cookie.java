@@ -165,7 +165,7 @@ public class Cookie implements Serializable
           // and all instances of HttpOnly following a semi-colon at the end of
           // the cookie. This leaves something that is more conventional
           // This shouldn't break any valid cookies.
-          set_cookie = set_cookie.replaceAll("(?i);\\s*HttpOnly[,;]",";,");
+          set_cookie = set_cookie.replaceAll("(?i);\\s*HttpOnly[,;]","");
           set_cookie = set_cookie.replaceAll("(?i);\\s*HttpOnly$",";");
         }
         /** --GRINDER MODIFICATION **/
@@ -590,6 +590,7 @@ public class Cookie implements Serializable
     /**
      * Hash up name, path and domain into new hash.
      */
+    @Override
     public int hashCode()
     {
   return (name.hashCode() + path.hashCode() + domain.hashCode());
@@ -599,6 +600,7 @@ public class Cookie implements Serializable
     /**
      * Two cookies match if the name, path and domain match.
      */
+    @Override
     public boolean equals(Object obj)
     {
   if ((obj != null) && (obj instanceof Cookie))
@@ -625,6 +627,7 @@ public class Cookie implements Serializable
      * Create a string containing all the cookie fields. The format is that
      * used in the Set-Cookie header.
      */
+    @Override
     public String toString()
     {
   StringBuffer res = new StringBuffer(name.length() + value.length() + 30);

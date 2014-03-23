@@ -56,6 +56,9 @@ The Grinder 3.12 (not yet released)
   include dependency information. Thanks to Jonas Öhrnell for the
   request.
 
+  Fix bug #240 Cookie Parsing failing for HttpOnly Cookies. Thanks
+  to Chris Barran and juray for the reports.
+
 
 The Grinder 3.11
 ----------------
