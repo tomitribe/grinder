@@ -29,7 +29,7 @@
 
     <tr>
       <td>
-        <a href="https://bitbucket.org/travis_bear/grinder_to_graphite">Grinder to Graphite</a>
+        <a href="http://grinder-to-graphite.readthedocs.org/en/latest/">Grinder to Graphite</a>
       </td>
 
       <td></td>
@@ -38,12 +38,16 @@
         Grinder to Graphite (g2g) is a tool that analyzes the logs
         from your Grinder tests, and sends the data into Graphite
         where it can be visualized in a variety of ways.
+
+        <figure src="http://grinder-to-graphite.readthedocs.org/en/latest/_images/all_tps_stacked.png" alt="xg2g"
+              width="560" height="360" />
       </td>
     </tr>
     
     <tr>
       <td>
-        <a href="https://github.com/DealerDotCom/grinder-groovy">grinder-groovy</a>
+        <a
+        href="https://github.com/DealerDotCom/grinder-groovy">grinder-groovy</a>
       </td>
 
       <td></td>
