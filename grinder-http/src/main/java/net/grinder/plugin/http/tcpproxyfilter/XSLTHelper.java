@@ -48,7 +48,8 @@ import HTTPClient.Codecs;
  */
 public final class XSLTHelper {
   private static int s_indentLevel;
-  private static String s_indentString = "  ";
+
+  private static String s_indentString = System.getProperty("grinder.xslthelper.indent", "  ");
 
   XSLTHelper() {
     throw new UnsupportedOperationException();
