@@ -498,30 +498,102 @@ stylesheet</a>.</p>
     cryptographic strength of any SSL communication using The
     Grinder.</warning>
 
-    <p>Advanced users can specify their own server certificate for the
-    connection from the browser, or add client certificates for the
-    connection to the server, using the <code>-keystore</code>,
-    <code>-keystorepassword</code>, and <code>-keystoretype</code>
-    options. See the J2SE/JSSE documentation for how to set up a key
-    store.</p>
+    <section>
+        <title>Custom certificates</title>
 
-    <p>If you fail to provide a key store with a valid server
-    certificate (hard to do now The Grinder has a built in
-    certificate), you may get a <em>No available certificate
-    corresponds to the SSL cipher suites which are enabled</em>
-    exception, and your browser may report that it cannot communicate
-    as it has no common encryption algorithms. Internet Explorer likes
-    to be different. If start the TCPProxy without a valid server
-    certificate and then connect through it using Internet Explorer,
-    the TCPProxy will report "SSL peer shut down incorrectly. The
-    browser will just spin away until it times out. The easiest way to
-    provide a server certificate is to copy the <em>testkeys</em> file
-    from the <a href="ext:oracle/java/jsse-archive">JSSE samples
-    distribution</a> and start the proxy using:</p>
+        <p>With more complicated pages, a browser may not give you the
+        option to accept the test certificate. In this case, you can
+        specify your own server certificate for the connection from
+        the browser, or add client certificates for the connection to
+        the server, using the <code>-keystore</code>,
+        <code>-keystorepassword</code>, and <code>-keystoretype</code>
+        options. See the J2SE/JSSE documentation for how to set up a
+        key store.</p>
+
+        <p>If you fail to provide a key store with a valid server
+        certificate , you may get a <em>No available certificate
+        corresponds to the SSL cipher suites which are enabled</em>
+        exception, and your browser may report that it cannot
+        communicate as it has no common encryption algorithms.
+        Internet Explorer likes to be different. If start the TCPProxy
+        without a valid server certificate and then connect through it
+        using Internet Explorer, the TCPProxy will report "SSL peer
+        shut down incorrectly. The browser will just spin away until
+        it times out. The easiest way to provide a server certificate
+        is to copy the <em>testkeys</em> file from the <a
+        href="ext:oracle/java/jsse-archive">JSSE samples
+        distribution</a> and start the proxy using:</p>
 
 <source class="sh">
 java net.grinder.TCPProxy -keyStore testkeys -keyStorePassword passphrase
 </source>
+
+        <p>Alfin Haji provided the following helpful write-up
+        explaining how he solved a problem using a custom
+        keystore:</p>
+
+        <p>The site we were testing had an embedded iframe that was
+        making a call out to an HTTPS endpoint using an AJAX call via
+        javascript. This endpoint was further making a call out to
+        another HTTPS endpoint. The self-signed cert that Grinder was
+        issuing was causing the following error to be thrown in
+        developer tools of Chrome: net::ERR_INSECURE_RESPONSE. As a
+        result, all the content in that iframe was blank and not being
+        rendered (IE was throwing a content blocked error). IE
+        developer tools was also throwing an error in developer tools
+        that indicated the content was in mixed security format (HTTP
+        and HTTPS) - SEC7111 "HTTPS security is compromised by [name
+        of resource]".</p>
+
+        <p>Now since all traffic needs to go through a local proxy
+        (TCPProxy), and since some of that traffic was secured,
+        TCPProxy had to do a MITM in order to decrypt the secure
+        traffic. However, since TCPProxy had an untrusted cert with
+        hostnames not matching those endpoints that our app was
+        calling out to, the browser generated an error. </p>
+
+        <p>Resolution: We created a self-signed cert using keytool.exe
+        and we added the sites/endpoints we was testing in the Subject
+        Alternative Name section of the certificate. We then added the
+        new certificate to the browser’s trust store:</p>
+
+        <ol>
+
+            <li>Create certificate using keytool.exe and add the sites/endpoints you are testing that are blocking content from being shown in browser.  Example below:
+ 
+<source class="sh">
+keytool -genkeypair -keystore keystore -dname "CN=test, OU=Unknown, O=Unknown, L=Unknown, ST=Unknown, C=Unknown" -storepass password -keyalg RSA -alias self-signed-cert –ext SAN=dns:domain1,dns:domain2
+</source>
+ 
+<p>You can add as many SANs as you want. Delimit them with “:” and if you are adding a DNS name, start with <code>dns:</code>
+            </p>
+            </li>
+
+            <li>Launch tcpproxy with the keystore generated above:
+            <code>java -classpath %CLASSPATH% net.grinder.TCPProxy -keyStore
+            </code>
+            <em>path to above keystore</em> <code>-keyStorePassword
+            password -console -http > script.py</code></li>
+
+            <li>Point your browser to the proxy, you will get a
+            certificate error. IE for some reason didn't allow us to
+            export the certificate, so we used Chrome. Export in
+            base64 format. </li>
+
+            <li>Then in IE, imported the certificate to the trust
+            store: <em>Internet Options > Content > Certificates >
+            Trusted Root Certification Authorities > Import</em>.
+            Browse to the exported certificate from step 3 above and
+            import.</li>
+
+            <li>Restart the browser and navigate to the app. Your
+            certificate should now be valid and content that was
+            blocked should now be visible since the domains that were
+            blocking the content are valid for the certificate
+            provided (from step 1).</li>
+        </ol>
+
+    </section>
   </section>
 
   <section id="chained-proxies">
