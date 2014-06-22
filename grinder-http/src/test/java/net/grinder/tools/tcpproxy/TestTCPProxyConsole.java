@@ -24,11 +24,12 @@ package net.grinder.tools.tcpproxy;
 
 import java.awt.Component;
 import java.awt.event.WindowEvent;
-import javax.swing.JButton;
 
-import net.grinder.testutility.RandomStubFactory;
+import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 
 import junit.framework.TestCase;
+import net.grinder.testutility.RandomStubFactory;
 
 
 /**
@@ -66,11 +67,11 @@ public class TestTCPProxyConsole extends TestCase {
     JButton stopButton = null;
 
     final Component[] components = console.getContentPane().getComponents();
-    for (int i=0; i<components.length; ++i) {
-      if (components[i] instanceof JButton) {
-        final JButton b = (JButton)components[i];
+    for (final Component component : components) {
+      if (component instanceof JButton) {
+        final JButton b = (JButton)component;
         if ("Stop".equals(b.getText())) {
-          stopButton = (JButton)components[i];
+          stopButton = (JButton)component;
         }
       }
     }
@@ -78,7 +79,14 @@ public class TestTCPProxyConsole extends TestCase {
     assertNotNull(stopButton);
 
     if (stopButton != null) { // Shut up eclipse null warning.
-      stopButton.doClick();
+      final JButton b = stopButton;
+
+      SwingUtilities.invokeAndWait(new Runnable() {
+          @Override
+          public void run() {
+            b.doClick();
+          }
+        });
     }
     engineStubFactory.assertSuccess("stop");
     engineStubFactory.assertNoMoreCalls();
