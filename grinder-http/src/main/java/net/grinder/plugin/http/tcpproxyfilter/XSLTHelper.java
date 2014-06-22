@@ -49,7 +49,8 @@ import HTTPClient.Codecs;
 public final class XSLTHelper {
   private static int s_indentLevel;
 
-  private static String s_indentString = System.getProperty("grinder.xslthelper.indent", "  ");
+  private static String s_indentString =
+      System.getProperty("grinder.xslthelper.indent", "  ");
 
   XSLTHelper() {
     throw new UnsupportedOperationException();
@@ -65,7 +66,7 @@ public final class XSLTHelper {
    * @throws ParseException
    *           If the date could not be parsed.
    */
-  public static String formatTime(String iso8601) throws ParseException {
+  public static String formatTime(final String iso8601) throws ParseException {
     final Date date =
       new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss").parse(iso8601);
     return DateFormat.getDateTimeInstance().format(date);
@@ -77,7 +78,7 @@ public final class XSLTHelper {
    * @param value The string.
    * @return The quoted string.
    */
-  public static String quoteForPython(String value) {
+  public static String quoteForPython(final String value) {
     if (value == null) {
       return "None";
     }
@@ -98,7 +99,7 @@ public final class XSLTHelper {
    * @param s The string to quote.
    * @return The quotes.
    */
-  private static String pythonQuotes(String s) {
+  private static String pythonQuotes(final String s) {
     return s.indexOf("\n") > -1 || s.indexOf("\r") > -1 ? "'''" : "'";
   }
 
@@ -111,7 +112,7 @@ public final class XSLTHelper {
    * @return The quoted string.
    * @see net.grinder.util.SimpleStringEscaper
    */
-  public static String quoteEOLEscapedStringForPython(String value) {
+  public static String quoteEOLEscapedStringForPython(final String value) {
     if (value == null) {
       return "None";
     }
@@ -131,7 +132,7 @@ public final class XSLTHelper {
    * @param value The string.
    * @return The quoted string.
    */
-  public static String quoteForClojure(String value) {
+  public static String quoteForClojure(final String value) {
     if (value == null) {
       return "nil";
     }
@@ -152,7 +153,7 @@ public final class XSLTHelper {
    * @return The quoted string.
    * @see net.grinder.util.SimpleStringEscaper
    */
-  public static String quoteEOLEscapedStringForClojure(String value) {
+  public static String quoteEOLEscapedStringForClojure(final String value) {
     if (value == null) {
       return "nil";
     }
@@ -177,7 +178,8 @@ public final class XSLTHelper {
    *          longer.
    * @return The result.
    */
-  public static String summariseAsLine(String value, int maximumCharacters) {
+  public static String summariseAsLine(
+    final String value, final int maximumCharacters) {
 
     final StringBuilder result = new StringBuilder(value.length());
 
@@ -216,7 +218,7 @@ public final class XSLTHelper {
    * @param value The string.
    * @return The escaped string.
    */
-  public static String escape(String value) {
+  public static String escape(final String value) {
     return escape(value, false);
   }
 
@@ -232,7 +234,9 @@ public final class XSLTHelper {
    *            {@link net.grinder.util.SimpleStringEscaper}).
    * @return The escaped string.
    */
-  private static String escape(String value, boolean preserveEOLQuotes) {
+  private static String escape(
+    final String value, final boolean preserveEOLQuotes) {
+
     final int valueLength = value.length();
 
     final StringBuilder result = new StringBuilder(valueLength);
@@ -329,7 +333,7 @@ public final class XSLTHelper {
    * @param indentChange Offset to indent level, positive or negative.
    * @return An empty string.
    */
-  public static String changeIndent(int indentChange) {
+  public static String changeIndent(final int indentChange) {
     s_indentLevel += indentChange;
     return "";
   }
@@ -351,7 +355,7 @@ public final class XSLTHelper {
    * @param base64String The binary data.
    * @return The scriptlet.
    */
-  public static String base64ToPython(String base64String) {
+  public static String base64ToPython(final String base64String) {
 
     final byte[] base64 = base64String.getBytes();
 
@@ -394,7 +398,7 @@ public final class XSLTHelper {
    * @param base64String The binary data.
    * @return The scriptlet.
    */
-  public static String base64ToClojure(String base64String) {
+  public static String base64ToClojure(final String base64String) {
 
     final byte[] base64 = base64String.getBytes();
 
@@ -442,7 +446,7 @@ public final class XSLTHelper {
    * @see #changeIndent
    * @see #resetIndent
    */
-  public static void setIndentString(String indentString) {
+  public static void setIndentString(final String indentString) {
     s_indentString = indentString;
   }
 }
