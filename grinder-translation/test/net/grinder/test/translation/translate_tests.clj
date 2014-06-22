@@ -27,47 +27,6 @@
     [taoensso.tower :as tower])
   (:import [net.grinder.translation Translatable Translations]))
 
-(def tb "net.grinder.test.console.service.TestBundle")
-
-(deftest to-resource-bundle-keys
-  (are [x k] (= x (#'translate/to-resource-bundle-keys k))
-    ["foo.label" "foo.text"] :foo
-    ["foo.label" "foo.text"] :blah/foo
-    ["x.label" "x.text"] :x
-    ))
-
-(deftest resource-bundle-result
-  (are [x k] (= x (#'translate/resource-bundle-result k))
-    nil :hello)
-
-  (binding
-    [translate/*resource-bundle-name* tb]
-    (are [x k] (= x (#'translate/resource-bundle-result k))
-      "Hello World" :hello
-      "Goodbye" :goodbye
-      nil :blah
-      ))
-
-  (binding
-    [translate/*resource-bundle-name* tb
-     tower/*Locale* (java.util.Locale. "tr")]
-    (are [x k] (= x (#'translate/resource-bundle-result k))
-      "Merhaba Dünya" :hello
-      "Goodbye" :goodbye
-      nil :blah
-      )))
-
-(deftest with-resource-bundle
-  (let [x {:k "v"}]
-    (translate/with-resource-bundle x
-      (is (= x translate/*resource-bundle-name*))))
-
-  (is (nil? translate/*resource-bundle-name*))
-
-  (translate/with-resource-bundle tb
-    (are [x k] (= x (#'translate/resource-bundle-result k))
-      "Hello World" :hello)))
-
 (defmacro preserve-tower-config
   "Save and restore tower/config."
   [& body]
@@ -89,26 +48,25 @@
 (deftest test-t
   (preserve-tower-config
     (load-test-tower-config)
-    (translate/with-resource-bundle tb
-      (tower/with-locale :en
-        (tower/with-scope :test
-          (are [x k] (= x (translate/t k))
-            "blah" :foo
-            "blah" [:bah :foo]
-            "Hello World" :hello
-            "Hello World" [:hello]
-            "Hello World" [:x :hello :y]
-            "Hello World" (reify Translatable (getTranslationKey [this] "hello"))
-            "missing for en" :not-there
-            )
-          (is "Hi World" (translate/t :hi "World"))
-          (is "Underscore" (translate/t :inder_score))
+    (tower/with-locale :en
+      (tower/with-scope :test
+        (are [x k] (= x (translate/t k))
+          "blah" :foo
+          "blah" [:bah :foo]
+          "Hello World" :hello
+          "Hello World" [:hello]
+          "Hello World" [:x :hello :y]
+          "Hello World" (reify Translatable (getTranslationKey [this] "hello"))
+          "missing for en" :not-there
+          "Hyphen" :hy-phen
+          "" :empty
+          )
 
-          (is "" (translate/t :empty)))
+        (is (= "Hi World" (translate/t :hi "World"))))
 
-        (is "blah" (translate/t :test2/bah))
+      (is (= "blah" (translate/t :test2/bah)))
 
-        ))))
+      )))
 
 (deftest test-t-standard-dictionary
   (preserve-tower-config
@@ -123,8 +81,7 @@
   (preserve-tower-config
     (load-test-tower-config)
     (let [mw (translate/make-wrap-with-translation
-               :test
-               tb)
+               :test)
           request {}
           tr-request {:params {:locale "tr"}}
           response {:some "response"}]

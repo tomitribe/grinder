@@ -1,6 +1,7 @@
 {:en {:test {:foo         "blah"
+             :hello       "Hello World"
              :hi          "Hi {0}"
-             :under_score "Underscore"
+             :hy-phen     "Hyphen"
              :empty       ""
             }
 
@@ -9,7 +10,7 @@
       :missing "missing for en"
       }
 
- :tr {:test {}
+ :tr {:test {:hello       "Merhaba Dünya"}
 
       :missing "missing for tr"
       }

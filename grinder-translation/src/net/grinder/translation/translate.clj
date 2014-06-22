@@ -24,42 +24,9 @@
   (:use [taoensso.tower.ring :only [make-wrap-i18n-middleware]])
   (:require [taoensso.tower :as tower])
   (:import
-    [java.util MissingResourceException ResourceBundle]
     net.grinder.translation.Translatable))
 
-(def ^:dynamic *resource-bundle-name* nil)
-
 (tower/load-dictionary-from-map-resource! "translations.clj")
-
-(defn- to-resource-bundle-keys
-  "Translate tower format keys to a list of potential resource bundle keys"
-  [k]
-  (let [kw-name (name k)]
-    [
-     (str kw-name ".label")
-     (str kw-name ".text")
-     ]))
-
-(defn- resource-bundle-result
-  "Translate the given key using `to-resource-bundle-keys` and find its
-   value using the current resource bundle and locale.
-   Return `nil` if not found, or `*resource-bundle-name*` is nil."
-  [k]
-  (when-let [bundle-name *resource-bundle-name*]
-    (let [resources (ResourceBundle/getBundle
-                      *resource-bundle-name*
-                      tower/*Locale*)
-          g (fn [x]
-              (try (.getString resources x)
-                (catch MissingResourceException e)))]
-      (some g (to-resource-bundle-keys k)))))
-
-
-(defmacro with-resource-bundle
-  "Bind the resource bundle name."
-  [resource-bundle-name & body]
-  `(binding [*resource-bundle-name* ~resource-bundle-name]
-     ~@body))
 
 (defmulti tkeys
   "Convert an object into a keyword to use for translation."
@@ -73,11 +40,7 @@
   (keyword (.getTranslationKey t)))
 
 (defn t
-  "Extends `tower/t` so that if the key is missing, the last part of the
-   key is looked up using the Java resource bundle and the current tower
-   locale.
-
-   This method is more relaxed than `tower/t` in its interpretation of
+  "This method is more relaxed than `tower/t` in its interpretation of
    the supplied keys. As well as keywords, it accepts Strings, and
    implementations of `net.grinder.common.Translatable`. See `tkeys`."
   ([k-or-ks & interpolation-args]
@@ -87,23 +50,17 @@
   ([k-or-ks]
     (let [kchoices* (if (vector? k-or-ks) k-or-ks [k-or-ks])
           kchoices  (apply vector (map tkeys kchoices*))]
-      (or
-        (tower/t (conj kchoices nil))
-        (some resource-bundle-result kchoices)
-        (tower/t kchoices)
-        ))))
+      (tower/t kchoices)
+      )))
 
 (defn make-wrap-with-translation
   "Returns Ring middleware that binds the translation context.
-   The optional parameters control the tower scope, and the name of
-   the Java resource bundle to be used if the translation is not
-   found in the tower dictionary."
-  [& [tower-scope resource-bundle-name]]
+   The optional parameter controls the tower scope."
+  [& [tower-scope]]
 
   (comp
     (make-wrap-i18n-middleware)
     (fn [handler]
       (fn [request]
-        (with-resource-bundle resource-bundle-name
-          (tower/with-scope tower-scope
-            (handler request)))))))
+        (tower/with-scope tower-scope
+          (handler request))))))
