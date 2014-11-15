@@ -1,4 +1,4 @@
-; Copyright (C) 2012 - 2013 Philip Aston
+; Copyright (C) 2012 - 2014 Philip Aston
 ; Copyright (C) 2012 Marc Holden
 ; All rights reserved.
 ;
@@ -133,7 +133,7 @@
           (format-long formatter (.getLongValue e statistics))
           )))))
 
-(extend-protocol StatisticsFormatter Format
+(extend-type Format StatisticsFormatter
   (format-double [this v]
     (if (Double/isNaN v)
       ""
@@ -147,8 +147,8 @@
   "Return a map containing the current recording data.
 
    Accepts the following optional arguments:
-     :as-text If true, return statistics as formatted text rather than
-              numbers.
+     :web     If true, return statistics as formatted text rather than
+              numbers, and return column names as translation keys.
      :sample  If true, return the latest sample, rather than the accumulated
               statistics.
 
@@ -164,16 +164,21 @@
      :statistics Vector of statistics.
 "
   [^SampleModel sample-model
-   ^SampleModelViews statistics-view &
-   {:keys [as-text sample]}]
+   ^SampleModelViews statistics-view
+   & {:keys [web sample]}]
 
   (let [test-index (get-test-index sample-model)
 
-        formatter (if as-text
+        formatter (if web
                     (.getNumberFormat statistics-view)
                     (reify StatisticsFormatter
                       (format-double [this v] v)
                       (format-long [this v] v)))
+
+        view-to-column (if web
+                         (fn [^ExpressionView v] (.getTranslationKey v))
+                         (fn [^ExpressionView v] (.getDisplayName v)))
+
         [view
          totals
          statistics-for-test]
@@ -189,18 +194,17 @@
         views (.getExpressionViews view)]
 
     {:status (status sample-model)
-     :columns (vec (for [^ExpressionView v views] (.getDisplayName v)))
-     :tests
-     (vec
-       (for [i (range (.getNumberOfTests test-index))]
-         (let [test (.getTest test-index i)]
-           {
-            :test (.getNumber test)
-            :description (.getDescription test)
-            :statistics (process-statistics views
-                          (statistics-for-test test-index i)
-                          formatter)
-            })))
+     :columns (map view-to-column views)
+     :tests (vec
+              (for [i (range (.getNumberOfTests test-index))]
+                (let [test (.getTest test-index i)]
+                  {
+                   :test (.getNumber test)
+                   :description (.getDescription test)
+                   :statistics (process-statistics views
+                                 (statistics-for-test test-index i)
+                                 formatter)
+                   })))
      :totals (process-statistics views totals formatter)}))
 
 

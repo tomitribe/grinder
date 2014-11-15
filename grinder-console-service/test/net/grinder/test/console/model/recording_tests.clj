@@ -1,4 +1,4 @@
-; Copyright (C) 2012 - 2013 Philip Aston
+; Copyright (C) 2012 - 2014 Philip Aston
 ; Copyright (C) 2012 Marc Holden
 ; All rights reserved.
 ;
@@ -181,11 +181,14 @@
         (is (= "[0 0]" (str statistics)))))
 
     (let [{:keys [tests columns status totals]}
-          (recording/data sm sv :as-text true
+          (recording/data sm sv :web true
             )]
       (is (= ["0" "0" "" "0.00" ""] (doall totals)))
-      (is (= ["Tests" "Errors" "Mean Test Time (ms)"
-              "Test Time Standard Deviation (ms)" "TPS"] columns))
+      (is (= ["console.statistic/Tests"
+              "console.statistic/Errors"
+              "console.statistic/Mean-Test-Time-ms"
+              "console.statistic/Test-Time-Standard-Deviation-ms"
+              "console.statistic/TPS"] columns))
       (is (= 2 (count tests)))
       (let [{:keys [test description statistics]} (first tests)]
         (is (= 1 test))

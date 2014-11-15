@@ -1,4 +1,4 @@
-; Copyright (C) 2013 Philip Aston
+; Copyright (C) 2014 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -37,6 +37,7 @@
      [keyword-params :only [wrap-keyword-params]]]
     [ring.util [response :only [redirect redirect-after-post response]]])
   (:require
+    [clojure [string :as s]]
     [clojure.tools [logging :as log]]
     [net.grinder.console.model
      [files :as files]
@@ -51,24 +52,24 @@
     net.grinder.console.ConsoleFoundation
     [net.grinder.statistics ExpressionView]))
 
-(defn- state [type p]
-  (let [s (:state p)]
-    [s
-     (t [(str (name s) "-" (name type)) s])]))
-
 (defmulti render-process-state #(first %&))
 
-(defmethod render-process-state :agent [type p]
-  (let [[s d] (state type p)]
+(defmethod render-process-state :agent [_ p]
+    (let [s (:state p)
+        d (t (condp = s
+               :started :console.state/started
+               :running :console.state/running-agent
+               :finished :console.state/finished-agent))]
     (html
       [:div {:class s} d])))
 
-(defmethod render-process-state :worker [type p]
-  (let [[s d] (state type p)]
+(defmethod render-process-state :worker [_ p]
+  (let [s (:state p)
+        d (t (keyword "console.state" (name s)))]
     (html
       [:div {:class s}
        (if (= :running s)
-         (str d " " (t :worker-threads
+         (str d " " (t :console.state/worker-threads
                       (:running-threads p)
                       (:maximum-threads p)))
          d)])))
@@ -91,11 +92,11 @@
                 {:class "grinder-table process-table ld-animate"})
        [:thead
         [:tr
-         [:th (t [:agent-name])]
-         [:th (t [:worker-name])]
-         [:th (t [:process-status :status])]]]
+         [:th (t :console.term/agent)]
+         [:th (t :console.term/worker)]
+         [:th (t :console.process/state)]]]
        (if (empty? processes)
-         [:tr [:td (t :no-processes)]]
+         [:tr [:td (t :console.phrase/no-processes)]]
          (for [agent processes]
            [:tr
             [:td (:name agent)]
@@ -119,7 +120,7 @@
     (html
       [:button {:class (str "grinder-button grinder-button-icon " (name action))
                 :id id }
-       (t id)])))
+       (t (keyword "console.action" (name id)))])))
 
 (defn- render-processes [{:keys [process-control]}]
   (let [buttons [(make-button :start-processes)
@@ -129,11 +130,9 @@
       [:div {:class "process-controls"} (for [b buttons] b) ]
       (render-process-table process-control))))
 
-; TODO translate table headers
-; TODO why isn't test-number etc. translated?
 (defn- render-data-table [sample-model sample-model-views]
   (let [{:keys [status columns tests totals] :as data}
-        (recording/data sample-model sample-model-views :as-text true)]
+        (recording/data sample-model sample-model-views :web true)]
 
     (html
       [:div (ld-subscription :statistics
@@ -141,9 +140,9 @@
        [:table
         [:thead
          [:tr
-          [:th (t :test-number)]
-          [:th (t :test-description)]
-          (for [c columns] [:th c])]]
+          [:th (t :console.term/test-number)]
+          [:th (t :console.term/test-description)]
+          (for [c columns] [:th (t c)])]]
         (for [{:keys [test description statistics]} tests]
           [:tr
            [:th test]
@@ -151,7 +150,7 @@
            (for [s statistics] [:td s])
            ])
         [:tr {:class "total-row"}
-         [:th (t :totals)]
+         [:th (t :console.term/total)]
          [:th]
          (for [c totals] [:td c])]]
        ])))
@@ -170,7 +169,7 @@
        ; position:relative div with no margins so rule position is correct.
        [:div {:id :cubism}]
        [:fieldset
-        [:legend (t :chart-statistic)]
+        [:legend (t :console.option/chart-statistic)]
 
         (drop-down :chart-statistic
           (map-indexed
@@ -221,13 +220,19 @@
   [:div {:class "property"}
    (render-text-field k v d (merge {} attributes))])
 
+(defn- uncamel [s]
+  (s/lower-case (s/replace s #"([a-z])([A-Z])" "$1-$2")))
+
+(defn- translate-option [o]
+  (t (keyword "console.option" (uncamel (name o)))))
+
 (defn- render-property-group [legend properties defaults]
   [:fieldset
    [:legend legend]
    (for [[d k v]
          (sort
            (map
-             (fn [[k v]] [(t k) k v])
+             (fn [[k v]] [(translate-option k) k v])
              properties))]
      [:div {:class "property-line"}
       [:div {:class "label"}
@@ -241,18 +246,18 @@
 
     (let [properties (properties/get-properties properties)
           defaults (properties/default-properties)
-          groups [[(t :file-distribution)
+          groups [[(t :console.section/file-distribution)
                    #{;:scanDistributionFilesPeriod
                      :distributionDirectory
                      :propertiesFile
                      ;:distributionFileFilterExpression
                      }]
-                  [(t :sampling)
+                  [(t :console.section/sampling)
                    #{:significantFigures
                      :collectSampleCount
                      :sampleInterval
                      :ignoreSampleCount}]
-                  [(t :communication)
+                  [(t :console.section/communication)
                    #{:consoleHost
                      :consolePort
                      :httpHost
@@ -272,13 +277,13 @@
 
     [:button {:class "grinder-button post-form"
               :id :set-properties
-              :type :button} (t :set-properties)]])
+              :type :button} (t :console.action/set-properties)]])
 
 (defn handle-properties-form [p params]
   (let [expanded (-> params
                    properties/add-default-properties
                    )]
-    ; Currently don't have any, but if/when we do, we'll need  to add default
+    ; Currently don't have any, but if/when we do, we'll need to add default
     ; values for check boxes present in the form.
     ; E.g (merge { "saveTotalsWithResults" "false" } params)
     (properties/set-properties p expanded)))
@@ -323,7 +328,7 @@
       [:div {:id :sidebar}
        (for [[k {:keys [summary-fn] :as v}] sections]
          [:button {:class "grinder-button replace-content"
-                   :id k} (t k)
+                   :id k} (t (keyword "console.section" (name k)))
           (when summary-fn
             [:div {:class "summary"} (summary-fn)])
          ])]
