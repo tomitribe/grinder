@@ -41,6 +41,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1490,13 +1491,28 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
     ChooseDirectoryAction() {
       super(m_resources, m_translations, "choose-directory", true);
 
-      m_fileChooser.setDialogTitle(
-        m_translations.translate("console.action/choose-directory-detail"));
+      // Sigh - should have a better pattern for dispatching construction
+      // activity on the swing thread.
+      try {
+        SwingUtilities.invokeAndWait(new Runnable() {
+          public void run() {
+            m_fileChooser.setDialogTitle(
+              m_translations.translate(
+                "console.action/choose-directory-detail"));
 
-      m_fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            m_fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-      m_fileChooser.setSelectedFile(
-        m_properties.getDistributionDirectory().getFile());
+            m_fileChooser.setSelectedFile(
+              m_properties.getDistributionDirectory().getFile());
+          }
+          });
+      }
+      catch (InterruptedException e) {
+        throw new UncheckedInterruptedException(e);
+      }
+      catch (InvocationTargetException e) {
+        throw new AssertionError(e);
+      }
 
       m_lookAndFeel.addListener(
         new LookAndFeel.ComponentListener(m_fileChooser));
