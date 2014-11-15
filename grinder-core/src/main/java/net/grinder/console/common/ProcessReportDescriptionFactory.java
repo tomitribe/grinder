@@ -34,7 +34,7 @@ import net.grinder.translation.Translations;
  * @author Philip Aston
  */
 public final class ProcessReportDescriptionFactory {
-  private final String m_threadsString;
+  private final Translations m_translations;
   private final String m_agentString;
   private final String m_workerString;
   private final String m_stateStartedString;
@@ -50,9 +50,7 @@ public final class ProcessReportDescriptionFactory {
    * @param translations Translation service.
    */
   public ProcessReportDescriptionFactory(final Translations translations) {
-    m_threadsString =
-      translations.translate("console.term/threads").toLowerCase();
-
+    m_translations = translations;
     m_agentString = translations.translate("console.term/agent");
     m_workerString = translations.translate("console.term/worker");
 
@@ -125,10 +123,11 @@ public final class ProcessReportDescriptionFactory {
         break;
 
       case RUNNING:
-        state = m_stateRunningString + " (" +
-                workerProcessReport.getNumberOfRunningThreads() + "/" +
-                workerProcessReport.getMaximumNumberOfThreads() + " " +
-                m_threadsString + ")";
+        state = m_stateRunningString + " " +
+            m_translations.translate(
+              "console.state/worker-threads",
+              workerProcessReport.getNumberOfRunningThreads(),
+              workerProcessReport.getMaximumNumberOfThreads());
         break;
 
       case FINISHED:

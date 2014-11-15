@@ -1,4 +1,4 @@
-// Copyright (C) 2008 - 2013 Philip Aston
+// Copyright (C) 2008 - 2014 Philip Aston
 // All rights reserved.
 //
 // This file is part of The Grinder software distribution. Refer to
@@ -51,8 +51,8 @@ public class TestProcessReportDescriptionFactory {
   @Before public void setUp() {
     initMocks(this);
 
-    when(m_translations.translate("console.term/threads"))
-      .thenReturn("strings");
+    when(m_translations.translate("console.state/worker-threads", (short)10, (short)21))
+      .thenReturn("(10 out of 21 strings)");
 
     when(m_translations.translate("console.term/agent"))
       .thenReturn("AG");
@@ -179,7 +179,7 @@ public class TestProcessReportDescriptionFactory {
     final ProcessDescription description2 =
       processReportDescriptionFactory.create(workerProcessReport);
 
-    assertEquals("rolling (10/21 strings)", description2.getState());
+    assertEquals("rolling (10 out of 21 strings)", description2.getState());
 
     workerProcessReportStubFactory.setResult(
       "getState", ProcessReport.State.STARTED);
