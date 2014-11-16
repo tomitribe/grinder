@@ -21,19 +21,12 @@
 
 package net.grinder.console.common;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.Reader;
-import java.io.StringWriter;
 import java.net.URL;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import javax.swing.ImageIcon;
-
-import net.grinder.common.Closer;
-import net.grinder.common.UncheckedInterruptedException;
 
 
 /**
@@ -109,51 +102,6 @@ public final class ResourcesImplementation implements Resources {
     final URL resource = get(key, false);
 
     return resource != null ? new ImageIcon(resource) : null;
-  }
-
-  /**
-   * {@inheritDoc}
-   */
-  @Override
-  public String getStringFromFile(final String key,
-    final boolean warnIfMissing) {
-
-    final URL resource = get(key, warnIfMissing);
-
-    if (resource != null) {
-      Reader in = null;
-
-      try {
-        in = new InputStreamReader(resource.openStream());
-
-        final StringWriter out = new StringWriter();
-
-        final char[] buffer = new char[128];
-
-        while (true) {
-          final int n = in.read(buffer);
-
-          if (n == -1) {
-            break;
-          }
-
-          out.write(buffer, 0, n);
-        }
-
-        out.close();
-
-        return out.toString();
-      }
-      catch (final IOException e) {
-        UncheckedInterruptedException.ioException(e);
-        m_errorWriter.println("Warning - could not read " + resource);
-      }
-      finally {
-        Closer.close(in);
-      }
-    }
-
-    return null;
   }
 
   private URL get(final String key, final boolean warnIfMissing) {

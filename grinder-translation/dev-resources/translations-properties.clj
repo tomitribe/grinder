@@ -30,7 +30,7 @@
                 :section {
                           :console-properties "Console Properties"
                           :file-distribution "File Distribution"
-                          :processes "processStatusTableTab.title"
+                          :processes "Processes"
                           :processes-detail "processStatusTableTab.tip"
                           :sampling "options.samplingTab.title"
                           :communication "options.communicationTab.title"
@@ -76,10 +76,8 @@
                          :reset-console-with-processes "resetConsoleWithProcesses.label"
                          :look-and-feel "lookAndFeel.label"
 
-                         :distribution-directory "Script directory"
-                         :properties-file "Selected properties file"
-
-                         :frame-bounds "Frame bounds"
+                         :distribution-directory "distributionDirectory.label"
+                         :properties-file "propertiesFile.label"
 
                          :default-filename "default.filename"
                          }
@@ -111,21 +109,21 @@
                          :about-detail :console.dialog/about
 
                          :exit "exit.label"
-                         :exit-detail "exit.label"
+                         :exit-detail "Exit"
 
                          :start "start.label"
                          :start-detail "start.tip"
                          :stop "stop.label"
                          :stop-detail "stop.tip"
 
-                         :start-processes "start-processes.label"
+                         :start-processes "Start workers"
                          :start-processes-detail "start-processes.tip"
-                         :stop-processes "stop-processes.label"
+                         :stop-processes "Stop agents"
                          :stop-processes-detail "stop-processes.tip"
-                         :reset-processes "reset-processes.label"
+                         :reset-processes "Stop workers"
                          :reset-processes-detail "reset-processes.tip"
 
-                         :new-file "new-file.label"
+                         :new-file "new-file.tip"
                          :new-file-detail "new-file.tip"
 
                          :open-file "open-file.label"
@@ -155,8 +153,8 @@
                          :distribute-files "distribute-files.label"
                          :distribute-files-detail "distribute-files.tip"
 
-                         :choose-external-editor "external editor"
-                         :choose-external-editor-detail "Select the executable file to use as the external editor"
+                         :choose-external-editor "choose-external-editor.label"
+                         :choose-external-editor-detail "choose-external-editor.tip"
                          }
 
                 :menu {
@@ -169,27 +167,26 @@
                 :state {:started "processState.started.label"
                         :running "processState.running.label"
                         :finished "processState.finished.label"
-                        :unknown "processState.unknown.label" ; OR "?"
+                        :unknown "?"
                         :running-agent "processState.connected.label"
                         :finished-agent "processState.disconnected.label"
                         :worker-threads "({0}/{1} {1,choice,0#threads|1#thread|1<{0,number} threads})"
-                        :ignoring-samples "Waiting for samples, ignoring"
-                        :waiting-for-samples "Waiting for samples"
-                        :collection-stopped "Collection stopped"
-                        :capturing-samples "Collecting samples"
-                        :no-connected-agents "noConnectedAgents.text" ; CAPITAL CASE
+                        :ignoring-samples "state.ignoring.label"
+                        :waiting-for-samples "state.waiting.label"
+                        :collection-stopped "state.stopped.label"
+                        :capturing-samples "state.capturing.label"
+                        :no-connected-agents "No connected agents"
                         }
 
                 :term {:agent "processTable.agentProcess.label"
                        :name "Name"
                        :running-processes "Running processes"
-                       :status "Status"
+                       :status "processTable.stateColumn.label"
                        :test "table.test.label"
                        :tests "test.units" ; CAPITAL CASE
                        :test-number :console.term/test
                        :test-description "table.descriptionColumn.label"
                        :total "totalGraph.title"
-                       :totals "Totals"
                        :worker "processTable.workerProcess.label"
                        :peak "graph.averageSuffix.label" ; CAPTIAL CASE
                        :mean "graph.peakSuffix.label" ; CAPITAL CASE
@@ -226,7 +223,7 @@
                          :interval-less-than-one-error "intervalLessThanOneError.text"
                          :significant-figures-negative-error "significantFiguresNegativeError.text"
                          :unknown-host-error "unknownHostError.text"
-                         :invalid-host-address-error "invalidHostAddressError.text."
+                         :invalid-host-address-error "invalidHostAddressError.text"
                          :invalid-port-number-error "invalidPortNumberError.text"
                          :scan-distributioned-files-period-negative-error "scanDistributionFilesPeriodNegativeError.text"
                          :external-editor-not-set "externalEditorNotSet.text"
@@ -239,22 +236,22 @@
                          :start-with-unsaved-buffers-confirmation "startWithUnsavedBuffersConfirmation.text"
                          :script-not-in-directory-error "scriptNotInDirectoryError.text"
                          :save-outside-of-distribution-confirmation "saveOutsideOfDistributionConfirmation.text"
-                         ; Add colon
-                         :ignoring-unknown-test "Ignoring unknown test"
+                         ; Remove colon
+                         :ignoring-unknown-test "ignoringUnknownTest.text"
                          }
 
                 :statistic {:Tests "statistic.Tests.label"
                             :Errors :console.term/errors
-                            :Mean_Test_Time_ms "statistic.Mean_Test_Time_(ms).label"
-                            :Test_Time_Standard_Deviation_ms "statistic.Test_Time_Standard_Deviation_(ms).label"
+                            :Mean-Test-Time-ms "statistic.Mean_Test_Time_(ms).label"
+                            :Test-Time-Standard-Deviation-ms "statistic.Test_Time_Standard_Deviation_(ms).label"
                             :TPS :console.term/tps
-                            :Peak_TPS "statistic.Peak_TPS.label"
-                            :Mean_response_length "statistic.Mean_response_length.label"
-                            :Response_bytes_per_second "statistic.Response_bytes_per_second.label"
-                            :Response_errors "statistic.Response_errors.label"
-                            :Mean_time_to_resolve_host "statistic.Mean_time_to_resolve_host.label"
-                            "Mean_time_to_establish_connection" "statistic.Mean_time_to_establish_connection.label"
-                            :Mean_time_to_first_byte "statistic.Mean_time_to_first_byte.label"
+                            :Peak-TPS "statistic.Peak_TPS.label"
+                            :Mean-response-length "statistic.Mean_response_length.label"
+                            :Response-bytes-per-second "statistic.Response_bytes_per_second.label"
+                            :Response-errors "statistic.Response_errors.label"
+                            :Mean-time-to-resolve-host "statistic.Mean_time_to_resolve_host.label"
+                            "Mean-time-to-establish-connection" "statistic.Mean_time_to_establish_connection.label"
+                            :Mean-time-to-first-byte "statistic.Mean_time_to_first_byte.label"
                             }
 
                 :process {

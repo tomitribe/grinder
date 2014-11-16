@@ -41,7 +41,11 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -938,9 +942,8 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
         removeMnemonicMarkers(m_translations.translate("console.dialog/about"));
 
       final String aboutText =
-          m_resources.getStringFromFile(
-            m_translations.translate("console.dialog/about.text"),
-            true);
+          readResource(
+            m_translations.translate("console.dialog/about.text"));
 
       final JEditorPane htmlPane = new JEditorPane("text/html", aboutText);
       htmlPane.setEditable(false);
@@ -966,6 +969,44 @@ public final class ConsoleUI implements ConsoleFoundation.UI {
                                     JOptionPane.PLAIN_MESSAGE,
                                     m_logoIcon);
     }
+  }
+
+  private String readResource(String name) {
+    final URL resource = getClass().getClassLoader().getResource(name);
+
+    if (resource != null) {
+      Reader in = null;
+
+      try {
+        in = new InputStreamReader(resource.openStream());
+
+        final StringWriter out = new StringWriter();
+
+        final char[] buffer = new char[1024];
+
+        while (true) {
+          final int n = in.read(buffer);
+
+          if (n == -1) {
+            break;
+          }
+
+          out.write(buffer, 0, n);
+        }
+
+        out.close();
+
+        return out.toString();
+      }
+      catch (final IOException e) {
+        UncheckedInterruptedException.ioException(e);
+      }
+      finally {
+        Closer.close(in);
+      }
+    }
+
+    return "Could not read " + name;
   }
 
   private final class ExitAction extends CustomAction {

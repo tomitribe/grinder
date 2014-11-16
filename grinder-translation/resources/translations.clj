@@ -1,4 +1,4 @@
-; Copyright (C) 2000 - 2013 Philip Aston
+; Copyright (C) 2000 - 2014 Philip Aston
 ; Copyright (C) 2004 John Stanford White
 ; All rights reserved.
 ;
@@ -78,8 +78,6 @@
 
                          :distribution-directory "Script directory"
                          :properties-file "Selected properties file"
-
-                         :frame-bounds "Frame bounds"
 
                          :default-filename "grinder-console.data"
                          }
@@ -190,7 +188,6 @@
                        :test-number :console.term/test
                        :test-description "Description"
                        :total "Total"
-                       :totals "Totals"
                        :worker "Worker"
                        :peak "Peak" ; transform to (peak) for usage
                        :mean "Mean" ; transform to (mean) for usage

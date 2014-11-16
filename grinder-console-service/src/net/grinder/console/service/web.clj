@@ -344,8 +344,7 @@
   [{:keys [process-control
            sample-model
            sample-model-views
-           properties
-           console-resources]
+           properties]
     :as state}]
 
   (letfn [(push-process-data [_ _]
@@ -438,7 +437,9 @@
 
         (GET "/" []
           (page (content :about
-                  (.getStringFromFile console-resources "about.text" true))))
+                  (if-let [r (t :console.dialog/about.text)]
+                    (slurp
+                      (clojure.java.io/resource r))))))
 
         (ANY "*" [] (redirect (rr "/"))))
 

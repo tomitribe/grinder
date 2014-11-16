@@ -21,7 +21,6 @@
 
 package net.grinder.console.common;
 
-import static net.grinder.testutility.FileUtilities.setCanAccess;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -30,7 +29,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.File;
 import java.io.PrintWriter;
 
 import org.junit.After;
@@ -92,40 +90,5 @@ public class TestResources {
   @Test
   public void testGetImageIconMissing() throws Exception {
     assertNull(resources.getImageIcon("notthere"));
-  }
-
-  @Test
-  public void testGetStringFromFile() throws Exception {
-    final String helloWorld = resources.getStringFromFile("aFile", true);
-    assertEquals("Hello world\n", helloWorld);
-  }
-
-  @Test
-  public void testGetStringFromFileMissing() throws Exception {
-    assertNull(resources.getStringFromFile("notthere", false));
-  }
-
-  @Test
-  public void testGetStringFromFileMissing2() throws Exception {
-    assertNull(resources.getStringFromFile("notthere", true));
-    verify(m_errorWriter).println(isA(String.class));
-  }
-
-  @Test
-  public void testGetStringReadFailure() throws Exception {
-
-    final File file =
-        new File(getClass().getResource("resources/helloworld.txt").getFile());
-
-    setCanAccess(file, false);
-
-    try {
-      final String noResource = resources.getStringFromFile("aFile", false);
-      assertNull(noResource);
-      verify(m_errorWriter).println(isA(String.class));
-    }
-    finally {
-      setCanAccess(file, true);
-    }
   }
 }

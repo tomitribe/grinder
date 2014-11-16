@@ -45,15 +45,4 @@ public interface Resources {
    * @return The image.
    */
   ImageIcon getImageIcon(String key);
-
-  /**
-   * Use {@code key} to identify a file by URL. Return contents
-   * of file as a String.
-   *
-   * @param key Resource key used to look up URL of file.
-   * @param warnIfMissing true => write out an error message if the
-   * resource is missing.
-   * @return Contents of file.
-   */
-  String getStringFromFile(String key, boolean warnIfMissing);
 }
