@@ -1,4 +1,4 @@
-; Copyright (C) 2013 Philip Aston
+; Copyright (C) 2013-2014 Philip Aston
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
@@ -48,10 +48,7 @@
     Translations
     (^String translate [^Translations this ^String k ^objects format-args]
 
-      ; Fix passing of format-args. (Still a problem??)
-      ; Resource bundle support will go away.
-      ; Where to place translations file?
-      (binding [tower/*Locale* locale]
+      (binding [tower/*locale* locale]
         (apply translate/t k format-args)
         ))))
 

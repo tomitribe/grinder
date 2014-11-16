@@ -10,10 +10,8 @@
     <groupId>net.sf.grinder</groupId>
     <version>3.12-SNAPSHOT</version>
   </parent>
-  <groupId>net.sf.grinder</groupId>
   <artifactId>grinder-translation</artifactId>
   <packaging>clojure</packaging>
-  <version>3.12-SNAPSHOT</version>
   <name>grinder-translation</name>
   <description>Translation services for The Grinder.</description>
   <url>http://grinder.sourceforge.net</url>
@@ -83,7 +81,7 @@
     <dependency>
       <groupId>com.taoensso</groupId>
       <artifactId>tower</artifactId>
-      <version>1.6.0</version>
+      <version>2.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.clojure</groupId>

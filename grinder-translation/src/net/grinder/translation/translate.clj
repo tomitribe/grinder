@@ -21,11 +21,11 @@
 
 (ns net.grinder.translation.translate
   "Internationalisation."
-  (:use [taoensso.tower.ring :only [make-wrap-i18n-middleware]])
   (:require [taoensso.tower :as tower])
   (:import
     net.grinder.translation.Translatable))
 
+; FIXME - depreacted
 (tower/load-dictionary-from-map-resource! "translations.clj")
 
 (defmulti tkeys
@@ -45,22 +45,12 @@
    implementations of `net.grinder.common.Translatable`. See `tkeys`."
   ([k-or-ks & interpolation-args]
     (when-let [pattern (t k-or-ks)]
+       ; FIXME - depreacted
        (apply tower/format-msg pattern interpolation-args)))
 
   ([k-or-ks]
     (let [kchoices* (if (vector? k-or-ks) k-or-ks [k-or-ks])
           kchoices  (apply vector (map tkeys kchoices*))]
-      (tower/t kchoices)
+      ; FIXME - depreacted
+      (tower/oldt kchoices)
       )))
-
-(defn make-wrap-with-translation
-  "Returns Ring middleware that binds the translation context.
-   The optional parameter controls the tower scope."
-  [& [tower-scope]]
-
-  (comp
-    (make-wrap-i18n-middleware)
-    (fn [handler]
-      (fn [request]
-        (tower/with-scope tower-scope
-          (handler request))))))

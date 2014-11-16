@@ -28,14 +28,15 @@
     [hiccup core def element form page
      [middleware :only [wrap-base-url]]
      [util :only [to-str to-uri]]]
-    [net.grinder.translation.translate :only [t make-wrap-with-translation]]
+    [net.grinder.translation.translate :only [t]]
     [net.grinder.console.web.ringutil
      :only [root-relative-url] :rename {root-relative-url rr}]
     [org.httpkit.server :only [with-channel send!]]
     [ring.middleware
      [params :only [wrap-params]]
      [keyword-params :only [wrap-keyword-params]]]
-    [ring.util [response :only [redirect redirect-after-post response]]])
+    [ring.util [response :only [redirect redirect-after-post response]]]
+    [taoensso.tower.ring :only [wrap-tower-middleware]])
   (:require
     [clojure [string :as s]]
     [clojure.tools [logging :as log]]
@@ -49,7 +50,6 @@
      [ringutil :as ringutil]])
   (:import
     java.awt.Rectangle
-    net.grinder.console.ConsoleFoundation
     [net.grinder.statistics ExpressionView]))
 
 (defmulti render-process-state #(first %&))
@@ -370,79 +370,76 @@
     (recording/add-listener :key push-recording-data)
     (push-recording-data nil))
 
-  (let [translate (make-wrap-with-translation
-                    nil
-                    ConsoleFoundation/RESOURCE_BUNDLE)]
+  (->
+    (routes
+      (resources "/resources/" {:root "web"})
+      (resources "/lib/" {:root "web/lib"})
+      (resources "/core/" {:root "net/grinder/console/common/resources"})
 
-    (->
-      (routes
-        (resources "/resources/" {:root "web"})
-        (resources "/lib/" {:root "web/lib"})
-        (resources "/core/" {:root "net/grinder/console/common/resources"})
+      (GET "/poll" [& kts :as request]
+        (with-channel
+          request
+          ch
+          (livedata/poll (fn [d] (send! ch d)) kts)))
 
-        (GET "/poll" [& kts :as request]
-          (with-channel
-            request
-            ch
-            (livedata/poll (fn [d] (send! ch d)) kts)))
+      (->
+        (apply routes
+          (for [[section {:keys [render-fn]}] sections :when render-fn]
+            (GET (section-url section) []
+              (page (content section (apply render-fn [state]))))))
+        wrap-tower-middleware)
 
+      (context "/content" []
         (->
           (apply routes
             (for [[section {:keys [render-fn]}] sections :when render-fn]
               (GET (section-url section) []
-                (page (content section (apply render-fn [state]))))))
-          translate)
+                (content section (apply render-fn [state])))))
+          ringutil/wrap-no-cache
+          wrap-tower-middleware))
 
-        (context "/content" []
-          (->
-            (apply routes
-              (for [[section {:keys [render-fn]}] sections :when render-fn]
-                (GET (section-url section) []
-                  (content section (apply render-fn [state])))))
-            ringutil/wrap-no-cache
-            translate))
+      (context "/form" []
+        (->
+          (POST "/set-properties" {params :form-params}
+            (handle-properties-form properties params)
+            (content :properties (render-properties-form state)))
+          ringutil/wrap-no-cache
+          wrap-tower-middleware))
 
-        (context "/form" []
-          (->
-            (POST "/set-properties" {params :form-params}
-              (handle-properties-form properties params)
-              (content :properties (render-properties-form state)))
-            ringutil/wrap-no-cache
-            translate))
+      (context "/action" []
+        (POST "/start-processes" []
+          (ringutil/json-response
+            (processes/workers-start process-control properties {})))
 
-        (context "/action" []
-          (POST "/start-processes" []
-            (ringutil/json-response
-              (processes/workers-start process-control properties {})))
+        (POST "/reset-processes" []
+          (ringutil/json-response
+            (processes/workers-stop process-control)))
 
-          (POST "/reset-processes" []
-            (ringutil/json-response
-              (processes/workers-stop process-control)))
+        (POST "/stop-processes" []
+          (ringutil/json-response
+            (processes/agents-stop process-control)))
 
-          (POST "/stop-processes" []
-            (ringutil/json-response
-              (processes/agents-stop process-control)))
+        (POST "/start-recording" []
+          (ringutil/json-response
+            (recording/start sample-model)))
 
-          (POST "/start-recording" []
-            (ringutil/json-response
-              (recording/start sample-model)))
+        (POST "/stop-recording" []
+          (ringutil/json-response
+            (recording/stop sample-model)))
 
-          (POST "/stop-recording" []
-            (ringutil/json-response
-              (recording/stop sample-model)))
+        (POST "/reset-recording" []
+          (ringutil/json-response
+            (recording/zero sample-model))))
 
-          (POST "/reset-recording" []
-            (ringutil/json-response
-              (recording/zero sample-model))))
-
+      (->
         (GET "/" []
           (page (content :about
                   (if-let [r (t :console.dialog/about.text)]
-                    (slurp
-                      (clojure.java.io/resource r))))))
+                    (slurp (clojure.java.io/resource r))))))
+        wrap-tower-middleware)
 
-        (ANY "*" [] (redirect (rr "/"))))
+      (ANY "*" [] (redirect (rr "/"))))
 
-      wrap-base-url
-      wrap-keyword-params
-      wrap-params)))
+    wrap-base-url
+    wrap-keyword-params
+    wrap-params))

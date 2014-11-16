@@ -49,7 +49,7 @@
   (preserve-tower-config
     (load-test-tower-config)
     (tower/with-locale :en
-      (tower/with-scope :test
+      (tower/with-tscope :test
         (are [x k] (= x (translate/t k))
           "blah" :foo
           "blah" [:bah :foo]
@@ -77,38 +77,10 @@
         "Script Editor" :console.option/editor ; Test alias
     ))))
 
-(deftest test-make-wrap-with-translation
-  (preserve-tower-config
-    (load-test-tower-config)
-    (let [mw (translate/make-wrap-with-translation
-               :test)
-          request {}
-          tr-request {:params {:locale "tr"}}
-          response {:some "response"}]
-      (is (= response
-        ((mw (fn [r]
-              (is (= r request))
-              (are [x k] (= x (translate/t k))
-                "blah" :foo
-                "Hello World" :hello)
-              response))
-          request)))
-
-      (is (= response
-        ((mw (fn [r]
-              (is (= r tr-request))
-              (are [x k] (= x (translate/t k))
-                "blah" :foo
-                "Merhaba Dünya" :hello)
-              response
-              ))
-          tr-request)))
-      )))
-
 (deftest test-java-access
   (preserve-tower-config
     (load-test-tower-config)
-    (tower/with-scope :test
+    (tower/with-tscope :test
       (let [ts (net.grinder.translation.impl.TranslationsSource.)
             t (.getTranslations ts (java.util.Locale. "en"))]
         (is (= "blah" (.translate t "foo" nil))

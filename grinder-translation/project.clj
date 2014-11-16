@@ -3,7 +3,7 @@
   :description "Translation services for The Grinder."
   :url "http://grinder.sourceforge.net"
   :dependencies
-  [[com.taoensso/tower "1.6.0"]
+  [[com.taoensso/tower "2.0.2"]
    [org.clojure/clojure "1.4.0"]
    [org.clojure/tools.logging "0.2.3"]]
   :profiles {:dev {:dependencies []}}
