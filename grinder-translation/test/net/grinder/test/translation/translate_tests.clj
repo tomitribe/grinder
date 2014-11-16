@@ -27,27 +27,14 @@
     [taoensso.tower :as tower])
   (:import [net.grinder.translation Translatable Translations]))
 
-(defmacro preserve-tower-config
-  "Save and restore tower/config."
-  [& body]
-  `(let [c# @tower/config]
-     (try
-       ~@body
-       (finally
-         (swap! tower/config (fn [_#] c#) )))))
 
-(defn- load-test-tower-config
-  ([]
-    (load-test-tower-config
-      "net/grinder/test/console/service/testtranslations.clj"))
-  ([d]
-    (tower/set-config! [:dictionary] {}) ; Discard any configuration.
-    (tower/set-config! [:log-missing-translation!-fn] (fn [x])) ; Don't log.
-    (tower/load-dictionary-from-map-resource! d)))
+(defmacro with-translations
+  [d & body]
+  `(binding [translate/*tconfig* {:dictionary ~d}]
+     ~@body))
 
 (deftest test-t
-  (preserve-tower-config
-    (load-test-tower-config)
+  (with-translations "net/grinder/test/console/service/testtranslations.clj"
     (tower/with-locale :en
       (tower/with-tscope :test
         (are [x k] (= x (translate/t k))
@@ -69,8 +56,7 @@
       )))
 
 (deftest test-t-standard-dictionary
-  (preserve-tower-config
-    (load-test-tower-config "translations.clj")
+  (with-translations "translations.clj"
     (tower/with-locale :en
       (are [x k] (= x (translate/t k))
         "console" :console/terminal-label
@@ -78,16 +64,14 @@
     ))))
 
 (deftest test-java-access
-  (preserve-tower-config
-    (load-test-tower-config)
+  (with-translations "net/grinder/test/console/service/testtranslations.clj"
     (tower/with-tscope :test
       (let [ts (net.grinder.translation.impl.TranslationsSource.)
             t (.getTranslations ts (java.util.Locale. "en"))]
         (is (= "blah" (.translate t "foo" nil))
           ))))
 
-  (preserve-tower-config
-    (load-test-tower-config  "translations.clj")
+  (with-translations "translations.clj"
 
     (let [ts (net.grinder.translation.impl.TranslationsSource.)
           t (.getTranslations ts (java.util.Locale. "en"))]

@@ -25,8 +25,11 @@
   (:import
     net.grinder.translation.Translatable))
 
-; FIXME - depreacted
-(tower/load-dictionary-from-map-resource! "translations.clj")
+(def ^:dynamic *tconfig*
+  {:fallback-locale :en
+   :dictionary "translations.clj"
+   })
+
 
 (defmulti tkeys
   "Convert an object into a keyword to use for translation."
@@ -45,12 +48,10 @@
    implementations of `net.grinder.common.Translatable`. See `tkeys`."
   ([k-or-ks & interpolation-args]
     (when-let [pattern (t k-or-ks)]
-       ; FIXME - depreacted
+       ; FIXME - deprecated
        (apply tower/format-msg pattern interpolation-args)))
 
   ([k-or-ks]
     (let [kchoices* (if (vector? k-or-ks) k-or-ks [k-or-ks])
           kchoices  (apply vector (map tkeys kchoices*))]
-      ; FIXME - depreacted
-      (tower/oldt kchoices)
-      )))
+      (tower/t (or tower/*locale* :jvm-default) *tconfig* kchoices))))
