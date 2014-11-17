@@ -1,5 +1,7 @@
 ; Copyright (C) 2000 - 2014 Philip Aston
 ; Copyright (C) 2004 John Stanford White
+; Copyright (C) 2003, 2004 Bertrand Ave
+; Copyright (C) 2008 Tagnon Soko
 ; All rights reserved.
 ;
 ; This file is part of The Grinder software distribution. Refer to
