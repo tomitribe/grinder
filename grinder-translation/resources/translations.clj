@@ -1,9 +1,10 @@
 ; Copyright (C) 2000 - 2014 Philip Aston
-; Copyright (C) 2004 John Stanford White
-; Copyright (C) 2003, 2004 Bertrand Ave
-; Copyright (C) 2008 Tagnon Soko
 ; Copyright (C) 2002, 2003, 2004, 2005 Jose Antonio Zapata Rey
 ; Copyright (C) 2003 Manuel Silva
+; Copyright (C) 2003, 2004 Bertrand Ave
+; Copyright (C) 2004 John Stanford White
+; Copyright (C) 2007 Hugh Chen
+; Copyright (C) 2008 Tagnon Soko
 ; Copyright (C) 2009 Antonio Manuel Muñiz Martín (http://amunizmartin.wordpress.com)
 ; All rights reserved.
 ;
@@ -653,6 +654,199 @@
                 :dialog {:error :console.term/error
                          :error-details "Détail des erreurs"
                          :about "A propos de The Grinder"
+                         :about.text "about.html"}
+                }
+      },
+
+ :zh {:communication {:local-bind-error "无法绑定控制台地址，请检查选项。"
+                      :send-error "无法发送消息，请检查选项。"}
+      :console {:state {:finished "完成"
+                        :worker-threads_comment "({0}/{1} {1,choice,0#threads|1#thread|1<{0,number} threads}) <translate me>"
+                        :capturing-samples "数据收集进行中"
+                        :running "运行中"
+                        :started "就绪"
+                        :finished-agent "已断开"
+                        :unknown_comment "? <translate me>"
+                        :collection-stopped "数据收集停止"
+                        :waiting-for-samples "等待取样数据"
+                        :ignoring-samples "等待取样数据，忽略"
+                        :running-agent "已连接"
+                        :no-connected-agents_comment "No connected agents <translate me>"}
+                :menu {:file "文件"
+                       :action "动作"
+                       :distribute "分发"
+                       :help "帮助"}
+                :action {:reset-processes_comment "Stop workers <translate me>"
+                         :stop-processes_comment "Stop agents <translate me>"
+                         :reset-processes-detail "复位worker进程"
+                         :save-file-detail "保存文件"
+                         :stop-processes-detail "停止worker和agent进程"
+                         :new-file-detail "新建文件"
+                         :about-detail :console.dialog/about
+                         :ok "确定"
+                         :cancel "取消"
+                         :select-properties_comment "Select properties <translate me>"
+                         :reset-recording_comment "Reset recording <translate me>"
+                         :choose-external-editor-detail_comment "Select the executable file to use as the external editor <translate me>"
+                         :save-file-as-detail "以不同的名字保存文件"
+                         :distribute-files "分发文件"
+                         :about :console.dialog/about
+                         :options-detail "通信配置等"
+                         :choose-directory "设置目录"
+                         :deselect-properties_comment "Deselect _properties <translate me>"
+                         :new-file "新建文件"
+                         :start "收集统计数据"
+                         :start-recording_comment "Start recording <translate me>"
+                         :close-file "关闭"
+                         :open-file-external_comment "Open with external editor <translate me>"
+                         :open-file-detail "打开文件"
+                         :save-results-detail "保存结果"
+                         :close-file-detail "关闭"
+                         :exit-detail_comment "Exit <translate me>"
+                         :stop "停止收集数据"
+                         :stop-recording_comment "Stop recording <translate me>"
+                         :copy-to-clipboard "拷贝到粘贴板"
+                         :start-detail "开始收集统计数据"
+                         :deselect-properties-detail_comment "Deselect the properties file. The worker processes will run the script set in the agent's grinder.properties file. <translate me>"
+                         :select-properties-detail_comment "Select the properties file to use. The properties file controls which script will be run. <translate me>"
+                         :exit "退出"
+                         :set-properties_comment "Set <translate me>"
+                         :options "选项"
+                         :distribute-files-detail "发送更改过的文件到worker进程"
+                         :save-file-as "保存为"
+                         :open-file "打开"
+                         :open-file-external-detail_comment "Open file using the configured external editor <translate me>"
+                         :start-processes_comment "Start workers <translate me>"
+                         :save-file "保存"
+                         :start-processes-detail "启动worker进程"
+                         :save-defaults "保存缺省值"
+                         :save-results "保存结果"
+                         :stop-detail "停止收集统计数据"
+                         :choose-directory-detail "为脚本分发设置根目录"
+                         :choose-external-editor_comment "Select external editor <translate me>"}
+                :terminal-label "控制台"
+                :section {:processes-detail "进程状态"
+                          :scripts_comment "scripts.label <translate me>"
+                          :communication-detail "通信地址"
+                          :swing-console_comment "Swing Console <translate me>"
+                          :cumulative-data "累加的测试统计数据"
+                          :console-properties_comment "Console Properties <translate me>"
+                          :results-detail "测试结果表"
+                          :editor-detail "编辑测试脚本"
+                          :sampling "取样"
+                          :graphs "图示"
+                          :communication "通信"
+                          :sample-data "最近一次取样"
+                          :editor "脚本编辑器"
+                          :file-distribution_comment "File Distribution <translate me>"
+                          :graphs-detail "测试活动图示"
+                          :results "结果"
+                          :data_comment "Data <translate me>"
+                          :processes_comment "Processes <translate me>"}
+                :title "The Grinder 控制台"
+                :term {:status "状态"
+                       :test-description "描述"
+                       :name_comment "Name <translate me>"
+                       :sample "sample"
+                       :threads "线程"
+                       :total "总共"
+                       :milliseconds "ms"
+                       :test "测试"
+                       :mean "(峰值)"
+                       :peak "(平均)"
+                       :samples "samples"
+                       :error "error"
+                       :test-number :console.term/test
+                       :errors "errors"
+                       :millisecond "ms"
+                       :running-processes_comment "Running processes <translate me>"
+                       :agent "代理"
+                       :tests "tests"
+                       :tps "TPS"
+                       :worker "Worker"}
+                :process {:name "进程"
+                          :type "类型"
+                          :state :console.term/status
+                          :label "worker进程"}
+                :statistic {:Mean-time-to-first-byte "获得首字节平均时间"
+                            :Errors :console.term/errors
+                            :Mean-response-length "平均响应长度"
+                            :Peak-TPS "每秒事务数峰值"
+                            :Mean-time-to-resolve-host "解析主机平均时间"
+                            :Mean-time-to-establish-connection "确立连接平均时间"
+                            :Response-bytes-per-second "每秒响应字节数"
+                            :Tests "成功的测试"
+                            :Response-errors "响应错误数"
+                            :TPS :console.term/tps
+                            :Test-Time-Standard-Deviation-ms "平均时间标准偏差"
+                            :Mean-Test-Time-ms "平均时间"}
+                :phrase {:reset-console-with-processes-confirmation "你已选择复位worker进程。\n你也想复位控制台吗？"
+                         :ignore-existing-buffer-confirmation2 "(如果你选择 'No' 该文件不会被保存)."
+                         :dont-ask-me-again "不要再询问"
+                         :ignore-existing-buffer-confirmation "文件已经在另一个缓冲区打开，废弃另一个缓冲区吗？"
+                         :existing-buffer-has-unsaved-changes "另一个缓冲区有未保存的改变。"
+                         :create-directory "目录并不存在，创建吗？"
+                         :invalid-port-number-error "端口号应该在 [{0}, {1}] 的范围内。"
+                         :regular-expression-error_comment "The expression for property {0} is invalid, check options. <translate me>"
+                         :interval-less-than-one-error "最小的取样间隔为 1 ms."
+                         :unexpected-error "未知错误"
+                         :new-buffer "新文件"
+                         :save-outside-of-distribution-confirmation "你选择的文件位于当前分发目录之外。\n你真的想把文件保存在这儿吗？"
+                         :overwrite-confirmation "文件已存在，覆盖吗？"
+                         :ignore-samples-negative-error "忽略的样本数不能为负。"
+                         :could-not-save-options-error "无法保存控制台选项"
+                         :external-edit-error_comment "Open in external editor failed, check options. <translate me>"
+                         :existing-buffer-out-of-date "磁盘上的文件已经改变而另一个缓冲区并未更新。"
+                         :caches-out-of-date-confirmation_comment "The agent file caches are out of date.\nDo you want to distribute the files now? <translate me>"
+                         :stop-proceses-confirmation "你已选择停止所有进程，包括agent进程。\n你将需要手动重启agent进程。 你想继续吗？"
+                         :start-with-unsaved-buffers-confirmation "某些缓冲区并未保存。你想继续吗？"
+                         :external-editor-not-set_comment "No external editor has been set, check options. <translate me>"
+                         :save-modified-buffer-confirmation "在 \"{0}\" 的文本已经改变。\n你想保存这些改变吗？"
+                         :file-read-error "无法从 \"{0}\"{1} 文件读。"
+                         :unknown-host-error "未知主机名。"
+                         :script-not-in-directory-error_comment "The grinder.script property does not refer to a file in the current distribution directory.\nPlease set or correct the 'grinder.script' property. <translate me>"
+                         :ignoring-unknown-test_comment "ignoringUnknownTest.text <translate me>"
+                         :external-edit-modified-buffer-confirmation_comment "The file has unsaved changes in an open buffer.\nDo you still want to open it with the external editor? <translate me>"
+                         :could-not-load-options-error "无法装载控制台选项"
+                         :out-of-date-overwrite-confirmation "磁盘上的文件已更改而缓冲区并没更新，覆盖吗？"
+                         :scan-distributioned-files-period-negative-error "扫描分发文件的时间间隔不能为负。"
+                         :invalid-host-address-error "无效的IP地址。该域留空以绑定到所有的网络接口。"
+                         :file-error "文件错误"
+                         :properties-not-set-confirmation_comment "You have not selected a properties file. The worker processes will run the \nscript set in the agent's grinder.properties file.\nDo you want to continue? <translate me>"
+                         :file-write-error "无法写进 \"{0}\"{1} 文件。"
+                         :significant-figures-negative-error "有效数字不能为负。"
+                         :no-processes_comment "There are no connected agents. <translate me>"
+                         :collect-negative-error "你必须至少收集一组样本数据，零意味着“永远”。"}
+                :option {:chart-statistic_comment "Statistic <translate me>"
+                         :collect-count-zero "不间断收集样本数据"
+                         :http-port_comment "HTTP Service Port <translate me>"
+                         :ignore-sample-count "忽略"
+                         :miscellaneous-detail "其它选项"
+                         :default-filename "grinder-console.data"
+                         :console-host "控制台主机"
+                         :reset-console-with-processes "根据Worker进程重置控制台"
+                         :console-port "控制台端口"
+                         :ignore-sample-count-detail_comment "Number of samples to ignore <translate me>"
+                         :collect-sample-count-detail_comment "Number of samples to collect <translate me>"
+                         :sample-interval "取样间隔"
+                         :sampling :console.section/sampling
+                         :distribution-directory "脚本目录"
+                         :external-editor-arguments_comment "External editor arguments <translate me>"
+                         :http-host_comment "HTTP Service Host <translate me>"
+                         :editor :console.section/editor
+                         :miscellaneous "杂项"
+                         :collect-sample-count "在这个值后停止"
+                         :save-totals-with-results.detail_comment "Save totals with results <translate me>"
+                         :editor-detail_comment "Script editor options <translate me>"
+                         :save-totals-with-results_comment "Include totals <translate me>"
+                         :properties-file_comment "propertiesFile.label <translate me>"
+                         :sampling-detail "取样控制"
+                         :look-and-feel "观感"
+                         :external-editor-command_comment "External editor command <translate me>"
+                         :significant-figures "有效数字"}
+                :dialog {:error :console.term/error
+                         :error-details "错误详细信息"
+                         :about "关于 The Grinder"
                          :about.text "about.html"}
                 }
       }
