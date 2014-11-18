@@ -6,6 +6,7 @@
 ; Copyright (C) 2004 Andreas Schmidt
 ; Copyright (C) 2004 John Stanford White
 ; Copyright (C) 2004 Marc Born
+; Copyright (C) 2005 - 2008 Meo Bogliolo
 ; Copyright (C) 2007 - 2008 Matthias Dillier
 ; Copyright (C) 2007 Hugh Chen
 ; Copyright (C) 2008 Tagnon Soko
@@ -467,7 +468,7 @@
                          :about "Über The Grinder"
                          :about.text "about.html"}
                 }
-      },
+      }
 
  :es {:communication {:local-bind-error "Falló la conexión con la consola, verifique las opciones de dirección."
                       :send-error "Error enviando mensaje, verifica las opciones"}
@@ -658,7 +659,8 @@
                 :dialog {:error :console.term/error
                          :error-details "Detalle de errores"
                          :about "Acerca de The Grinder"
-                         :about.text "about.html"}}
+                         :about.text "about.html"}
+                }
       }
 
  :fr {:communication {:local-bind-error "Utilisation de l'adresse de la console impossible, vérifier les options."
@@ -782,8 +784,8 @@
                             :Tests "Transactions réussies"
                             :Response-errors "Nombre d'erreurs"
                             :TPS :console.term/tps
-                            :Test-Time-Standard-Deviation-ms "Écart-type du temps moyen de réponse (ms)"
-                            :Mean-Test-Time-ms "Temps moyen de réponse (ms)"}
+                            :Test-Time-Standard-Deviation-ms "Écart-type du temps moyen de réponse"
+                            :Mean-Test-Time-ms "Temps moyen de réponse"}
                 :phrase {:external-edit-modified-buffer-confirmation "Le fichier a des modifications non enregistrées dans un autre\nprogramme. Voulez-vous toujours l'ouvrir avec l'éditeur externe?"
                          :reset-console-with-processes-confirmation "Vous avez choisi de ré-initialiser les processus injecteurs. Voulez-vous\nré-initialiser la console?"
                          :ignore-existing-buffer-confirmation2 "(Si vous choisissez 'Non' le fichier ne sera pas sauvegardé)."
@@ -853,7 +855,198 @@
                          :about "A propos de The Grinder"
                          :about.text "about.html"}
                 }
-      },
+      }
+
+ :it {:communication {:local-bind-error "Impossibile connettersi alla console. Verificare le opzioni."
+                      :send-error "Impossibile inviare il messaggio. Verificare le opzioni."}
+      :console {:state {:finished "Terminato"
+                        :worker-threads_comment "({0}/{1} {1,choice,0#threads|1#thread|1<{0,number} threads}) <translate me>"
+                        :capturing-samples "Campioni raccolti"
+                        :running "In esecuzione"
+                        :started "Pronto"
+                        :finished-agent "Sconnesso"
+                        :unknown_comment "? <translate me>"
+                        :collection-stopped "Campionamento interrotto"
+                        :waiting-for-samples "In attesa di risultati"
+                        :ignoring-samples "In attesa di risultati, ignorati"
+                        :running-agent "Connesso"
+                        :no-connected-agents_comment "No connected agents <translate me>"}
+                :menu {:file "File"
+                       :action "Azioni"
+                       :distribute "Distribuisci"
+                       :help "Aiuto"}
+                :action {:reset-processes_comment "Stop workers <translate me>"
+                         :stop-processes_comment "Stop agents <translate me>"
+                         :reset-processes-detail "Riavvia i processi Worker"
+                         :choose-external-editor-detail "Seleziona il file da eseguire come editor esterno"
+                         :save-file-detail "Salva"
+                         :stop-processes-detail "Interrompe l'Agent ed i processi di Worker"
+                         :deselect-properties "Disseleziona _proprieta'"
+                         :new-file-detail "Nuovo"
+                         :about-detail :console.dialog/about
+                         :ok "OK"
+                         :cancel "Annulla"
+                         :choose-external-editor "Seleziona l'editor esterno"
+                         :reset-recording_comment "Reset recording <translate me>"
+                         :save-file-as-detail "Salva con un nome differente"
+                         :distribute-files "Distribuisci script"
+                         :about :console.dialog/about
+                         :options-detail "Configurazione rete ed altri parametri"
+                         :choose-directory "Scelta directory"
+                         :new-file "Nuovo"
+                         :start "Avvio statistiche"
+                         :start-recording_comment "Start recording <translate me>"
+                         :close-file "Chiudi"
+                         :open-file-detail "Apri il file"
+                         :open-file-external-detail "Apri il file con l'editor esterno configurato"
+                         :save-results-detail "Salva risultati"
+                         :close-file-detail "Chiudi"
+                         :exit-detail_comment "Exit <translate me>"
+                         :stop "Stop statistiche"
+                         :stop-recording_comment "Stop recording <translate me>"
+                         :copy-to-clipboard "Copia in clipboard"
+                         :start-detail "Avvia la raccolta delle statistiche"
+                         :exit "Esci"
+                         :set-properties_comment "Set <translate me>"
+                         :open-file-external "Apri con l'editor esterno"
+                         :options "Opzioni"
+                         :distribute-files-detail "Distribuisce gli script modificati ai processi Worker"
+                         :save-file-as "Salva con nome..."
+                         :open-file "Apri"
+                         :start-processes_comment "Start workers <translate me>"
+                         :save-file "Salva"
+                         :start-processes-detail "Attiva i processi Worker"
+                         :save-defaults "Salva come default"
+                         :deselect-properties-detail "Disseleziona il file di proprieta'. Il processo Worker eseguira' lo script definito nel file grinder.properties dell'Agent."
+                         :save-results "Salva risultati"
+                         :stop-detail "Interrompe la raccolta delle statistiche"
+                         :select-properties-detail "Seleziona il file di proprieta' da usare. Il file di proprieta' controlla quale script eseguire."
+                         :choose-directory-detail "Scelta directory di partenza per la distribuzione degli script"
+                         :select-properties "Seleziona proprieta'"}
+                :terminal-label "console"
+                :section {:processes-detail "Stato dei processi"
+                          :communication-detail "Indirizzi"
+                          :swing-console_comment "Swing Console <translate me>"
+                          :cumulative-data "Risultati raccolti"
+                          :console-properties_comment "Console Properties <translate me>"
+                          :results-detail "Tabella dei risultati"
+                          :scripts "Scripts"
+                          :editor-detail "Modifica lo script"
+                          :sampling "Campionamento"
+                          :graphs "Grafici"
+                          :communication "Rete"
+                          :sample-data "Ultimo campionamento"
+                          :editor "Editor di script"
+                          :file-distribution_comment "File Distribution <translate me>"
+                          :graphs-detail "Grafici attivita'"
+                          :results "Risultati"
+                          :data_comment "Data <translate me>"
+                          :processes_comment "Processes <translate me>"}
+                :title "Grinder Console"
+                :term {:status "Stato"
+                       :test-description "Descrizione"
+                       :name_comment "Name <translate me>"
+                       :sample "campionamento"
+                       :threads "Threads"
+                       :total "Totale"
+                       :milliseconds "ms"
+                       :test "Test"
+                       :mean "picco"
+                       :peak "medio"
+                       :samples "campionamenti"
+                       :error "errore"
+                       :test-number :console.term/test
+                       :errors "errori"
+                       :millisecond "ms"
+                       :running-processes_comment "Running processes <translate me>"
+                       :agent "Agent"
+                       :tests "transazioni"
+                       :tps "TPS"
+                       :worker "Worker"}
+                :process {:name "Processo"
+                          :type "Tipo"
+                          :state :console.term/status
+                          :label "Processi Worker"}
+                :statistic {:Mean-time-to-first-byte "Tempo medio ricezione del primo byte"
+                            :Errors :console.term/errors
+                            :Mean-response-length "Lunghezza media risposta"
+                            :Peak-TPS "Picco TPS"
+                            :Mean-time-to-resolve-host "Tempo medio risoluzione nome host", "Mean-time-to-establish-connection" "Tempo medio connessione"
+                            :Response-bytes-per-second "Byte al secondo in risposta"
+                            :Tests "Transazioni corrette"
+                            :Response-errors "Errori nella risposta"
+                            :TPS :console.term/tps
+                            :Test-Time-Standard-Deviation-ms "Deviazione standard"
+                            :Mean-Test-Time-ms "Tempo medio"}
+                :phrase {:external-edit-modified-buffer-confirmation "Il file ha modifiche non salvate in un buffer.\nVolete aprirlo comunque con l'editor esterno?"
+                         :reset-console-with-processes-confirmation "Hai scelto di resettare i processi Worker.\nResettare anche la console?"
+                         :ignore-existing-buffer-confirmation2 "(Se selezioni 'No' il file non sara' salvato)."
+                         :dont-ask-me-again "Non chiedere la prossima volta"
+                         :ignore-existing-buffer-confirmation "Il file e' aperto con un altro buffer, vuoi perdere le modifiche dell'altro buffer?"
+                         :existing-buffer-has-unsaved-changes "L'altro buffer ha modifiche non salvate."
+                         :create-directory "La directory non esiste, vuoi crearla?"
+                         :invalid-port-number-error "Il numero di porta deve essere compreso nell'intervallo [{0}, {1}]."
+                         :external-edit-error "L'apertura dell'editor esterno e' fallita, controllate le opzioni."
+                         :interval-less-than-one-error "L'intervallo minimo di campionamento e' 1 ms."
+                         :unexpected-error "Errore non atteso"
+                         :new-buffer "Nuovo file"
+                         :save-outside-of-distribution-confirmation "Il file selezionato e' al di fuori della directory di distribuzione.\nVuoi davvero salvare qui?"
+                         :overwrite-confirmation "Il file esiste gia', sovrascrivere?"
+                         :ignore-samples-negative-error "Il numero di campionamenti da ignorare non puo' essere negativo."
+                         :could-not-save-options-error "Impossibile salvare le opzioni della console"
+                         :existing-buffer-out-of-date "Il file e' stato cambiato e l'altro buffer non e' aggiornato."
+                         :stop-proceses-confirmation "Hai chiesto di interrompere i processi e gli agenti.\nDevi poi riattivarli manualmente. Continua?"
+                         :start-with-unsaved-buffers-confirmation "Alcuni buffer non sono stati salvati. Continua?"
+                         :properties-not-set-confirmation "Non e' stato selezionato un file di proprieta'. Il processo Worker eseguira' \nlo script definito nel file grinder.properties dell'Agent.\nVuoi continuare?"
+                         :save-modified-buffer-confirmation "Il contenuto in \"{0}\" e' stato modificato.\nSalvare le modifiche?"
+                         :file-read-error "Impossibile leggere il file \"{0}\"{1}."
+                         :unknown-host-error "Nome host sconosciuto."
+                         :caches-out-of-date-confirmation "Le cache dei file dell'Agent non sono aggiornate.\nVuoi distribuire i file adesso?"
+                         :ignoring-unknown-test_comment "ignoringUnknownTest.text <translate me>"
+                         :could-not-load-options-error "Impossibile caricare le opzioni della console"
+                         :out-of-date-overwrite-confirmation "Il file e' stato cambiato ed il buffer non e' aggiornato, sovrascrivere?"
+                         :scan-distributioned-files-period-negative-error "Il periodo di controllo distribuzione file non puo' essere negativo."
+                         :invalid-host-address-error "Indirizzo IP non valido. Lasciare il campo vuoto per indicare tutte le interfacce di rete."
+                         :external-editor-not-set "Non e' stato configurato nessun editor esterno. verificare le opzioni."
+                         :file-error "Errore di accesso al file"
+                         :file-write-error "Impossibile scrivere il file \"{0}\"{1}."
+                         :significant-figures-negative-error "Il numero di cifre significative non puo' essere negativo."
+                         :script-not-in-directory-error "La proprieta' grinder.script non fa riferimento ad un file corretto nella directory corrente.\nDeve essere impostata correttamente la proprieta' 'grinder.script' property."
+                         :no-processes_comment "There are no connected agents. <translate me>"
+                         :regular-expression-error "L'espressione per la proprieta' {0} e' invalida, verificare le opzioni."
+                         :collect-negative-error "Devi raccogliere almeno una campionamento, 0 (zero) significa \"in continuo\"."}
+                :option {:chart-statistic_comment "Statistic <translate me>"
+                         :external-editor-command "Comando di lancio dell'editor esterno"
+                         :collect-count-zero "Colleziona statistiche in continuo"
+                         :http-port_comment "HTTP Service Port <translate me>"
+                         :ignore-sample-count "Ignora"
+                         :miscellaneous-detail "Altre opzioni"
+                         :default-filename "grinder-console.data"
+                         :console-host "Indirizzo della Console"
+                         :reset-console-with-processes "Reset della Console e dei processi Worker"
+                         :console-port "Numero di porta della Console"
+                         :ignore-sample-count-detail_comment "Number of samples to ignore <translate me>"
+                         :collect-sample-count-detail_comment "Number of samples to collect <translate me>"
+                         :sample-interval "Intervallo di campionamento"
+                         :editor-detail "Opzioni dell'editor"
+                         :sampling :console.section/sampling
+                         :distribution-directory "Directory degli script"
+                         :http-host_comment "HTTP Service Host <translate me>"
+                         :editor :console.section/editor
+                         :miscellaneous "Altro"
+                         :collect-sample-count "Interrompi dopo"
+                         :save-totals-with-results.detail_comment "Save totals with results <translate me>"
+                         :save-totals-with-results_comment "Include totals <translate me>"
+                         :external-editor-arguments "Parametri dell'editor"
+                         :properties-file_comment "propertiesFile.label <translate me>"
+                         :sampling-detail "Configurazione Campionamento"
+                         :look-and-feel "Interfaccia grafica"
+                         :significant-figures "Cifre significative"}
+                :dialog {:error :console.term/error
+                         :error-details "Dettagli errore"
+                         :about "Informazioni su Grinder",:about.text "about.html"}
+                }
+      }
 
  :zh {:communication {:local-bind-error "无法绑定控制台地址，请检查选项。"
                       :send-error "无法发送消息，请检查选项。"}
