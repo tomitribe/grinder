@@ -58,6 +58,11 @@
       <artifactId>grinder-crest</artifactId>
       <version>3.12-SNAPSHOT</version>
     </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>grinder-dcr-agent</artifactId>
+      <version>3.12-SNAPSHOT</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -81,6 +86,14 @@
                   <mainClass>net.grinder.Grinder</mainClass>
                 </transformer>
               </transformers>
+              <filters>
+                <filter>
+                  <artifact>net.sf.grinder:grinder-core</artifact>
+                  <excludes>
+                    <exclude>META-INF/net.grinder.scriptengine</exclude>
+                  </excludes>
+                </filter>
+              </filters>
             </configuration>
           </execution>
         </executions>

@@ -2,4 +2,4 @@
 #
 # The order of lines is important; see net.grinder.scriptengine.ScriptEngine.
 
-net.grinder.scriptengine.crest.CrestScriptEngineService
+com.tomitribe.performance.scriptengine.crest.CrestScriptEngineService
