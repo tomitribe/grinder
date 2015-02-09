@@ -587,6 +587,8 @@
     <module>grinder</module>
     <module>grinder-console-service</module>
     <module>grinder-core</module>
+    <module>grinder-crest</module>
+    <module>grinder-crest-sample</module>
     <module>grinder-dcr-agent</module>
     <module>grinder-http</module>
     <module>grinder-httpclient</module>
