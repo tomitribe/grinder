@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DefaultCrestTestRunner implements Runnable {
 
     private static final Map<String, Cmd> commands = new ConcurrentHashMap<String, Cmd>();
+    private static final String PREFIX = "grinder.command.";
 
     private final List<TestCommand> tests = new ArrayList<TestCommand>();
 
@@ -44,9 +45,15 @@ public class DefaultCrestTestRunner implements Runnable {
 
         while (propertyNames.hasMoreElements()) {
             final String propertyName = (String) propertyNames.nextElement();
-            final String propertyValue = properties.getProperty(propertyName);
 
-            tests.add(new TestCommand(testCount, propertyName, propertyValue));
+            if (! propertyName.startsWith(PREFIX)) {
+                continue;
+            }
+
+            final String commandName = propertyName.substring(PREFIX.length());
+            final String command = properties.getProperty(propertyName);
+
+            tests.add(new TestCommand(testCount, commandName, command));
             testCount++;
         }
     }
@@ -95,7 +102,7 @@ public class DefaultCrestTestRunner implements Runnable {
 
             final Test test = new Test(testNumber, testName);
 
-            final List<String> list = Arrays.asList(CommandLine.translateCommandline(commandLine));
+            final List<String> list = new ArrayList<String>(Arrays.asList(CommandLine.translateCommandline(commandLine)));
             final String commandName = list.remove(0);
             final String[] args = list.toArray(new String[list.size()]);
 
