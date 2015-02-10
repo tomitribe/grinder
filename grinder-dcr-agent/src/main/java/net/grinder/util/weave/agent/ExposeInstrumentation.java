@@ -31,25 +31,37 @@ import java.lang.instrument.Instrumentation;
  * @author Philip Aston
  */
 public final class ExposeInstrumentation {
-  private static Instrumentation s_instrumentation;
+    private static Instrumentation s_instrumentation;
 
-  /**
-   * Remember the {@link Instrumentation}.
-   *
-   * @param arguments Arguments passed to the agent.
-   * @param instrumentation The JRE supplies this.
-   */
-  public static void premain(String arguments,
-                             Instrumentation instrumentation) {
-    s_instrumentation = instrumentation;
-  }
+    /**
+     * Remember the {@link Instrumentation}. This method is invoked when then agent is dynamically loaded
+     *
+     * @param arguments       Arguments passed to the agent.
+     * @param instrumentation The JRE supplies this.
+     */
+    public static void agentmain(String arguments,
+                                 Instrumentation instrumentation) {
+        s_instrumentation = instrumentation;
+    }
 
-  /**
-   * Provide access to the {@link Instrumentation}.
-   *
-   * @return The {@link Instrumentation}.
-   */
-  public static Instrumentation getInstrumentation() {
-    return s_instrumentation;
-  }
+
+    /**
+     * Remember the {@link Instrumentation}.
+     *
+     * @param arguments       Arguments passed to the agent.
+     * @param instrumentation The JRE supplies this.
+     */
+    public static void premain(String arguments,
+                               Instrumentation instrumentation) {
+        s_instrumentation = instrumentation;
+    }
+
+    /**
+     * Provide access to the {@link Instrumentation}.
+     *
+     * @return The {@link Instrumentation}.
+     */
+    public static Instrumentation getInstrumentation() {
+        return s_instrumentation;
+    }
 }
