@@ -73,6 +73,9 @@ public class CrestGrinder {
             logger.info("Unable to dynamically load the java agent");
         }
 
+        // config self as the Grinder script to run
+        System.setProperty("grinder.script", file.getAbsolutePath());
+        
         // delegate to Grinder
         Grinder.main(args);
     }
