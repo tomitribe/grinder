@@ -41,7 +41,25 @@
       <groupId>${project.groupId}</groupId>
       <artifactId>grinder-core</artifactId>
       <version>3.12-SNAPSHOT</version>
-    </dependency>
+      <exclusions>
+      	<exclusion>
+	      <groupId>com.taoensso</groupId>
+    	  <artifactId>tower</artifactId>
+    	</exclusion>
+      	<exclusion>
+	      <groupId>org.clojure</groupId>
+	      <artifactId>clojure</artifactId>
+    	</exclusion>
+      	<exclusion>
+	      <groupId>org.clojure</groupId>
+	      <artifactId>tools.logging</artifactId>
+    	</exclusion>
+    	<exclusion>
+   	      <groupId>org.python</groupId>
+    	  <artifactId>jython-standalone</artifactId>
+    	</exclusion>
+      </exclusions>
+	</dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>grinder-dcr-agent</artifactId>
