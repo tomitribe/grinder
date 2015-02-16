@@ -51,7 +51,7 @@ public class DefaultCrestTestRunner implements Runnable {
             }
 
             final String commandName = propertyName.substring(PREFIX.length());
-            final String command = properties.getProperty(propertyName);
+            final String command = Expand.expand(properties.getProperty(propertyName), properties);
 
             tests.add(new TestCommand(testCount, commandName, command));
             testCount++;
