@@ -14,5 +14,5 @@ import net.grinder.statistics.StatisticsServices;
 import net.grinder.statistics.TestStatisticsMap;
 
 public interface StatsPlugin {
-    public void scriptComplete(StatisticsServices statisticsServices, TestStatisticsMap accumulatedStatistics);
+    public void scriptComplete(StatisticsServices statisticsServices, TestStatisticsMap accumulatedStatistics, long elapsedTime);
 }

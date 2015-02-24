@@ -554,7 +554,7 @@ final class GrinderProcess {
       m_logger.info(statistics.toString());
 
       // allow plugins to do some processing on statistics
-      StatsPluginContainer.getInstance().scriptComplete(m_statisticsServices, m_accumulatedStatistics);
+      StatsPluginContainer.getInstance().scriptComplete(m_statisticsServices, m_accumulatedStatistics, elapsedTime);
 
       timer.cancel();
 

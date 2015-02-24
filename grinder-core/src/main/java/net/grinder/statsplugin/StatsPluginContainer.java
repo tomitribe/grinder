@@ -15,8 +15,6 @@ import net.grinder.statistics.TestStatisticsMap;
 import org.picocontainer.DefaultPicoContainer;
 import org.picocontainer.MutablePicoContainer;
 import org.picocontainer.behaviors.Caching;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -25,7 +23,6 @@ import static net.grinder.util.ClassLoaderUtilities.loadRegisteredImplementation
 public class StatsPluginContainer {
 
     private static final StatsPluginContainer instance = new StatsPluginContainer();
-    private static final Logger logger = LoggerFactory.getLogger(StatsPluginContainer.class);
     private static final String RESOURCE_NAME = "META-INF/net.grinder.statsplugin";
 
     private final MutablePicoContainer container = new DefaultPicoContainer(new Caching());
@@ -38,12 +35,10 @@ public class StatsPluginContainer {
 
             for (final Class<? extends StatsPlugin> implementation : registeredImplementations) {
                 container.addComponent(implementation);
-                logger.info("registered plug-in {}", implementation.getName());
             }
 
             container.getComponents(StatsPlugin.class);
         } catch (EngineException e) {
-            logger.error("Error initializing statistics plugins");
         }
     }
 
@@ -51,10 +46,10 @@ public class StatsPluginContainer {
         return instance;
     }
 
-    public void scriptComplete(StatisticsServices statisticsServices, TestStatisticsMap accumulatedStatistics) {
+    public void scriptComplete(StatisticsServices statisticsServices, TestStatisticsMap accumulatedStatistics, long elapsedTime) {
         final List<StatsPlugin> statsPlugins = container.getComponents(StatsPlugin.class);
         for (StatsPlugin statsPlugin : statsPlugins) {
-            statsPlugin.scriptComplete(statisticsServices, accumulatedStatistics);
+            statsPlugin.scriptComplete(statisticsServices, accumulatedStatistics, elapsedTime);
         }
     }
 }
