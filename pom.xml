@@ -249,17 +249,24 @@
 
   <!-- Required so site:stage works. -->
   <distributionManagement>
-    <site>
-      <id>blah</id>
-      <url>file:///tmp/bah</url>
-    </site>
+    <repository>
+      <id>tomitribe.releases.https</id>
+      <name>Tomitribe Release Distribution Repository</name>
+      <url>http://repository.tomitribe.com/content/repositories/releases-tomitribe</url>
+    </repository>
+
+    <snapshotRepository>
+      <id>tomitribe.snapshots.https</id>
+      <name>Tomitribe Development Snapshot Repository</name>
+      <url>http://repository.tomitribe.com/content/repositories/snapshots-tomitribe</url>
+    </snapshotRepository>
   </distributionManagement>
 
   <scm>
-    <url>http://sourceforge.net/scm/?type=git&amp;group_id=18598</url>
-    <connection>git://grinder.git.sourceforge.net/gitroot/grinder/grinder</connection>
-    <developerConnection>scm:git:file://${basedir}</developerConnection>
-    <tag>release_3.11-TT-SNAPSHOT_final</tag>
+    <connection>scm:git:git@github.com:tomitribe/grinder.git</connection>
+    <url>scm:git:git@github.com:tomitribe/grinder.git</url>
+    <developerConnection>scm:git:git@github.com:tomitribe/grinder.git</developerConnection>
+    <tag>HEAD</tag>
   </scm>
 
   <properties>

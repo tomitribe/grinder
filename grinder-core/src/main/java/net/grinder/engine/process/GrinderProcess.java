@@ -24,17 +24,10 @@
 
 package net.grinder.engine.process;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.Context;
+import ch.qos.logback.core.joran.spi.JoranException;
 import net.grinder.common.GrinderBuild;
 import net.grinder.common.GrinderException;
 import net.grinder.common.GrinderProperties;
@@ -74,6 +67,7 @@ import net.grinder.statistics.StatisticsServices;
 import net.grinder.statistics.StatisticsServicesImplementation;
 import net.grinder.statistics.StatisticsTable;
 import net.grinder.statistics.TestStatisticsMap;
+import net.grinder.statsplugin.StatsPluginContainer;
 import net.grinder.synchronisation.BarrierGroups;
 import net.grinder.synchronisation.BarrierIdentityGenerator;
 import net.grinder.synchronisation.ClientBarrierGroups;
@@ -87,15 +81,20 @@ import net.grinder.util.StandardTimeAuthority;
 import net.grinder.util.TimeAuthority;
 import net.grinder.util.thread.BooleanCondition;
 import net.grinder.util.thread.Condition;
-
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.Context;
-import ch.qos.logback.core.joran.spi.JoranException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -553,6 +552,9 @@ final class GrinderProcess {
       statistics.write("\n");
       statisticsTable.print(new PrintWriter(statistics), elapsedTime);
       m_logger.info(statistics.toString());
+
+      // allow plugins to do some processing on statistics
+      StatsPluginContainer.getInstance().scriptComplete(m_statisticsServices, m_accumulatedStatistics);
 
       timer.cancel();
 
