@@ -214,7 +214,7 @@ public final class ConsoleCommunicationImplementation
                               ConnectionType.CONSOLE_CLIENT,
                               ConnectionType.WORKER,
                              },
-                             5,
+                             Integer.getInteger("grinder.receiver.threads", 5),
                              m_idlePollDelay,
                              m_inactiveClientTimeOut);
     }
