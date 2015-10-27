@@ -157,7 +157,7 @@ public final class StatisticsIndexMap implements Serializable {
                 "userDouble3",
                 "userDouble4"),
          asList("period"),
-         asList("timedTests"));
+         asList("timedTests", "userLong0", "userLong1", "userLong2"));
   }
 
   /**
